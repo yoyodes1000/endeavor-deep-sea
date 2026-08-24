@@ -1,0 +1,48 @@
+# Secrets — ne jamais committer
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# Angular / Node
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Matériel sous licence de l'éditeur — ne jamais publier
+# (scans des tuiles, spécialistes, revues, jetons, fiches scénario)
+scans/
+**/scans/
+*.pdf
+
+# Notes de travail reprenant le contenu des règles publiées par l'éditeur.
+# Restent en local : synthèse des règles, transcription du feuillet officiel.
+docs/prive/
+
+# Sauvegardes de parties et fichiers de travail
+*.save.json
+/tmp/
