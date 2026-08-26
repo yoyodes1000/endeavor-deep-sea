@@ -18,13 +18,56 @@ n'est pas une variante prévue par l'éditeur.
 
 ## État
 
-En cours de conception. Aucun code écrit à ce stade.
+Squelette en place. Le moteur de règles n'est pas commencé.
 
 | Étape | État |
 |---|---|
 | Lecture et synthèse des règles | terminé |
-| Architecture du projet | en cours |
+| Architecture du projet | terminé |
+| Squelette technique | terminé |
 | Modélisation du matériel | en attente des relevés |
+| Moteur de règles | à faire |
+
+## Construire et lancer
+
+**Prérequis** : JDK 21 ou plus, Maven 3.9, Node 20 ou plus.
+
+Construire l'interface, puis le tout :
+
+```
+cd ui && npm install && npm run build
+cd .. && mvn clean install
+```
+
+`npm run build` dépose l'interface compilée dans les ressources de Spring Boot ;
+l'application est donc autonome.
+
+Lancer :
+
+```
+java -jar app/target/app-0.1.0-SNAPSHOT.jar
+```
+
+Puis ouvrir <http://localhost:8080>.
+
+### En développement
+
+Deux processus, pour bénéficier du rechargement à chaud de l'interface :
+
+```
+mvn -pl app spring-boot:run
+cd ui && npm start
+```
+
+L'interface est alors sur <http://localhost:4200> et relaie les appels `/api`
+vers le port 8080, ce qui évite toute configuration CORS.
+
+### Tests
+
+```
+mvn test              # moteur
+cd ui && npm test     # interface
+```
 
 ## Documentation
 

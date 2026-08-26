@@ -20,6 +20,9 @@ dist/
 npm-debug.log*
 yarn-error.log*
 
+# Interface compilée, déposée dans les ressources de Spring Boot par `ng build`
+app/src/main/resources/static/
+
 # IDE
 .idea/
 *.iml

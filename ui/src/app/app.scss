@@ -1,0 +1,36 @@
+.accueil {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+  font-family: system-ui, sans-serif;
+
+  h1 {
+    margin: 0 0 0.25rem;
+    font-size: 1.75rem;
+    color: #0b3a53;
+  }
+
+  &__sous-titre {
+    margin: 0 0 2rem;
+    color: #4a5b66;
+  }
+}
+
+.etat {
+  border: 1px solid #c8d2d8;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+
+  &__ligne {
+    margin: 0;
+
+    // La couleur ne porte jamais l'information seule : le texte l'exprime aussi.
+    &--ok {
+      color: #14532d;
+    }
+
+    &--erreur {
+      color: #8a1c1c;
+    }
+  }
+}

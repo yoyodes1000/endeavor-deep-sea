@@ -113,6 +113,43 @@ mécanisme pour les surcharges de scénario, qui priment sur les règles de base
 Le chargement des données est **strict** : une description invalide empêche le
 démarrage, elle ne dégrade pas silencieusement le comportement.
 
+### 5. Position et niveau sont deux nombres distincts
+
+Les quatre pistes d'attribut comptent 13 cases groupées en 5 paliers
+(2 + 2 + 3 + 3 + 3). Deux notions s'y superposent, et les confondre serait la
+source d'erreurs de décalage la plus probable du projet.
+
+| Notion | Plage | Nature | Rôle |
+|---|:-:|---|---|
+| `step` | 0 à 12 | position du cube | ce que stocke l'état, ce qui avance d'un cran |
+| `level` | 1 à 5 | palier atteint, **déduit** du `step` | ce que lit la logique de jeu |
+
+**Le `step` part de 0** parce que le jeu lui-même compte ainsi : le livret
+demande de placer les cubes « sur la case 0 », et la piste de recherche est
+imprimée de 0 à 12 sur le plateau. Retenir la base 1 aurait introduit deux
+numérotations concurrentes dans le même projet.
+
+**Le `level` part de 1** parce qu'il vaut exactement ce qu'il procure : au
+niveau 3, on recrute un spécialiste de rang 3, on prend 3 disques, on récupère
+3 disques, on se déplace de 3 cases jusqu'à la profondeur 3. **Le niveau est la
+valeur**, sur les quatre pistes. Aucune table de correspondance à écrire.
+
+Les deux bases ne se contredisent pas : un `step` est un décalage depuis le
+départ, un `level` est une grandeur. Un décalage se compte à partir de zéro, une
+grandeur à partir de un — comme l'indice et la longueur d'une chaîne.
+
+| Niveau | Cases | Valeur | Points | Repère |
+|:-:|:-:|:-:|:-:|---|
+| 1 | 0 – 1 | 1 | 0 | départ de la partie |
+| 2 | 2 – 3 | 2 | 1 | case 2 : submersible bonus (ingéniosité) |
+| 3 | 4 – 6 | 3 | 4 | |
+| 4 | 7 – 9 | 4 | 7 | case 7 : submersible bonus (ingéniosité) |
+| 5 | 10 – 12 | 5 | 10 | case 10 : symbole impact |
+
+Dépassement : au-delà de la case 12, le cube revient à la **case 10** et
+rapporte un impact. Les trois repères tombent tous sur la première case d'un
+palier.
+
 ## Intelligence artificielle
 
 Recherche arborescente Monte-Carlo avec déterminisation, pour traiter
@@ -185,9 +222,6 @@ poursuit.
 
 ## Points encore ouverts
 
-- Convention de numérotation des paliers de piste, à fixer avant la première
-  ligne de moteur : le palier atteint et la valeur utile qu'il procure ne sont
-  pas le même nombre.
 - Format exact de description des effets déclenchés — à concevoir une fois les
   premières tuiles relevées, sur des cas réels plutôt que dans l'abstrait.
 - Empaquetage final pour un lancement en un clic.
