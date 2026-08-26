@@ -1,0 +1,21 @@
+# Fins de ligne normalisées en LF, dans le dépôt comme dans la copie locale.
+# Toute la chaîne d'outils (Maven, npm, Angular) s'en accommode sous Windows,
+# et cela évite des diffs entiers dus au seul changement de plateforme.
+* text=auto eol=lf
+
+# Scripts Windows : ils exigent CRLF pour être exécutables.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaires : aucune conversion, sous aucun prétexte.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

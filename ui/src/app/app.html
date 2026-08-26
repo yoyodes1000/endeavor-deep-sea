@@ -1,0 +1,20 @@
+<main class="accueil">
+  <h1>Endeavor : Eaux profondes</h1>
+  <p class="accueil__sous-titre">Adaptation jouable en solo contre une intelligence artificielle</p>
+
+  <section class="etat" aria-live="polite">
+    @if (version(); as v) {
+      <p class="etat__ligne etat__ligne--ok">
+        <span aria-hidden="true">●</span>
+        API joignable — {{ v.application }}, version {{ v.version }}
+      </p>
+    } @else if (erreur()) {
+      <p class="etat__ligne etat__ligne--erreur">
+        <span aria-hidden="true">●</span>
+        {{ erreur() }}
+      </p>
+    } @else {
+      <p class="etat__ligne">Contact de l'API…</p>
+    }
+  </section>
+</main>
