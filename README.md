@@ -86,6 +86,11 @@ lit, l'application les sert.
 
 - `specialists.json` — les 21 spécialistes, faces Junior et Senior
 
+Le champ `actions` se lit à deux niveaux : la liste **externe** énumère les
+actions cumulées, la liste **interne** les alternatives. `[["travel", "sonar"]]`
+donne une action au choix entre Voyage et Sonar — le trait oblique imprimé sur
+la carte — tandis que `[["sonar"], ["dive"]]` donne les deux, l'une puis l'autre.
+
 Les scans du matériel ne sont pas versionnés, ils appartiennent à l'éditeur.
 
 Les notes de travail sur les règles — synthèse du livret et transcription du

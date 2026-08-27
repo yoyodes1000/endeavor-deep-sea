@@ -53,7 +53,7 @@
       "senior": {
         "name": "Ecotoxicologist",
         "immediateGains": ["coordination", "coordination"],
-        "actions": [["sonar", "conserve"]]
+        "actions": [["dive", "conserve"]]
       }
     },
     {
@@ -95,7 +95,7 @@
       "senior": {
         "name": "Deep-Sea Videographer",
         "immediateGains": ["reputation", "reputation"],
-        "actions": [["sonar"], ["conserve"]]
+        "actions": [["dive"], ["conserve"]]
       }
     },
     {
@@ -201,7 +201,7 @@
         "immediateGains": [],
         "actions": [],
         "endGameScoring": {
-          "text": "1 point for each of your conservation discs in a single zone of your choice",
+          "text": "1 point for each of your 'conserve' in one zone",
           "points": 1,
           "per": 1,
           "count": "conservation-discs-in-best-zone"
@@ -321,7 +321,7 @@
         "immediateGains": [],
         "actions": [],
         "endGameScoring": {
-          "text": "1 point for every two empty dive site in the ocean",
+          "text": "1 point for every two empty dive sites in the ocean",
           "points": 1,
           "per": 2,
           "count": "empty-dive-sites"
@@ -336,7 +336,7 @@
         "immediateGains": ["inspiration", "inspiration"],
         "actions": [],
         "specialAbility": {
-          "text": "Copy the action of one of your other specialists"
+          "text": "Copy the action(s) of one of your other specialists"
         }
       },
       "senior": {
