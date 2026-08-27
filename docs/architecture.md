@@ -198,6 +198,51 @@ Le champ `text` est conservé dans tous les cas : c'est lui que l'interface
 affiche au joueur, et il sert de référence pour vérifier que la fonction codée
 dit bien la même chose que la tuile.
 
+### 7. Le plateau Impact est dessiné depuis les données, jamais depuis le scan
+
+Chaque scénario a sa grille d'hexagones. Elle est **décrite en données et rendue
+par l'interface** ; les scans des fiches servent au relevé, pas à l'affichage.
+
+Le moteur a de toute façon besoin de la description complète — hexagones
+existants, hexagones de départ, capacité, points — et surtout de l'**adjacence**,
+puisque la pose exige un hexagone de départ ou le voisin d'un hexagone occupé,
+quel qu'en soit le propriétaire. L'IA parcourt ce graphe des milliers de fois par
+seconde. Une fois cette description écrite, le scan n'apprend plus rien au
+moteur.
+
+Trois bénéfices s'y ajoutent :
+
+- **Une seule vérité.** Une carte dessinée depuis les données rend l'erreur de
+  relevé visible : si le JSON est faux, l'écran est faux. Une image annotée
+  obligerait à maintenir l'accord entre le dessin et les données, sans que rien
+  ne le vérifie.
+- **Un dépôt autonome.** Les scans appartiennent à l'éditeur et ne sont pas
+  versionnés. Une interface qui en dépendrait ne fonctionnerait pas depuis un
+  clone propre.
+- **Accessibilité.** Des hexagones en DOM sont focalisables, étiquetables et
+  navigables au clavier ; une image à zones cliquables ne l'est qu'au prix d'un
+  travail supplémentaire.
+
+L'adjacence se **calcule** à partir de coordonnées axiales `(q, r)`, elle ne se
+stocke pas — une source d'erreur de saisie en moins.
+
+```json
+"impactBoard": {
+  "hexes": [
+    { "q": 0, "r": 0,  "start": true },
+    { "q": 1, "r": 0,  "points": 3 },
+    { "q": 1, "r": -1, "points": -2 },
+    { "q": 2, "r": 0,  "capacity": "unlimited" }
+  ]
+}
+```
+
+**Alternative écartée : délimiter les zones sur le scan.** Fidélité visuelle
+immédiate, aucun travail de dessin. Écartée parce qu'elle impose dix jeux de
+coordonnées en pixels à recalibrer à chaque nouveau scan, qu'elle ne dispense
+d'aucun relevé, et qu'elle place du matériel sous licence dans le chemin
+d'exécution de l'application.
+
 ## Intelligence artificielle
 
 Recherche arborescente Monte-Carlo avec déterminisation, pour traiter
@@ -272,4 +317,7 @@ poursuit.
 
 - Format exact de description des effets déclenchés — à concevoir une fois les
   premières tuiles relevées, sur des cas réels plutôt que dans l'abstrait.
+- Grilles Impact irrégulières — hexagones reliés par des traits, îlots séparés.
+  Un champ `links` explicite viendrait alors compléter l'adjacence géométrique.
+  À trancher sur les vraies fiches.
 - Empaquetage final pour un lancement en un clic.
