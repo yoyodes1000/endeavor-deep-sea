@@ -150,6 +150,54 @@ Dépassement : au-delà de la case 12, le cube revient à la **case 10** et
 rapporte un impact. Les trois repères tombent tous sur la première case d'un
 palier.
 
+### 6. Où s'arrête « les règles sont des données »
+
+La décision 4 pose que les règles spéciales sont décrites en données. Les neuf
+décomptes de fin de partie des spécialistes Senior de rang 5 montrent où ce
+principe cesse de payer, et la frontière mérite d'être écrite.
+
+Les neuf partagent **exactement la même arithmétique** :
+
+```
+points × partie entière( effectif ÷ par )
+```
+
+Mais leurs neuf « effectifs » n'ont presque rien en commun : un maximum sur les
+zones, un minimum sur quatre symboles de domaine, deux comptages de zones
+distinctes selon des critères différents, un décompte global de l'océan. Huit
+calculs différents pour neuf tuiles.
+
+Les mettre en données exigerait d'inventer un langage de requête sur l'état du
+jeu — agrégations, minimums, maximums, prédicats sur les zones. Plus de code
+que les neuf petites fonctions qu'il remplacerait, et intestable en tant que
+données.
+
+**La frontière retenue : l'arithmétique en données, le prédicat en code.**
+
+```json
+"endGameScoring": {
+  "text": "1 point for every three zones where you have 'disc' or 'submarine'",
+  "points": 1,
+  "per": 3,
+  "count": "zones-with-disc-or-vessel"
+}
+```
+
+`count` nomme une fonction d'un registre du moteur. Le chargeur vérifie que le
+nom existe : une faute de frappe fait échouer le démarrage, au lieu de rapporter
+zéro point sans rien dire.
+
+**Le critère général**, applicable aux revues scientifiques et aux règles de
+zones qui viendront : les données conviennent quand des règles **se répètent sur
+une forme commune** — c'est le cas des 19 règles de zones, qui partagent leurs
+déclencheurs. Le code convient quand chaque règle est un cas unique. La question
+à se poser n'est pas « est-ce une règle ? » mais « cette règle a-t-elle des
+sœurs ? ».
+
+Le champ `text` est conservé dans tous les cas : c'est lui que l'interface
+affiche au joueur, et il sert de référence pour vérifier que la fonction codée
+dit bien la même chose que la tuile.
+
 ## Intelligence artificielle
 
 Recherche arborescente Monte-Carlo avec déterminisation, pour traiter

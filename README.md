@@ -78,6 +78,16 @@ cd ui && npm test     # interface
 - [Sources](docs/sources.md) — documents de référence, méthode d'extraction,
   données manquantes
 
+## Données du matériel
+
+`data/` contient la description du matériel de jeu, relevée sur la boîte et
+chargée au démarrage. Ces fichiers ne dépendent d'aucun module : le moteur les
+lit, l'application les sert.
+
+- `specialists.json` — les 21 spécialistes, faces Junior et Senior
+
+Les scans du matériel ne sont pas versionnés, ils appartiennent à l'éditeur.
+
 Les notes de travail sur les règles — synthèse du livret et transcription du
 feuillet officiel de clarifications — reprennent le contenu publié par
 l'éditeur. Elles restent en local dans `docs/prive/` et ne sont pas versionnées.
