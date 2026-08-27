@@ -223,16 +223,17 @@ Trois bénéfices s'y ajoutent :
   navigables au clavier ; une image à zones cliquables ne l'est qu'au prix d'un
   travail supplémentaire.
 
-L'adjacence se **calcule** à partir de coordonnées axiales `(q, r)`, elle ne se
-stocke pas — une source d'erreur de saisie en moins.
+L'adjacence se **calcule** à partir des coordonnées, elle ne se stocke pas — une
+source d'erreur de saisie en moins.
 
 ```json
 "impactBoard": {
+  "orientation": "pointy-top",
+  "starMarker": { "row": 3, "col": 4 },
   "hexes": [
-    { "q": 0, "r": 0,  "start": true },
-    { "q": 1, "r": 0,  "points": 3 },
-    { "q": 1, "r": -1, "points": -2 },
-    { "q": 2, "r": 0,  "capacity": "unlimited" }
+    { "row": 2, "col": 4, "points": 0, "gains": ["ingenuity"], "start": true },
+    { "row": 0, "col": 0, "points": 1, "fieldSymbol": "yellow" },
+    { "row": 6, "col": 1, "points": 2, "capacity": "unlimited" }
   ]
 }
 ```
@@ -242,6 +243,35 @@ immédiate, aucun travail de dessin. Écartée parce qu'elle impose dix jeux de
 coordonnées en pixels à recalibrer à chaque nouveau scan, qu'elle ne dispense
 d'aucun relevé, et qu'elle place du matériel sous licence dans le chemin
 d'exécution de l'application.
+
+**Ce que le relevé des trois premiers plateaux a corrigé.** Le modèle esquissé
+ci-dessus a été écrit sur la seule mission 1. Les missions 2 et 3 l'ont démenti
+sur quatre points, tous conservés ici parce qu'ils se représenteront :
+
+- **L'orientation des hexagones change d'un scénario à l'autre.** Les missions 1
+  et 3 sont pavées pointe en haut, la mission 2 côté plat en haut. Le champ
+  `orientation` est donc porté par le plateau, et le calcul d'adjacence en
+  dépend : voisins est/ouest en pointe en haut, nord/sud en côté plat. Les
+  coordonnées sont décalées — par lignes dans un cas, par colonnes dans l'autre.
+- **Un hexagone peut porter plusieurs gains.** D'où `gains` au pluriel.
+- **Les symboles de domaine ne sont pas des gains.** La fiche de la mission 3
+  l'imprime : ils ne rapportent rien au moment de la pose, ils se collectionnent
+  pour le décompte final — celui du Renowned Ocean Historian, notamment. Deux
+  notions distinctes, deux champs : `gains` et `fieldSymbol`.
+- **Le marqueur de départ est parfois posé sur le plateau.** En marge de la
+  fiche sur les missions 1 et 2, il occupe une case de la grille sur la
+  mission 3, case qui n'accueille alors aucun pion. D'où `starMarker`, facultatif.
+
+**La couleur du contour n'est pas une donnée.** Elle indique la valeur en points
+sur le carton, mais son barème change de fiche en fiche — bleu, jaune, orange
+sur les trois premières, brun, jaune, vert et rose sur la quatrième, qui
+introduit un palier à 3 points. Seule la valeur relevée est conservée ; la
+couleur reste une aide de lecture du scan.
+
+**Contrôle de relevé.** La règle de pose impose que tout hexagone soit
+atteignable depuis un départ, de proche en proche. Un parcours du graphe
+d'adjacence après chaque relevé attrape donc les erreurs de coordonnées : une
+case mal placée devient presque toujours inaccessible.
 
 ## Intelligence artificielle
 

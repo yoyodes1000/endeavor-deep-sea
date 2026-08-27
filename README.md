@@ -85,6 +85,8 @@ chargée au démarrage. Ces fichiers ne dépendent d'aucun module : le moteur le
 lit, l'application les sert.
 
 - `specialists.json` — les 21 spécialistes, faces Junior et Senior
+- `missions.json` — les plateaux Impact des scénarios, relevés sur les fiches
+  (3 des 10 à ce jour)
 
 Le champ `actions` se lit à deux niveaux : la liste **externe** énumère les
 actions cumulées, la liste **interne** les alternatives. `[["travel", "sonar"]]`

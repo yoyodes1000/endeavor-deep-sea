@@ -1,0 +1,793 @@
+{
+  "missions": [
+    {
+      "id": "the-call-of-the-ocean",
+      "number": 1,
+      "name": "The Call of the Ocean",
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ],
+            "start": true
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ],
+            "start": true
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ],
+            "start": true
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ],
+            "start": true
+          },
+          {
+            "row": 6,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "maps-and-charts",
+      "number": 2,
+      "name": "Maps and Charts",
+      "impactBoard": {
+        "orientation": "flat-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "research",
+              "research"
+            ],
+            "start": true
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ],
+            "start": true
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ],
+            "start": true
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 8,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 8,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 8,
+            "points": 2,
+            "capacity": "unlimited"
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-oceanic-journal",
+      "number": 3,
+      "name": "The Oceanic Journal",
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "starMarker": {
+          "row": 3,
+          "col": 4
+        },
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "promote"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ],
+            "start": true
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ],
+            "start": true
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ],
+            "start": true
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 1,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 8,
+            "points": 0,
+            "gains": [
+              "promote"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
