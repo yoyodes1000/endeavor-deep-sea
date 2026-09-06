@@ -296,6 +296,65 @@ atteignable depuis un départ, de proche en proche. Un parcours du graphe
 d'adjacence après chaque relevé attrape donc les erreurs de coordonnées : une
 case mal placée devient presque toujours inaccessible.
 
+### 8. Le reste de la fiche : mise en place, objectifs, règles spéciales
+
+Le plateau Impact (décision 7) n'est qu'une partie de la fiche. Le reste — la
+mise en place, les façons de marquer, les règles propres au scénario — est décrit
+dans le même `missions.json`, sous `setup`, `goals` et `specialRules`. Le principe
+est celui de la décision 6, appliqué aux objectifs : **l'arithmétique en données,
+le prédicat en code.**
+
+**`setup`.** `columns` donne le nombre de colonnes de l'océan (lettres A, B, …).
+`startingTiles` liste les tuiles posées d'entrée : `{ depth, col, tile }` pour une
+tuile nommée, `{ depth, col, randomLevel }` pour un tirage dans une pile de niveau.
+Deux cas d'information cachée reçoivent leur propre champ, parce que l'IA doit les
+déterminiser :
+
+- `shuffledRows` — une rangée entière mélangée : les tuiles listées sont réparties
+  au hasard, une par colonne (la sea-star de la mission 8, dont la colonne
+  conditionne un objectif).
+- `hiddenTiles` — une tuile mêlée face cachée à une pile (`level`, plus
+  `shuffledAmongTop` ou `shuffledInto`) : la fallen-star de la mission 6, the
+  looking-glass de la mission 8.
+
+**`goals`.** Chaque objectif partage une forme commune :
+
+```json
+{ "number": 1, "units": ["sonar"], "depths": [], "columns": ["B", "C"],
+  "pointsPer": 1, "majorityBonus": { "first": 4, "second": 2 }, "text": "…" }
+```
+
+- `units` — ce qu'on compte, dans un vocabulaire fermé : `sonar`, `publish`,
+  `conserve` (disques par site), `disc` (n'importe quel disque), `vessel`, `zone`,
+  `fieldSymbol`, `impactMarker`. Le chargeur rejette tout autre jeton.
+- `depths` / `columns` — les filtres, `[]` valant « tout ». Un qualificateur de
+  zone s'ajoute au besoin : `zoneContains` (la zone compte si elle contient l'un
+  des éléments listés — disque, submersible) et `zoneDiscoveredByYou`.
+- `pointsPer` et `majorityBonus { first, second }` — l'arithmétique : points par
+  unité, bonus de majorité. `leaderBonuses` généralise la majorité quand il y en a
+  plusieurs, une par tranche (« le plus de zones découvertes en profondeur 3, en
+  colonne B… », mission 6).
+- `text` est toujours conservé : affichage joueur et référence pour vérifier le
+  code.
+
+Deux extensions couvrent les scénarios tardifs :
+
+- **Objectif à options** (`chooseOption` + `options`, mission 8) : le joueur
+  choisit une option de décompte parmi plusieurs (near/far, peu profond/profond),
+  chacune étant un objectif complet. `columnsFromSeaStar: "left" | "right"` exprime
+  une plage de colonnes relative à une tuile placée au hasard.
+- **Prédicat en code** (`count` + `unitCandidates`) : quand un objectif ne se
+  ramène pas à un filtre — piste de nettoyage (mission 9), premier à atteindre la
+  profondeur 5 (mission 10), type de site désigné en cours de partie (missions 6,
+  8), jeux complets de symboles — un `count` nomme une fonction du moteur, comme
+  les décomptes Senior de la décision 6. Un `note` marque les objectifs dont le
+  mécanisme reste à préciser.
+
+**`specialRules`.** Un tableau de règles propres au scénario, en texte pour
+l'instant ; leur structuration en effets suivra la décision 4, sur cas réels. La
+frontière tient : données tant qu'une règle a des sœurs, code dès qu'elle est un
+cas unique.
+
 ## Intelligence artificielle
 
 Recherche arborescente Monte-Carlo avec déterminisation, pour traiter

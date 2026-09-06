@@ -45,10 +45,10 @@ partir du matériel physique.
 | Revues scientifiques | 24 + 8 de départ | 07 |
 | Jetons Plongée | 36 jetons, dont 4 seulement illustrés dans le livret | 09 |
 
-Les **plateaux Impact des 10 scénarios sont relevés** dans `data/missions.json`
-(orientation, hexagones, gains, symboles de domaine, points, capacité, îlots) ;
-restent la mise en place et les objectifs de chaque fiche. Le relevé a été fait
-sur les scans des fiches, superposition de contrôle à l'appui, et les barèmes
+La fiche de chaque scénario est **entièrement relevée** dans `data/missions.json` :
+plateau Impact (orientation, hexagones, gains, symboles de domaine, points,
+capacité, îlots), mise en place, objectifs et règles spéciales. Le relevé a été
+fait sur les scans des fiches, superposition de contrôle à l'appui, et les barèmes
 couleur→points confrontés au matériel physique.
 
 **Piste de recoupement** : un [mod Tabletop Simulator](https://steamcommunity.com/sharedfiles/filedetails/?id=2976002512)
