@@ -266,7 +266,30 @@ sur quatre points, tous conservés ici parce qu'ils se représenteront :
 sur le carton, mais son barème change de fiche en fiche — bleu, jaune, orange
 sur les trois premières, brun, jaune, vert et rose sur la quatrième, qui
 introduit un palier à 3 points. Seule la valeur relevée est conservée ; la
-couleur reste une aide de lecture du scan.
+couleur reste une aide de lecture du scan. Un repère physique aide au relevé :
+**un hexagone n'a de relief intérieur que s'il rapporte des points** ; les cases
+plates valent zéro (ou le malus, cf. mission 9).
+
+**Ce que le relevé des sept plateaux restants a ajouté.** Les missions 4 à 10
+ont confirmé le modèle et introduit des cas nouveaux, tous portés par des champs
+optionnels qui décrivent le carton, jamais le mécanisme :
+
+- **Combos et doubles.** Un hexagone peut porter deux gains, ou un même gain en
+  double ; le symbole de domaine « joker » est `fieldSymbol: "wild"`, un double
+  field symbol se note `fieldSymbolCount`.
+- **Îlots et ∞ hors-grille — tranchés.** Les hexagones ∞ atteints par une flèche
+  et les cases de raccourci existent (missions 4, 10). On les porte comme
+  hexagones marqués `offGrid: true` avec une `note` ; l'adjacence géométrique
+  suffit au reste. Les deux « dauphins » de la mission 5, les deux grilles de la
+  mission 7 et les cinq pistes de profondeur de la mission 10 ne sont que des
+  **composantes disjointes de la même grille** — aucun champ `links` nécessaire
+  pour les séparer, le parcours du graphe le fait seul.
+- **Barèmes de points élargis.** La mission 6 monte à 6 points (paliers 2/4/6
+  par profondeur), la mission 9 descend à `points: -2` sur ses hexagones pollués.
+- **Marqueurs de scénario.** `arrow` (roue de domaine fléchée), `rescue` (grille
+  de sauvetage, mission 7), `goal` (hexagones objectif, mission 8). Le décompte
+  par grappes, la piste de nettoyage ou le placement par profondeur restent hors
+  des données du plateau, dans le code.
 
 **Contrôle de relevé.** La règle de pose impose que tout hexagone soit
 atteignable depuis un départ, de proche en proche. Un parcours du graphe
@@ -347,7 +370,11 @@ poursuit.
 
 - Format exact de description des effets déclenchés — à concevoir une fois les
   premières tuiles relevées, sur des cas réels plutôt que dans l'abstrait.
-- Grilles Impact irrégulières — hexagones reliés par des traits, îlots séparés.
-  Un champ `links` explicite viendrait alors compléter l'adjacence géométrique.
-  À trancher sur les vraies fiches.
+- Grilles Impact irrégulières — **tranché** (cf. décision 7) : les îlots sont des
+  composantes disjointes de la même grille, les ∞ hors-grille des hexagones
+  `offGrid`. Un champ `links` explicite pour matérialiser les flèches à sens
+  unique vers les ∞ reste optionnel, à n'ajouter que si le moteur en a besoin.
+- Reste à fiabiliser sur trois plateaux : positions exactes des vides du bas de
+  la mission 5, valeur en points des deux ∞ de la mission 10, et les cases de
+  lancement / liens de flèche des missions 5, 6, 7 et 9.
 - Empaquetage final pour un lancement en un clic.

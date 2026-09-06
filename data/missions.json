@@ -788,6 +788,1950 @@
           }
         ]
       }
+    },
+    {
+      "id": "better-than-you-found-it",
+      "number": 4,
+      "name": "Better Than You Found It",
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 1,
+            "points": 2,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 0,
+            "fieldSymbol": "wild",
+            "start": true
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 1,
+            "points": 2,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 9,
+            "points": 3,
+            "capacity": "unlimited",
+            "offGrid": true,
+            "note": "hexagone infini rose hors-plateau : une vessel gagnee via une tortue peut y etre placee (1x/zone)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-fallen-star",
+      "number": 5,
+      "name": "The Fallen Star",
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "promote"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "coordination",
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "inspiration",
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "disc"
+            ],
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "reputation",
+              "disc"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 0,
+            "fieldSymbol": "wild",
+            "fieldSymbolCount": 2
+          },
+          {
+            "row": 3,
+            "col": 8,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "reputation",
+              "disc"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "coordination",
+              "disc"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 7,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 7,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 8,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 8,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 8,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 9,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 10,
+            "points": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "star-search",
+      "number": 6,
+      "name": "Star Search",
+      "impactBoard": {
+        "orientation": "flat-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 8,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 4,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 4,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 4,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 4,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 4
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 4
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 4
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 4
+          },
+          {
+            "row": 3,
+            "col": 8,
+            "points": 4
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 6,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 6,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 6,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 4,
+            "col": 7,
+            "points": 6,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 6
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 6
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 6
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 6
+          },
+          {
+            "row": 4,
+            "col": 8,
+            "points": 6
+          }
+        ]
+      }
+    },
+    {
+      "id": "recover-the-fallen-star",
+      "number": 7,
+      "name": "Recover the Fallen Star",
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "coordination",
+              "disc"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "coordination",
+              "disc"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "inspiration",
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "inspiration",
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 5,
+            "col": 2,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 7,
+            "col": 0,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 7,
+            "col": 2,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 7,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "new-horizons",
+      "number": 8,
+      "name": "New Horizons",
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 1,
+            "col": 4,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 8,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 8,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 9,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 9,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 5,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 5,
+            "points": 1,
+            "starHere": true,
+            "start": true
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 9,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 6,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 8,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 8,
+            "col": 4,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 8,
+            "col": 6,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 1,
+            "goal": 3
+          },
+          {
+            "row": 9,
+            "col": 0,
+            "points": 1,
+            "goal": 1
+          },
+          {
+            "row": 8,
+            "col": 8,
+            "points": 1,
+            "goal": 2
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 1,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 8,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 8,
+            "points": 1
+          },
+          {
+            "row": 5,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 5,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 0,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 6,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 8,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 8,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 9,
+            "points": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-spill",
+      "number": 9,
+      "name": "The Spill",
+      "impactBoard": {
+        "orientation": "flat-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": -2,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": -2,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": -2,
+            "fieldSymbol": "wild",
+            "arrow": true,
+            "fieldSymbolCount": 2
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": -2,
+            "fieldSymbol": "wild",
+            "arrow": true,
+            "fieldSymbolCount": 2
+          },
+          {
+            "row": 0,
+            "col": 8,
+            "points": -2,
+            "fieldSymbol": "wild",
+            "fieldSymbolCount": 2
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": -2,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": -2,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": -2,
+            "gains": [
+              "reputation",
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "points": -2,
+            "gains": [
+              "inspiration",
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": -2,
+            "gains": [
+              "reputation",
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": -2,
+            "gains": [
+              "reputation",
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": -2,
+            "gains": [
+              "ingenuity",
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": -2,
+            "gains": [
+              "coordination",
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 8,
+            "points": -2,
+            "gains": [
+              "inspiration",
+              "coordination"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 1,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 1,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 1,
+            "gains": [
+              "ingenuity"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-deepest-sea",
+      "number": 10,
+      "name": "The Deepest Sea",
+      "impactBoard": {
+        "orientation": "rect-rows",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "research"
+            ],
+            "start": true
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 0,
+            "fieldSymbol": "wild",
+            "start": true
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 0,
+            "fieldSymbol": "wild",
+            "start": true
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 3,
+            "rescue": true,
+            "start": true
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 3,
+            "rescue": true,
+            "start": true
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "points": 0,
+            "capacity": "unlimited",
+            "offGrid": true,
+            "note": "infini bleu (depths 1-2) - points a verifier"
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 2,
+            "capacity": "unlimited",
+            "offGrid": true,
+            "note": "infini orange (depths 4-5) - points a verifier"
+          }
+        ]
+      }
     }
   ]
 }
