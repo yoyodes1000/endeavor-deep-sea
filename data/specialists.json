@@ -1,6 +1,21 @@
 {
   "specialists": [
     {
+      "id": "team-leader",
+      "teamLeader": true,
+      "rank": null,
+      "junior": {
+        "name": "Team Leader",
+        "immediateGains": [],
+        "actions": [["travel", "sonar", "dive", "conserve", "publish"]]
+      },
+      "senior": {
+        "name": "Team Leader",
+        "immediateGains": [],
+        "actions": [["travel", "sonar", "dive", "conserve", "publish"]]
+      }
+    },
+    {
       "id": "pilot",
       "rank": 1,
       "junior": {
