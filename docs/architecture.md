@@ -150,6 +150,211 @@ Dépassement : au-delà de la case 12, le cube revient à la **case 10** et
 rapporte un impact. Les trois repères tombent tous sur la première case d'un
 palier.
 
+### 6. Où s'arrête « les règles sont des données »
+
+La décision 4 pose que les règles spéciales sont décrites en données. Les neuf
+décomptes de fin de partie des spécialistes Senior de rang 5 montrent où ce
+principe cesse de payer, et la frontière mérite d'être écrite.
+
+Les neuf partagent **exactement la même arithmétique** :
+
+```
+points × partie entière( effectif ÷ par )
+```
+
+Mais leurs neuf « effectifs » n'ont presque rien en commun : un maximum sur les
+zones, un minimum sur quatre symboles de domaine, deux comptages de zones
+distinctes selon des critères différents, un décompte global de l'océan. Huit
+calculs différents pour neuf tuiles.
+
+Les mettre en données exigerait d'inventer un langage de requête sur l'état du
+jeu — agrégations, minimums, maximums, prédicats sur les zones. Plus de code
+que les neuf petites fonctions qu'il remplacerait, et intestable en tant que
+données.
+
+**La frontière retenue : l'arithmétique en données, le prédicat en code.**
+
+```json
+"endGameScoring": {
+  "text": "1 point for every three zones where you have 'disc' or 'submarine'",
+  "points": 1,
+  "per": 3,
+  "count": "zones-with-disc-or-vessel"
+}
+```
+
+`count` nomme une fonction d'un registre du moteur. Le chargeur vérifie que le
+nom existe : une faute de frappe fait échouer le démarrage, au lieu de rapporter
+zéro point sans rien dire.
+
+**Le critère général**, applicable aux revues scientifiques et aux règles de
+zones qui viendront : les données conviennent quand des règles **se répètent sur
+une forme commune** — c'est le cas des 19 règles de zones, qui partagent leurs
+déclencheurs. Le code convient quand chaque règle est un cas unique. La question
+à se poser n'est pas « est-ce une règle ? » mais « cette règle a-t-elle des
+sœurs ? ».
+
+Le champ `text` est conservé dans tous les cas : c'est lui que l'interface
+affiche au joueur, et il sert de référence pour vérifier que la fonction codée
+dit bien la même chose que la tuile.
+
+### 7. Le plateau Impact est dessiné depuis les données, jamais depuis le scan
+
+Chaque scénario a sa grille d'hexagones. Elle est **décrite en données et rendue
+par l'interface** ; les scans des fiches servent au relevé, pas à l'affichage.
+
+Le moteur a de toute façon besoin de la description complète — hexagones
+existants, hexagones de départ, capacité, points — et surtout de l'**adjacence**,
+puisque la pose exige un hexagone de départ ou le voisin d'un hexagone occupé,
+quel qu'en soit le propriétaire. L'IA parcourt ce graphe des milliers de fois par
+seconde. Une fois cette description écrite, le scan n'apprend plus rien au
+moteur.
+
+Trois bénéfices s'y ajoutent :
+
+- **Une seule vérité.** Une carte dessinée depuis les données rend l'erreur de
+  relevé visible : si le JSON est faux, l'écran est faux. Une image annotée
+  obligerait à maintenir l'accord entre le dessin et les données, sans que rien
+  ne le vérifie.
+- **Un dépôt autonome.** Les scans appartiennent à l'éditeur et ne sont pas
+  versionnés. Une interface qui en dépendrait ne fonctionnerait pas depuis un
+  clone propre.
+- **Accessibilité.** Des hexagones en DOM sont focalisables, étiquetables et
+  navigables au clavier ; une image à zones cliquables ne l'est qu'au prix d'un
+  travail supplémentaire.
+
+L'adjacence se **calcule** à partir des coordonnées, elle ne se stocke pas — une
+source d'erreur de saisie en moins.
+
+```json
+"impactBoard": {
+  "orientation": "pointy-top",
+  "starMarker": { "row": 3, "col": 4 },
+  "hexes": [
+    { "row": 2, "col": 4, "points": 0, "gains": ["ingenuity"], "start": true },
+    { "row": 0, "col": 0, "points": 1, "fieldSymbol": "yellow" },
+    { "row": 6, "col": 1, "points": 2, "capacity": "unlimited" }
+  ]
+}
+```
+
+**Alternative écartée : délimiter les zones sur le scan.** Fidélité visuelle
+immédiate, aucun travail de dessin. Écartée parce qu'elle impose dix jeux de
+coordonnées en pixels à recalibrer à chaque nouveau scan, qu'elle ne dispense
+d'aucun relevé, et qu'elle place du matériel sous licence dans le chemin
+d'exécution de l'application.
+
+**Ce que le relevé des trois premiers plateaux a corrigé.** Le modèle esquissé
+ci-dessus a été écrit sur la seule mission 1. Les missions 2 et 3 l'ont démenti
+sur quatre points, tous conservés ici parce qu'ils se représenteront :
+
+- **L'orientation des hexagones change d'un scénario à l'autre.** Les missions 1
+  et 3 sont pavées pointe en haut, la mission 2 côté plat en haut. Le champ
+  `orientation` est donc porté par le plateau, et le calcul d'adjacence en
+  dépend : voisins est/ouest en pointe en haut, nord/sud en côté plat. Les
+  coordonnées sont décalées — par lignes dans un cas, par colonnes dans l'autre.
+- **Un hexagone peut porter plusieurs gains.** D'où `gains` au pluriel.
+- **Les symboles de domaine ne sont pas des gains.** La fiche de la mission 3
+  l'imprime : ils ne rapportent rien au moment de la pose, ils se collectionnent
+  pour le décompte final — celui du Renowned Ocean Historian, notamment. Deux
+  notions distinctes, deux champs : `gains` et `fieldSymbol`.
+- **Le marqueur de départ est parfois posé sur le plateau.** En marge de la
+  fiche sur les missions 1 et 2, il occupe une case de la grille sur la
+  mission 3, case qui n'accueille alors aucun pion. D'où `starMarker`, facultatif.
+
+**La couleur du contour n'est pas une donnée.** Elle indique la valeur en points
+sur le carton, mais son barème change de fiche en fiche — bleu, jaune, orange
+sur les trois premières, brun, jaune, vert et rose sur la quatrième, qui
+introduit un palier à 3 points. Seule la valeur relevée est conservée ; la
+couleur reste une aide de lecture du scan. Un repère physique aide au relevé :
+**un hexagone n'a de relief intérieur que s'il rapporte des points** ; les cases
+plates valent zéro (ou le malus, cf. mission 9).
+
+**Ce que le relevé des sept plateaux restants a ajouté.** Les missions 4 à 10
+ont confirmé le modèle et introduit des cas nouveaux, tous portés par des champs
+optionnels qui décrivent le carton, jamais le mécanisme :
+
+- **Combos et doubles.** Un hexagone peut porter deux gains, ou un même gain en
+  double ; le symbole de domaine « joker » est `fieldSymbol: "wild"`, un double
+  field symbol se note `fieldSymbolCount`.
+- **Îlots et ∞ hors-grille — tranchés.** Les hexagones ∞ atteints par une flèche
+  et les cases de raccourci existent (missions 4, 10). On les porte comme
+  hexagones marqués `offGrid: true` avec une `note` ; l'adjacence géométrique
+  suffit au reste. Les deux « dauphins » de la mission 5, les deux grilles de la
+  mission 7 et les cinq pistes de profondeur de la mission 10 ne sont que des
+  **composantes disjointes de la même grille** — aucun champ `links` nécessaire
+  pour les séparer, le parcours du graphe le fait seul.
+- **Barèmes de points élargis.** La mission 6 monte à 6 points (paliers 2/4/6
+  par profondeur), la mission 9 descend à `points: -2` sur ses hexagones pollués.
+- **Marqueurs de scénario.** `arrow` (roue de domaine fléchée), `rescue` (grille
+  de sauvetage, mission 7), `goal` (hexagones objectif, mission 8). Le décompte
+  par grappes, la piste de nettoyage ou le placement par profondeur restent hors
+  des données du plateau, dans le code.
+
+**Contrôle de relevé.** La règle de pose impose que tout hexagone soit
+atteignable depuis un départ, de proche en proche. Un parcours du graphe
+d'adjacence après chaque relevé attrape donc les erreurs de coordonnées : une
+case mal placée devient presque toujours inaccessible.
+
+### 8. Le reste de la fiche : mise en place, objectifs, règles spéciales
+
+Le plateau Impact (décision 7) n'est qu'une partie de la fiche. Le reste — la
+mise en place, les façons de marquer, les règles propres au scénario — est décrit
+dans le même `missions.json`, sous `setup`, `goals` et `specialRules`. Le principe
+est celui de la décision 6, appliqué aux objectifs : **l'arithmétique en données,
+le prédicat en code.**
+
+**`setup`.** `columns` donne le nombre de colonnes de l'océan (lettres A, B, …).
+`startingTiles` liste les tuiles posées d'entrée : `{ depth, col, tile }` pour une
+tuile nommée, `{ depth, col, randomLevel }` pour un tirage dans une pile de niveau.
+Deux cas d'information cachée reçoivent leur propre champ, parce que l'IA doit les
+déterminiser :
+
+- `shuffledRows` — une rangée entière mélangée : les tuiles listées sont réparties
+  au hasard, une par colonne (la sea-star de la mission 8, dont la colonne
+  conditionne un objectif).
+- `hiddenTiles` — une tuile mêlée face cachée à une pile (`level`, plus
+  `shuffledAmongTop` ou `shuffledInto`) : la fallen-star de la mission 6, the
+  looking-glass de la mission 8.
+
+**`goals`.** Chaque objectif partage une forme commune :
+
+```json
+{ "number": 1, "units": ["sonar"], "depths": [], "columns": ["B", "C"],
+  "pointsPer": 1, "majorityBonus": { "first": 4, "second": 2 }, "text": "…" }
+```
+
+- `units` — ce qu'on compte, dans un vocabulaire fermé : `sonar`, `publish`,
+  `conserve` (disques par site), `disc` (n'importe quel disque), `vessel`, `zone`,
+  `fieldSymbol`, `impactMarker`. Le chargeur rejette tout autre jeton.
+- `depths` / `columns` — les filtres, `[]` valant « tout ». Un qualificateur de
+  zone s'ajoute au besoin : `zoneContains` (la zone compte si elle contient l'un
+  des éléments listés — disque, submersible) et `zoneDiscoveredByYou`.
+- `pointsPer` et `majorityBonus { first, second }` — l'arithmétique : points par
+  unité, bonus de majorité. `leaderBonuses` généralise la majorité quand il y en a
+  plusieurs, une par tranche (« le plus de zones découvertes en profondeur 3, en
+  colonne B… », mission 6).
+- `text` est toujours conservé : affichage joueur et référence pour vérifier le
+  code.
+
+Deux extensions couvrent les scénarios tardifs :
+
+- **Objectif à options** (`chooseOption` + `options`, mission 8) : le joueur
+  choisit une option de décompte parmi plusieurs (near/far, peu profond/profond),
+  chacune étant un objectif complet. `columnsFromSeaStar: "left" | "right"` exprime
+  une plage de colonnes relative à une tuile placée au hasard.
+- **Prédicat en code** (`count` + `unitCandidates`) : quand un objectif ne se
+  ramène pas à un filtre — piste de nettoyage (mission 9), premier à atteindre la
+  profondeur 5 (mission 10), type de site désigné en cours de partie (missions 6,
+  8), jeux complets de symboles — un `count` nomme une fonction du moteur, comme
+  les décomptes Senior de la décision 6. Un `note` marque les objectifs dont le
+  mécanisme reste à préciser.
+
+**`specialRules`.** Un tableau de règles propres au scénario, en texte pour
+l'instant ; leur structuration en effets suivra la décision 4, sur cas réels. La
+frontière tient : données tant qu'une règle a des sœurs, code dès qu'elle est un
+cas unique.
+
 ## Intelligence artificielle
 
 Recherche arborescente Monte-Carlo avec déterminisation, pour traiter
@@ -224,4 +429,11 @@ poursuit.
 
 - Format exact de description des effets déclenchés — à concevoir une fois les
   premières tuiles relevées, sur des cas réels plutôt que dans l'abstrait.
+- Grilles Impact irrégulières — **tranché** (cf. décision 7) : les îlots sont des
+  composantes disjointes de la même grille, les ∞ hors-grille des hexagones
+  `offGrid`. Un champ `links` explicite pour matérialiser les flèches à sens
+  unique vers les ∞ reste optionnel, à n'ajouter que si le moteur en a besoin.
+- Reste à fiabiliser sur trois plateaux : positions exactes des vides du bas de
+  la mission 5, valeur en points des deux ∞ de la mission 10, et les cases de
+  lancement / liens de flèche des missions 5, 6, 7 et 9.
 - Empaquetage final pour un lancement en un clic.

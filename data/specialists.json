@@ -1,0 +1,355 @@
+{
+  "specialists": [
+    {
+      "id": "pilot",
+      "rank": 1,
+      "junior": {
+        "name": "Pilot",
+        "immediateGains": ["impact"],
+        "actions": [["travel"]]
+      },
+      "senior": {
+        "name": "Skipper",
+        "immediateGains": ["inspiration", "coordination"],
+        "actions": [["travel"]]
+      }
+    },
+    {
+      "id": "reef-diver",
+      "rank": 1,
+      "junior": {
+        "name": "Reef Diver",
+        "immediateGains": ["reputation"],
+        "actions": [["dive"]]
+      },
+      "senior": {
+        "name": "Underwater Photographer",
+        "immediateGains": ["reputation"],
+        "actions": [["dive", "publish"]]
+      }
+    },
+    {
+      "id": "sonar-operator",
+      "rank": 1,
+      "junior": {
+        "name": "Sonar Operator",
+        "immediateGains": ["coordination"],
+        "actions": [["sonar"]]
+      },
+      "senior": {
+        "name": "Acoustics Engineer",
+        "immediateGains": ["coordination"],
+        "actions": [["travel", "sonar"]]
+      }
+    },
+    {
+      "id": "ecologist",
+      "rank": 2,
+      "junior": {
+        "name": "Ecologist",
+        "immediateGains": [],
+        "actions": [["travel", "conserve"]]
+      },
+      "senior": {
+        "name": "Ecotoxicologist",
+        "immediateGains": ["coordination", "coordination"],
+        "actions": [["dive", "conserve"]]
+      }
+    },
+    {
+      "id": "marine-engineer",
+      "rank": 2,
+      "junior": {
+        "name": "Marine Engineer",
+        "immediateGains": ["ingenuity", "ingenuity"],
+        "actions": []
+      },
+      "senior": {
+        "name": "Naval Architect",
+        "immediateGains": [],
+        "actions": [["travel", "publish"]]
+      }
+    },
+    {
+      "id": "navigator",
+      "rank": 2,
+      "junior": {
+        "name": "Navigator",
+        "immediateGains": ["inspiration"],
+        "actions": [["travel", "sonar"]]
+      },
+      "senior": {
+        "name": "Hydrographer",
+        "immediateGains": [],
+        "actions": [["sonar"], ["dive"]]
+      }
+    },
+    {
+      "id": "rov-operator",
+      "rank": 3,
+      "junior": {
+        "name": "R.O.V. Operator",
+        "immediateGains": [],
+        "actions": [["travel"], ["dive"]]
+      },
+      "senior": {
+        "name": "Deep-Sea Videographer",
+        "immediateGains": ["reputation", "reputation"],
+        "actions": [["dive"], ["conserve"]]
+      }
+    },
+    {
+      "id": "field-researcher",
+      "rank": 3,
+      "junior": {
+        "name": "Field Researcher",
+        "immediateGains": [],
+        "actions": [["sonar"], ["publish"]]
+      },
+      "senior": {
+        "name": "Marine Scientist",
+        "immediateGains": [],
+        "actions": [["travel"], ["publish"]]
+      }
+    },
+    {
+      "id": "marine-biologist",
+      "rank": 3,
+      "junior": {
+        "name": "Marine Biologist",
+        "immediateGains": ["inspiration", "inspiration"],
+        "actions": [["conserve", "publish"]]
+      },
+      "senior": {
+        "name": "Aquaculturist",
+        "immediateGains": [],
+        "actions": [["conserve"], ["conserve"]]
+      }
+    },
+    {
+      "id": "deep-sea-diver",
+      "rank": 4,
+      "junior": {
+        "name": "Deep-Sea Diver",
+        "immediateGains": ["impact"],
+        "actions": [["dive"], ["dive"]]
+      },
+      "senior": {
+        "name": "Deep-Sea Biologist",
+        "immediateGains": ["research", "research"],
+        "actions": [["travel"], ["conserve"]]
+      }
+    },
+    {
+      "id": "oceanographer",
+      "rank": 4,
+      "junior": {
+        "name": "Oceanographer",
+        "immediateGains": ["reputation", "inspiration", "coordination", "ingenuity"],
+        "actions": [["sonar", "publish"]]
+      },
+      "senior": {
+        "name": "Environmental Ambassador",
+        "immediateGains": ["impact", "impact"],
+        "actions": []
+      }
+    },
+    {
+      "id": "vessel-captain",
+      "rank": 4,
+      "junior": {
+        "name": "Vessel Captain",
+        "immediateGains": ["ingenuity"],
+        "actions": [["travel"], ["travel"]]
+      },
+      "senior": {
+        "name": "Expedition Leader",
+        "immediateGains": ["ingenuity"],
+        "actions": [["travel"], ["sonar"]]
+      }
+    },
+    {
+      "id": "fleet-coordinator",
+      "rank": 5,
+      "junior": {
+        "name": "Fleet Coordinator",
+        "immediateGains": ["ingenuity"],
+        "actions": [["travel"], ["travel"], ["travel"]]
+      },
+      "senior": {
+        "name": "Renowned Fleet Coordinator",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "1 point for every two completed links you share with opponents",
+          "points": 1,
+          "per": 2,
+          "count": "connections-shared-with-opponents"
+        }
+      }
+    },
+    {
+      "id": "ichthyologist",
+      "rank": 5,
+      "junior": {
+        "name": "Ichthyologist",
+        "immediateGains": ["inspiration"],
+        "actions": [["dive"], ["conserve"], ["conserve"]]
+      },
+      "senior": {
+        "name": "Renowned Ichthyologist",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "1 point for each of your 'conserve' in one zone",
+          "points": 1,
+          "per": 1,
+          "count": "conservation-discs-in-best-zone"
+        }
+      }
+    },
+    {
+      "id": "ocean-historian",
+      "rank": 5,
+      "junior": {
+        "name": "Ocean Historian",
+        "immediateGains": ["coordination"],
+        "actions": [["dive"], ["dive"], ["publish"]]
+      },
+      "senior": {
+        "name": "Renowned Ocean Historian",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "3 points for each complete set of the four field symbols (blue, brown, green, yellow) you hold",
+          "points": 3,
+          "per": 1,
+          "count": "complete-field-symbol-sets"
+        }
+      }
+    },
+    {
+      "id": "biotechnologist",
+      "rank": 5,
+      "junior": {
+        "name": "Biotechnologist",
+        "immediateGains": ["research", "research", "research", "research"],
+        "actions": [["conserve"], ["publish"]]
+      },
+      "senior": {
+        "name": "Renowned Biotechnologist",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "1 point for each depth where you have any 'publish'",
+          "points": 1,
+          "per": 1,
+          "count": "depths-with-publication"
+        }
+      }
+    },
+    {
+      "id": "biogeographer",
+      "rank": 5,
+      "junior": {
+        "name": "Biogeographer",
+        "immediateGains": ["ingenuity"],
+        "actions": [["travel"], ["dive"], ["conserve"]]
+      },
+      "senior": {
+        "name": "Renowned Biogeographer",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "1 point for each zone where you have any 'conserve'",
+          "points": 1,
+          "per": 1,
+          "count": "zones-with-conservation"
+        }
+      }
+    },
+    {
+      "id": "mentor",
+      "rank": 5,
+      "junior": {
+        "name": "Mentor",
+        "immediateGains": ["coordination", "coordination"],
+        "actions": [["publish", "promote"]]
+      },
+      "senior": {
+        "name": "Renowned Mentor",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "1 point for each senior specialist other than this one",
+          "points": 1,
+          "per": 1,
+          "count": "other-senior-specialists"
+        }
+      }
+    },
+    {
+      "id": "adventurer",
+      "rank": 5,
+      "junior": {
+        "name": "Adventurer",
+        "immediateGains": ["inspiration", "inspiration", "inspiration"],
+        "actions": [["sonar"], ["sonar"]]
+      },
+      "senior": {
+        "name": "Renowned Adventurer",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "1 point for every three zones where you have 'disc' or 'submarine'",
+          "points": 1,
+          "per": 3,
+          "count": "zones-with-disc-or-vessel"
+        }
+      }
+    },
+    {
+      "id": "dive-team-leader",
+      "rank": 5,
+      "junior": {
+        "name": "Dive Team Leader",
+        "immediateGains": ["ingenuity", "ingenuity", "ingenuity"],
+        "actions": [["travel"], ["dive"]]
+      },
+      "senior": {
+        "name": "Renowned Dive Team Leader",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "1 point for every two empty dive sites in the ocean",
+          "points": 1,
+          "per": 2,
+          "count": "empty-dive-sites"
+        }
+      }
+    },
+    {
+      "id": "robotics-engineer",
+      "rank": 5,
+      "junior": {
+        "name": "Robotics Engineer",
+        "immediateGains": ["inspiration", "inspiration"],
+        "actions": [],
+        "specialAbility": {
+          "text": "Copy the action(s) of one of your other specialists"
+        }
+      },
+      "senior": {
+        "name": "Renowned Robotics Engineer",
+        "immediateGains": [],
+        "actions": [],
+        "endGameScoring": {
+          "text": "4 points",
+          "points": 4,
+          "per": 1,
+          "count": "unconditional"
+        }
+      }
+    }
+  ]
+}

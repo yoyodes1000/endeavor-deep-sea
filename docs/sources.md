@@ -41,9 +41,15 @@ partir du matériel physique.
 |---|---|---|
 | Tuiles Océan : pistes sonar, sites, bonus, connexions | 37 tuiles | 04 |
 | Spécialistes, recto Junior et verso Senior | 21 modèles, 51 tuiles | 05 |
-| Fiches Scénario : mise en place, plateau Impact, objectifs | 10 scénarios | 06 |
+| Fiches Scénario : mise en place, objectifs | 10 scénarios | 06 |
 | Revues scientifiques | 24 + 8 de départ | 07 |
 | Jetons Plongée | 36 jetons, dont 4 seulement illustrés dans le livret | 09 |
+
+La fiche de chaque scénario est **entièrement relevée** dans `data/missions.json` :
+plateau Impact (orientation, hexagones, gains, symboles de domaine, points,
+capacité, îlots), mise en place, objectifs et règles spéciales. Le relevé a été
+fait sur les scans des fiches, superposition de contrôle à l'appui, et les barèmes
+couleur→points confrontés au matériel physique.
 
 **Piste de recoupement** : un [mod Tabletop Simulator](https://steamcommunity.com/sharedfiles/filedetails/?id=2976002512)
 du jeu existe et contient nécessairement les visuels de tout le matériel. Utile

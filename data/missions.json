@@ -1,0 +1,2950 @@
+{
+  "missions": [
+    {
+      "id": "the-call-of-the-ocean",
+      "number": 1,
+      "name": "The Call of the Ocean",
+      "flavorText": "Since it's your first day in charge of a team, we'll keep the mission simple and let you get your sea legs; pretty much anything you do in the ocean will have a value today.",
+      "setup": {
+        "columns": 5,
+        "startingTiles": [
+          { "depth": 1, "col": "B", "tile": "volcanic-island" },
+          { "depth": 1, "col": "C", "tile": "the-sea-star" },
+          { "depth": 2, "col": "C", "tile": "the-looking-glass" },
+          { "depth": 1, "col": "D", "randomLevel": 1 }
+        ]
+      },
+      "goals": [
+        { "number": 1, "units": ["sonar"], "depths": [], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 5, "second": 3 }, "text": "1 point par disque sonar dans l'océan ; +5 au 1er, +3 au 2e." },
+        { "number": 2, "units": ["publish"], "depths": [], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 3, "second": 1 }, "text": "1 point par disque publication dans l'océan ; +3 au 1er, +1 au 2e." },
+        { "number": 3, "units": ["conserve"], "depths": [], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 7, "second": 3 }, "text": "1 point par disque conservation dans l'océan ; +7 au 1er, +3 au 2e." }
+      ],
+      "specialRules": [],
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ],
+            "start": true
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ],
+            "start": true
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ],
+            "start": true
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ],
+            "start": true
+          },
+          {
+            "row": 6,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "maps-and-charts",
+      "number": 2,
+      "name": "Maps and Charts",
+      "flavorText": "Only a tiny percentage of the ocean has been mapped; we're going to try to change that today. Dust off that sonar screen, and see as much of the deep as you can!",
+      "setup": {
+        "columns": 5,
+        "startingTiles": [
+          { "depth": 1, "col": "A", "tile": "the-sea-star" },
+          { "depth": 1, "col": "B", "tile": "calm-seas" },
+          { "depth": 1, "col": "C", "tile": "remote-anchorage" },
+          { "depth": 2, "col": "A", "tile": "the-looking-glass" }
+        ]
+      },
+      "goals": [
+        { "number": 1, "units": ["sonar"], "depths": [], "columns": ["B", "C"], "pointsPer": 1, "majorityBonus": { "first": 4, "second": 2 }, "text": "1 point par disque sonar dans les colonnes B et C ; +4 au 1er, +2 au 2e." },
+        { "number": 2, "units": ["disc", "vessel"], "depths": [], "columns": ["D", "E"], "pointsPer": 1, "majorityBonus": { "first": 7, "second": 4 }, "text": "1 point par disque ou submersible dans les colonnes D et E ; +7 au 1er, +4 au 2e." },
+        { "number": 3, "units": ["zone"], "zoneContains": ["disc"], "depths": [2, 3, 4], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "1 point par zone aux profondeurs 2, 3 et 4 où vous avez au moins un disque ; +2 au 1er, +1 au 2e." }
+      ],
+      "specialRules": [],
+      "impactBoard": {
+        "orientation": "flat-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "research",
+              "research"
+            ],
+            "start": true
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ],
+            "start": true
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ],
+            "start": true
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 8,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 8,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 8,
+            "points": 2,
+            "capacity": "unlimited"
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-oceanic-journal",
+      "number": 3,
+      "name": "The Oceanic Journal",
+      "flavorText": "Publishing what you learn from field experience is vital towards building a team of skilled operators. Race to journal your research; you can find value specialising in a field of study, and in diversifying as well.",
+      "setup": {
+        "columns": 5,
+        "startingTiles": [
+          { "depth": 1, "col": "C", "tile": "the-sea-star" },
+          { "depth": 1, "col": "D", "randomLevel": 1 },
+          { "depth": 2, "col": "C", "tile": "the-looking-glass" },
+          { "depth": 3, "col": "C", "tile": "carbonate-spire" }
+        ]
+      },
+      "goals": [
+        { "number": 1, "units": ["sonar"], "depths": [1, 2], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 6, "second": 3 }, "text": "1 point par disque sonar aux profondeurs 1 et 2 ; +6 au 1er, +3 au 2e." },
+        { "number": 2, "units": ["publish", "vessel"], "depths": [3, 4, 5], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 4, "second": 2 }, "text": "1 point par disque publication ou submersible aux profondeurs 3, 4 et 5 ; +4 au 1er, +2 au 2e." },
+        { "number": 3, "units": ["fieldSymbol"], "depths": [], "columns": [], "pointsPer": 1, "majorityBonus": { "blue": 2, "brown": 2, "green": 2, "yellow": 2 }, "text": "1 point par symbole de domaine de votre type le plus possédé (bonus leader par couleur).", "note": "Décompte des field symbols à finaliser quand les symboles des cartes seront détaillés." }
+      ],
+      "specialRules": [
+        "Dans l'ordre du tour, chaque joueur choisit une zone de profondeur 1 comme zone de lancement, y place un submersible et gagne son bonus d'arrivée.",
+        "Quand vous gagnez un submersible, vous pouvez choisir n'importe quelle zone de profondeur 1 comme zone de lancement."
+      ],
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "starMarker": {
+          "row": 3,
+          "col": 4
+        },
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "promote"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ],
+            "start": true
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ],
+            "start": true
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ],
+            "start": true
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 1,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 8,
+            "points": 0,
+            "gains": [
+              "promote"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "better-than-you-found-it",
+      "number": 4,
+      "name": "Better Than You Found It",
+      "flavorText": "The sea hosts amazing biodiversity in the furthest and deepest places imaginable. Our job is to study and protect all the life we are lucky enough to encounter. The opportunities to create positive impact in this mission are unprecedented!",
+      "setup": {
+        "columns": 5,
+        "startingTiles": [
+          { "depth": 1, "col": "B", "randomLevel": 1 },
+          { "depth": 1, "col": "C", "tile": "the-sea-star" },
+          { "depth": 1, "col": "D", "tile": "dying-reef" },
+          { "depth": 2, "col": "C", "tile": "the-looking-glass" }
+        ]
+      },
+      "goals": [
+        { "number": 1, "units": ["conserve"], "depths": [1, 2, 3], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 6, "second": 3 }, "text": "1 point par disque conservation aux profondeurs 1, 2 et 3 ; +6 au 1er, +3 au 2e." },
+        { "number": 2, "units": ["disc", "vessel"], "depths": [], "columns": ["A", "E"], "pointsPer": 1, "majorityBonus": { "first": 7, "second": 4 }, "text": "1 point par disque ou submersible dans les colonnes A et E ; +7 au 1er, +4 au 2e." },
+        { "number": 3, "units": ["disc"], "depths": [4, 5], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 4, "second": 2 }, "text": "1 point par disque aux profondeurs 4 et 5 ; +4 au 1er, +2 au 2e." }
+      ],
+      "specialRules": [],
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 1,
+            "points": 2,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 0,
+            "fieldSymbol": "wild",
+            "start": true
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 1,
+            "points": 2,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 9,
+            "points": 3,
+            "capacity": "unlimited",
+            "offGrid": true,
+            "note": "hexagone infini rose hors-plateau : une vessel gagnee via une tortue peut y etre placee (1x/zone)"
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-fallen-star",
+      "number": 5,
+      "name": "The Fallen Star",
+      "flavorText": "A terrible storm has sent the sea star crashing to the uncharted depths. While deep-sea rescue and recovery races in from afar, scout the depths that you can reach to see how the disaster may have impacted the area.",
+      "setup": {
+        "columns": 7,
+        "startingTiles": [
+          { "depth": 1, "col": "A", "tile": "atoll" },
+          { "depth": 1, "col": "B", "tile": "calm-seas" },
+          { "depth": 1, "col": "C", "randomLevel": 1 },
+          { "depth": 1, "col": "D", "randomLevel": 1 },
+          { "depth": 2, "col": "A", "tile": "ledge-elevator" }
+        ]
+      },
+      "goals": [
+        { "number": 1, "units": ["sonar", "vessel"], "depths": [1, 2, 3], "columns": ["A", "B"], "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "1 point par disque sonar ou submersible dans les colonnes A et B ; +2 au 1er, +1 au 2e." },
+        { "number": 2, "units": ["publish", "vessel"], "depths": [1, 2, 3], "columns": ["E", "F", "G"], "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "1 point par disque publication ou submersible dans les colonnes E, F et G ; +2 au 1er, +1 au 2e." },
+        { "number": 3, "units": ["conserve"], "depths": [2, 3], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 4, "second": 2 }, "text": "1 point par disque conservation aux profondeurs 2 et 3 ; +4 au 1er, +2 au 2e." }
+      ],
+      "specialRules": [
+        "Cette mission a sept colonnes et une profondeur maximale de 3 : retirez du jeu tous les plateaux de profondeur 4 et 5.",
+        "Dans l'ordre du tour, chaque joueur choisit une zone de profondeur 1 comme zone de lancement, y place un submersible et gagne son bonus d'arrivée.",
+        "Quand vous gagnez un submersible, vous pouvez choisir n'importe quelle zone de profondeur 1 comme zone de lancement."
+      ],
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "promote"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "coordination",
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "inspiration",
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research",
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "disc"
+            ],
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "reputation",
+              "disc"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 0,
+            "fieldSymbol": "wild",
+            "fieldSymbolCount": 2
+          },
+          {
+            "row": 3,
+            "col": 8,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "reputation",
+              "disc"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "coordination",
+              "disc"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 7,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 7,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 8,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 8,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 8,
+            "col": 7,
+            "points": 2
+          },
+          {
+            "row": 5,
+            "col": 9,
+            "points": 2
+          },
+          {
+            "row": 6,
+            "col": 10,
+            "points": 2
+          }
+        ]
+      }
+    },
+    {
+      "id": "star-search",
+      "number": 6,
+      "name": "Star Search",
+      "flavorText": "The storm has abated and deep-sea search & rescue equipment is on the scene. You've narrowed the search area down to this region, and now the race to find the wreckage (and any survivors) is on!",
+      "setup": {
+        "columns": 5,
+        "startingTiles": [
+          { "depth": 1, "col": "A", "tile": "atoll" },
+          { "depth": 1, "col": "C", "tile": "remote-anchorage" },
+          { "depth": 1, "col": "E", "tile": "calm-seas" },
+          { "depth": 2, "col": "A", "tile": "ledge-elevator" },
+          { "depth": 2, "col": "C", "tile": "resupply-module" },
+          { "depth": 2, "col": "E", "tile": "shipwreck" }
+        ],
+        "hiddenTiles": [
+          { "tile": "fallen-star", "level": 5, "faceDown": true, "shuffledAmongTop": 4 }
+        ]
+      },
+      "goals": [
+        { "number": 1, "units": ["zone"], "zoneContains": ["disc"], "depths": [2, 3, 4], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 4, "second": 2 }, "text": "1 point par zone aux profondeurs 2, 3 et 4 où vous avez au moins un disque ; +4 au 1er, +2 au 2e." },
+        { "number": 2, "units": ["zone"], "zoneDiscoveredByYou": true, "depths": [], "columns": [], "pointsPer": 1, "leaderBonuses": [ { "depths": [3], "points": 2 }, { "depths": [4], "points": 2 }, { "depths": [5], "points": 2 }, { "columns": ["B"], "points": 2 }, { "columns": ["D"], "points": 2 } ], "text": "1 point par zone que vous avez découverte ; +2 à qui a découvert le plus de zones en profondeur 3, +2 en profondeur 4, +2 en profondeur 5, +2 en colonne B et +2 en colonne D." },
+        { "number": 3, "count": "fallen-star-designated-discs", "unitCandidates": ["conserve", "publish"], "depths": [], "columns": [], "pointsPer": 1, "leaderBonuses": [ { "units": ["conserve"], "points": 3 }, { "units": ["publish"], "points": 3 } ], "text": "1 point par disque du type de site (Conservation ou Publication) désigné par le découvreur de la fallen-star ; +3 au 1er sur les disques de conservation et +3 au 1er sur les disques de publication.", "note": "Base à préciser : comment le type est désigné à la découverte de la fallen-star (lien plateau Impact ?)." }
+      ],
+      "specialRules": [
+        "Ce scénario change la pose des pions Impact : un pion n'étend pas un réseau, c'est un marqueur de décompte. Quand vous gagnez de l'Impact, déplacez un de vos pions vers un hexagone adjacent vide (n'importe quelle direction ; les hexagones les plus hauts ne s'atteignent qu'en montant) au lieu d'en poser un nouveau.",
+        "Un nouveau pion se pose toujours sur un point d'entrée (hexagone fléché), jamais à côté d'un pion existant.",
+        "Vous ne pouvez poser un nouveau pion que si tous vos pions existants sont bloqués (aucun hexagone adjacent libre) ou verrouillés dans l'hexagone de décompte vide le plus profond de leur colonne.",
+        "Tant que la zone « fallen-star » n'est pas découverte, les 5 colonnes de décompte (A–E) sont interdites : les pions restent en haut et n'accumulent que les bonus d'attribut. Une fois découverte, les colonnes s'ouvrent ; un pion placé dans l'hexagone de décompte le plus profond libre d'une colonne y est verrouillé."
+      ],
+      "impactBoard": {
+        "orientation": "flat-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 8,
+            "points": 0,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 2
+          },
+          {
+            "row": 2,
+            "col": 8,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 4,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 4,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 4,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 4,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 4
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 4
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 4
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 4
+          },
+          {
+            "row": 3,
+            "col": 8,
+            "points": 4
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 6,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 6,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 6,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 4,
+            "col": 7,
+            "points": 6,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 6
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 6
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 6
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 6
+          },
+          {
+            "row": 4,
+            "col": 8,
+            "points": 6
+          }
+        ]
+      }
+    },
+    {
+      "id": "recover-the-fallen-star",
+      "number": 7,
+      "name": "Recover the Fallen Star",
+      "flavorText": "The fallen Star has been located and secured, with survivors aboard! At such depths, recovery is going to be a singularly difficult challenge. Stay focused on the mission, and anything is possible!",
+      "setup": {
+        "columns": 5,
+        "startingTiles": [
+          { "depth": 1, "col": "C", "tile": "remote-anchorage" },
+          { "depth": 2, "col": "C", "tile": "resupply-module" },
+          { "depth": 3, "col": "C", "randomLevel": 3 },
+          { "depth": 4, "col": "C", "randomLevel": 4 },
+          { "depth": 5, "col": "C", "tile": "fallen-star" }
+        ]
+      },
+      "goals": [
+        { "number": 1, "units": ["zone"], "zoneContains": ["disc", "vessel"], "depths": [], "columns": ["C"], "pointsPer": 2, "majorityBonus": { "first": 2, "second": 1 }, "text": "2 points par zone de la colonne C où vous avez un disque ou un submersible ; +2 au 1er, +1 au 2e." },
+        { "number": 2, "units": ["conserve", "publish"], "depths": [], "columns": ["A", "B", "D", "E"], "pointsPer": 1, "majorityBonus": { "first": 6, "second": 3 }, "text": "1 point par disque de conservation ou de publication dans les colonnes A, B, D et E ; +6 au 1er, +3 au 2e." },
+        { "number": 3, "count": "impact-markers-in-rescue-grid", "majorityBonus": { "first": 4, "second": 2 }, "text": "+4 au joueur ayant le plus de pions Impact dans la grille de sauvetage, +2 au 2e." }
+      ],
+      "specialRules": [
+        "L'ancrage isolé (remote-anchorage) est la zone de lancement initiale : chaque joueur y place un submersible et gagne son bonus d'arrivée (ingéniosité)."
+      ],
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "coordination",
+              "disc"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "coordination",
+              "disc"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "inspiration",
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "inspiration",
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 2,
+            "capacity": "unlimited"
+          },
+          {
+            "row": 5,
+            "col": 2,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 7,
+            "col": 0,
+            "points": 2,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 7,
+            "col": 2,
+            "points": 1,
+            "fieldSymbol": "wild",
+            "arrow": true
+          },
+          {
+            "row": 7,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "new-horizons",
+      "number": 8,
+      "name": "New Horizons",
+      "flavorText": "The sea-star is refurbished and back in action! New understanding gained from the difficult recovery gives you unprecedented control over this mission's priorities!",
+      "setup": {
+        "columns": 5,
+        "shuffledRows": [
+          { "depth": 1, "columns": ["A", "B", "C", "D", "E"], "tiles": [ { "tile": "the-sea-star" }, { "randomLevel": 1 }, { "randomLevel": 1 }, { "randomLevel": 1 }, { "randomLevel": 1 } ] }
+        ],
+        "hiddenTiles": [
+          { "tile": "the-looking-glass", "level": 2, "faceDown": true, "shuffledInto": "pile" }
+        ]
+      },
+      "goals": [
+        {
+          "number": 1,
+          "chooseOption": true,
+          "options": [
+            { "id": "near", "units": ["zone"], "zoneContains": ["disc"], "depths": [], "columnsFromSeaStar": "left", "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "1 point par zone où vous avez un disque, dans la colonne de la sea-star et vers la gauche ; +2 au 1er, +1 au 2e." },
+            { "id": "far", "units": ["zone"], "zoneContains": ["disc"], "depths": [], "columnsFromSeaStar": "right", "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "1 point par zone où vous avez un disque, dans la colonne de la sea-star et vers la droite ; +2 au 1er, +1 au 2e." }
+          ]
+        },
+        {
+          "number": 2,
+          "chooseOption": true,
+          "options": [
+            { "id": "shallow", "units": ["disc"], "depths": [2, 3], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "1 point par disque aux profondeurs 2 et 3 ; +2 au 1er, +1 au 2e." },
+            { "id": "deep", "units": ["disc"], "depths": [4, 5], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "1 point par disque aux profondeurs 4 et 5 ; +2 au 1er, +1 au 2e." }
+          ]
+        },
+        {
+          "number": 3,
+          "chooseOption": true,
+          "options": [
+            { "id": "narrow", "units": ["fieldSymbol"], "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "1 point par symbole de domaine de votre type le plus possédé ; +2 au 1er, +1 au 2e.", "note": "Même mécanique « type le plus possédé » que la M3 g3, à finaliser avec les field symbols." },
+            { "id": "broad", "count": "field-symbol-sets", "pointsPer": 3, "majorityBonus": { "first": 2, "second": 1 }, "text": "3 points par jeu complet de symboles de domaine (un bleu, un jaune, un brun, un vert) ; +2 au 1er, +1 au 2e." }
+          ]
+        }
+      ],
+      "specialRules": [
+        "Chaque objectif a un hexagone objectif sur le plateau Impact (3 en tout, un par objectif). En posant un pion Impact sur un hexagone objectif, choisissez aussitôt une option de décompte pour cet objectif et posez un pion dans l'emplacement correspondant pour indiquer votre choix. Un objectif dont l'hexagone objectif est vide n'est pas éligible au décompte final.",
+        "La sea-star est la zone de lancement : chaque joueur y place un submersible et gagne son bonus d'arrivée."
+      ],
+      "impactBoard": {
+        "orientation": "pointy-top",
+        "hexes": [
+          {
+            "row": 1,
+            "col": 4,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 8,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 8,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 9,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "brown"
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 9,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 5,
+            "col": 0,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 5,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 5,
+            "points": 1,
+            "starHere": true,
+            "start": true
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 5,
+            "col": 9,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 6,
+            "col": 1,
+            "points": 1,
+            "fieldSymbol": "green"
+          },
+          {
+            "row": 6,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 6,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 6,
+            "col": 8,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 7,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 8,
+            "col": 4,
+            "points": 1,
+            "fieldSymbol": "yellow"
+          },
+          {
+            "row": 8,
+            "col": 6,
+            "points": 1,
+            "fieldSymbol": "blue"
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 1,
+            "goal": 3
+          },
+          {
+            "row": 9,
+            "col": 0,
+            "points": 1,
+            "goal": 1
+          },
+          {
+            "row": 8,
+            "col": 8,
+            "points": 1,
+            "goal": 2
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 1,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 6,
+            "points": 1
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 6,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 8,
+            "points": 1
+          },
+          {
+            "row": 3,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 4,
+            "col": 8,
+            "points": 1
+          },
+          {
+            "row": 5,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 5,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 6,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 0,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 4,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 6,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 8,
+            "points": 1
+          },
+          {
+            "row": 7,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 3,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 5,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 8,
+            "col": 9,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 1,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 2,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 7,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 8,
+            "points": 1
+          },
+          {
+            "row": 9,
+            "col": 9,
+            "points": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-spill",
+      "number": 9,
+      "name": "The Spill",
+      "flavorText": "A catastrophic oil spill has occurred, and your team is on the scene to help out. Widespread and measured conservation effort near the surface will keep your cleanup mission on track to succeed and make it safe to venture deeper.",
+      "setup": {
+        "columns": 6,
+        "startingTiles": [
+          { "depth": 1, "col": "C", "tile": "decommissioned-oil-ring" },
+          { "depth": 1, "col": "D", "tile": "the-sea-star" },
+          { "depth": 2, "col": "C", "tile": "whale-calving-ground" },
+          { "depth": 2, "col": "D", "tile": "the-looking-glass" }
+        ]
+      },
+      "goals": [
+        { "number": 1, "count": "cleanup-track-progress", "pointsPer": 1, "majorityBonus": { "first": 2, "second": 1 }, "text": "Points égaux à votre progression sur la piste de nettoyage ; +2 au 1er, +1 au 2e." },
+        { "number": 2, "units": ["disc", "vessel"], "depths": [1], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 5, "second": 3 }, "text": "1 point par disque ou submersible à la profondeur 1 ; +5 au 1er, +3 au 2e." },
+        { "number": 3, "units": ["conserve"], "depths": [2, 3, 4], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 4, "second": 2 }, "text": "1 point par disque conservation aux profondeurs 2, 3 et 4 ; +4 au 1er, +2 au 2e." }
+      ],
+      "specialRules": [
+        "Retirez du jeu tous les plateaux Océan de profondeur 5.",
+        "Chaque joueur place un pion Impact sur la case de départ de la piste de nettoyage, comme marqueur de nettoyage.",
+        "La sea-star est la zone de lancement : chaque joueur y place un submersible et gagne son bonus d'arrivée."
+      ],
+      "impactBoard": {
+        "orientation": "flat-top",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": -2,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": -2,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": -2,
+            "fieldSymbol": "wild",
+            "arrow": true,
+            "fieldSymbolCount": 2
+          },
+          {
+            "row": 0,
+            "col": 6,
+            "points": -2,
+            "fieldSymbol": "wild",
+            "arrow": true,
+            "fieldSymbolCount": 2
+          },
+          {
+            "row": 0,
+            "col": 8,
+            "points": -2,
+            "fieldSymbol": "wild",
+            "fieldSymbolCount": 2
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": -2,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": -2,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 1,
+            "col": 5,
+            "points": -2,
+            "gains": [
+              "reputation",
+              "reputation"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "points": -2,
+            "gains": [
+              "inspiration",
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": -2,
+            "gains": [
+              "reputation",
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": -2,
+            "gains": [
+              "reputation",
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": -2,
+            "gains": [
+              "ingenuity",
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 6,
+            "points": -2,
+            "gains": [
+              "coordination",
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 8,
+            "points": -2,
+            "gains": [
+              "inspiration",
+              "coordination"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 1,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "points": 1,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 1,
+            "gains": [
+              "ingenuity"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "the-deepest-sea",
+      "number": 10,
+      "name": "The Deepest Sea",
+      "flavorText": "The deep sea holds many mysteries. We have explored far and wide, overcome catastrophe and protected the habitat of our ocean. But still, the quest to plunge ever deeper continues.",
+      "setup": {
+        "columns": 5,
+        "startingTiles": [
+          { "depth": 1, "col": "C", "tile": "the-sea-star" },
+          { "depth": 1, "col": "B", "randomLevel": 1 },
+          { "depth": 1, "col": "D", "randomLevel": 1 },
+          { "depth": 2, "col": "C", "tile": "the-looking-glass" }
+        ]
+      },
+      "goals": [
+        { "number": 1, "count": "first-depth-5-discovered", "majorityBonus": { "first": 4, "second": 2 }, "text": "Découvrez votre première zone de profondeur 5 ; posez-y un disque. +4 au 1er à réussir, +2 au 2e." },
+        { "number": 2, "count": "first-depth-5-travelled", "majorityBonus": { "first": 4, "second": 3 }, "text": "Voyagez jusqu'à votre première zone de profondeur 5 ; posez-y un disque. +4 au 1er à réussir, +3 au 2e." },
+        { "number": 3, "units": ["publish"], "depths": [4, 5], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 7, "second": 4 }, "text": "1 point par disque publication aux profondeurs 4 et 5 ; +7 au 1er, +4 au 2e." }
+      ],
+      "specialRules": [
+        "La sea-star est la zone de lancement : chaque joueur y place un submersible et gagne son bonus d'arrivée.",
+        "Placez un pion Impact sur la piste correspondant à la profondeur de la zone où vous l'avez gagné.",
+        "Si vous gagnez de l'Impact d'une source autre qu'une zone, placez-le à n'importe quelle profondeur où vous avez un submersible."
+      ],
+      "impactBoard": {
+        "orientation": "rect-rows",
+        "hexes": [
+          {
+            "row": 0,
+            "col": 0,
+            "points": 0,
+            "gains": [
+              "research"
+            ],
+            "start": true
+          },
+          {
+            "row": 0,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 3,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 4,
+            "points": 0,
+            "gains": [
+              "ingenuity"
+            ]
+          },
+          {
+            "row": 0,
+            "col": 5,
+            "points": 0,
+            "fieldSymbol": "wild"
+          },
+          {
+            "row": 1,
+            "col": 0,
+            "points": 0,
+            "fieldSymbol": "wild",
+            "start": true
+          },
+          {
+            "row": 1,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "inspiration"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 2,
+            "points": 0,
+            "gains": [
+              "coordination"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 1,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "disc"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 0,
+            "points": 0,
+            "fieldSymbol": "wild",
+            "start": true
+          },
+          {
+            "row": 2,
+            "col": 1,
+            "points": 0,
+            "gains": [
+              "reputation"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 2,
+            "col": 5,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 0,
+            "points": 3,
+            "rescue": true,
+            "start": true
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "points": 2
+          },
+          {
+            "row": 3,
+            "col": 2,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 3,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "points": 1,
+            "gains": [
+              "research"
+            ]
+          },
+          {
+            "row": 4,
+            "col": 0,
+            "points": 3,
+            "rescue": true,
+            "start": true
+          },
+          {
+            "row": 4,
+            "col": 1,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 4,
+            "col": 2,
+            "points": 3,
+            "rescue": true
+          },
+          {
+            "row": 4,
+            "col": 3,
+            "points": 2
+          },
+          {
+            "row": 4,
+            "col": 4,
+            "points": 2
+          },
+          {
+            "row": 4,
+            "col": 5,
+            "points": 2
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "points": 0,
+            "capacity": "unlimited",
+            "offGrid": true,
+            "note": "infini bleu (depths 1-2) - points a verifier"
+          },
+          {
+            "row": 3,
+            "col": 7,
+            "points": 2,
+            "capacity": "unlimited",
+            "offGrid": true,
+            "note": "infini orange (depths 4-5) - points a verifier"
+          }
+        ]
+      }
+    }
+  ]
+}

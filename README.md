@@ -78,6 +78,23 @@ cd ui && npm test     # interface
 - [Sources](docs/sources.md) — documents de référence, méthode d'extraction,
   données manquantes
 
+## Données du matériel
+
+`data/` contient la description du matériel de jeu, relevée sur la boîte et
+chargée au démarrage. Ces fichiers ne dépendent d'aucun module : le moteur les
+lit, l'application les sert.
+
+- `specialists.json` — les 21 spécialistes, faces Junior et Senior
+- `missions.json` — les plateaux Impact des scénarios, relevés sur les fiches
+  (3 des 10 à ce jour)
+
+Le champ `actions` se lit à deux niveaux : la liste **externe** énumère les
+actions cumulées, la liste **interne** les alternatives. `[["travel", "sonar"]]`
+donne une action au choix entre Voyage et Sonar — le trait oblique imprimé sur
+la carte — tandis que `[["sonar"], ["dive"]]` donne les deux, l'une puis l'autre.
+
+Les scans du matériel ne sont pas versionnés, ils appartiennent à l'éditeur.
+
 Les notes de travail sur les règles — synthèse du livret et transcription du
 feuillet officiel de clarifications — reprennent le contenu publié par
 l'éditeur. Elles restent en local dans `docs/prive/` et ne sont pas versionnées.
