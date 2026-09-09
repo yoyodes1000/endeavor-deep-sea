@@ -1,0 +1,879 @@
+{
+  "oceanTiles": [
+    {
+      "id": "atoll",
+      "name": "Atoll",
+      "depth": 1,
+      "unique": false,
+      "discoverBonus": ["inspiration", "disc"],
+      "arrivalBonus": ["coordination"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [1, 2] },
+          { "id": "s2", "type": "discover", "levels": [1, 2] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": []
+    },
+    {
+      "id": "calm-seas",
+      "name": "Calm Seas",
+      "depth": 1,
+      "unique": false,
+      "discoverBonus": ["ingenuity", "disc"],
+      "arrivalBonus": ["research"],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "reward", "gains": ["inspiration", "research"] },
+          { "id": "s2", "type": "discover", "levels": [3, 4, 5] }
+        ]},
+        { "spots": [
+          { "id": "s3", "type": "discover", "levels": [1, 2] },
+          { "id": "s4", "type": "discover", "levels": [1, 2] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [{ "id": "j1", "fieldSymbol": "brown" }],
+      "connections": [],
+      "specialRules": []
+    },
+    {
+      "id": "decommissioned-oil-rig",
+      "name": "Decommissioned Oil Rig",
+      "depth": 1,
+      "unique": false,
+      "discoverBonus": ["coordination", "research"],
+      "arrivalBonus": ["reputation"],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 1, "gains": ["ingenuity"] },
+        { "id": "c2", "cost": 4, "gains": ["reputation", "impact"] },
+        { "id": "c3", "cost": 4, "gains": ["coordination", "impact"] },
+        { "id": "c4", "cost": 1, "gains": ["ingenuity"] }
+      ],
+      "journalSites": [],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["reputation"] },
+        { "between": ["c2", "c3"], "gains": ["inspiration", "inspiration"] },
+        { "between": ["c3", "c4"], "gains": ["coordination"] }
+      ],
+      "specialRules": [
+        { "trigger": "site-state",
+          "text": "Quand tous les sites de conservation de la zone sont remplis, chaque joueur ayant au moins un disque dans la zone (joueur actif puis sens horaire) peut promouvoir un spécialiste." }
+      ]
+    },
+    {
+      "id": "dying-reef",
+      "name": "Dying Reef",
+      "depth": 1,
+      "unique": false,
+      "discoverBonus": ["reputation", "disc"],
+      "arrivalBonus": ["impact"],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 1, "gains": ["reputation"] },
+        { "id": "c2", "cost": 4, "gains": ["reputation", "impact"] },
+        { "id": "c3", "cost": 1, "gains": ["coordination"] },
+        { "id": "c4", "cost": 0, "gains": ["reputation"] },
+        { "id": "c5", "cost": 1, "gains": ["impact"] }
+      ],
+      "journalSites": [{ "id": "j1", "fieldSymbol": "green" }],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["coordination"] },
+        { "between": ["c1", "c3"], "gains": ["disc"] },
+        { "between": ["c2", "c3"], "gains": ["inspiration"] },
+        { "between": ["c2", "c4"], "gains": ["disc"] },
+        { "between": ["c2", "c5"], "gains": ["reputation"] }
+      ],
+      "specialRules": []
+    },
+    {
+      "id": "kelp-forest",
+      "name": "Kelp Forest",
+      "depth": 1,
+      "unique": false,
+      "discoverBonus": ["reputation", "research"],
+      "arrivalBonus": ["inspiration"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 2, "gains": ["reputation", "coordination"] },
+        { "id": "c2", "cost": 1, "gains": ["coordination"] }
+      ],
+      "journalSites": [],
+      "connections": [{ "between": ["c1", "c2"], "gains": ["coordination"] }],
+      "specialRules": []
+    },
+    {
+      "id": "remote-anchorage",
+      "name": "Remote Anchorage",
+      "depth": 1,
+      "unique": false,
+      "discoverBonus": ["ingenuity", "disc"],
+      "arrivalBonus": ["ingenuity"],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [1, 2] },
+          { "id": "s2", "type": "discover", "levels": [2, 3] },
+          { "id": "s3", "type": "reward", "gains": ["ingenuity", "research"] },
+          { "id": "s4", "type": "discover", "levels": [3, 4, 5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [{ "id": "j1", "fieldSymbol": "blue" }],
+      "connections": [],
+      "specialRules": []
+    },
+    {
+      "id": "the-sea-star",
+      "name": "The Sea Star",
+      "depth": 1,
+      "unique": true,
+      "discoverBonus": ["disc", "disc"],
+      "arrivalBonus": ["disc"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [1, 2] },
+          { "id": "s2", "type": "discover", "levels": [1, 2] },
+          { "id": "s3", "type": "discover", "levels": [1, 2] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "yellow" },
+        { "id": "j2", "fieldSymbol": "brown" }
+      ],
+      "connections": [],
+      "specialRules": []
+    },
+    {
+      "id": "volcanic-island",
+      "name": "Volcanic Island",
+      "depth": 1,
+      "unique": false,
+      "discoverBonus": ["inspiration", "disc"],
+      "arrivalBonus": ["ingenuity"],
+      "diveSites": [{ "id": "d1", "tokens": 2 }],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [1, 2] },
+          { "id": "s2", "type": "discover", "levels": [1, 2] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "yellow" },
+        { "id": "j2", "fieldSymbol": "brown" }
+      ],
+      "connections": [],
+      "specialRules": []
+    },
+    {
+      "id": "dolphin-pods",
+      "name": "Dolphin Pods",
+      "depth": 2,
+      "unique": false,
+      "discoverBonus": ["inspiration", "ingenuity"],
+      "arrivalBonus": ["inspiration"],
+      "diveSites": [{ "id": "d1", "tokens": 3 }],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 4, "gains": ["coordination", "impact"] },
+        { "id": "c2", "cost": 2, "gains": ["inspiration"] },
+        { "id": "c3", "cost": 3, "gains": ["impact", "inspiration"] },
+        { "id": "c4", "cost": 1, "gains": ["inspiration"] }
+      ],
+      "journalSites": [],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["impact"] },
+        { "between": ["c1", "c4"], "gains": ["reputation"] },
+        { "between": ["c2", "c3"], "gains": ["inspiration"] },
+        { "between": ["c2", "c4"], "gains": ["disc"] }
+      ],
+      "specialRules": []
+    },
+    {
+      "id": "ledge-elevator",
+      "name": "Ledge Elevator",
+      "depth": 2,
+      "unique": false,
+      "discoverBonus": ["reputation", "coordination"],
+      "arrivalBonus": ["ingenuity"],
+      "diveSites": [{ "id": "d1", "tokens": 3 }],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "reward", "gains": ["ingenuity", "research"] },
+          { "id": "s2", "type": "discover", "levels": [3, 4, 5] },
+          { "id": "s3", "type": "discover", "levels": [3, 4, 5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "yellow" }
+      ],
+      "connections": [{ "between": ["s2", "s3"], "gains": ["ingenuity"] }],
+      "specialRules": []
+    },
+    {
+      "id": "resupply-modules",
+      "name": "Resupply Modules",
+      "depth": 2,
+      "unique": false,
+      "discoverBonus": ["coordination", "ingenuity"],
+      "arrivalBonus": ["disc"],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [1, 2, 3] },
+          { "id": "s2", "type": "discover", "levels": [1, 2, 3] },
+          { "id": "s3", "type": "reward", "gains": ["ingenuity", "ingenuity"] }
+        ]},
+        { "spots": [
+          { "id": "s4", "type": "discover", "levels": [3, 4, 5] },
+          { "id": "s5", "type": "discover", "levels": [3, 4, 5] },
+          { "id": "s6", "type": "discover", "levels": [3, 4, 5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [
+        { "between": ["s1", "s4"], "gains": ["disc"] },
+        { "between": ["s2", "s5"], "gains": ["reputation"] },
+        { "between": ["s3", "s6"], "gains": ["disc"] }
+      ],
+      "specialRules": []
+    },
+    {
+      "id": "sea-turtle-migration",
+      "name": "Sea Turtle Migration",
+      "depth": 2,
+      "unique": false,
+      "discoverBonus": ["reputation", "inspiration"],
+      "arrivalBonus": ["coordination"],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 2, "gains": [], "actions": [{ "type": "sonar", "depths": [1, 2, 3] }] },
+        { "id": "c2", "cost": 4, "gains": ["coordination", "impact"] },
+        { "id": "c3", "cost": 2, "gains": [], "actions": [{ "type": "sonar", "depths": [1, 2, 3] }] }
+      ],
+      "journalSites": [],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["impact"] },
+        { "between": ["c2", "c3"], "gains": ["impact"] }
+      ],
+      "specialRules": [
+        { "trigger": "conserve",
+          "text": "Après une Conservation sur l'un de ces sites, vous pouvez faire un Voyage depuis cette zone." }
+      ]
+    },
+    {
+      "id": "shipwreck",
+      "name": "Shipwreck",
+      "depth": 2,
+      "unique": false,
+      "discoverBonus": ["inspiration", "ingenuity"],
+      "arrivalBonus": ["reputation"],
+      "diveSites": [{ "id": "d1", "tokens": 8 }],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "reward", "gains": ["coordination", "coordination"] },
+          { "id": "s2", "type": "discover", "levels": [3, 4, 5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "dive",
+          "text": "Quand vous plongez sur ce site, piochez deux jetons, gardez-en un et défaussez l'autre." }
+      ]
+    },
+    {
+      "id": "submerged-cave-system",
+      "name": "Submerged Cave System",
+      "depth": 2,
+      "unique": false,
+      "discoverBonus": ["coordination", "ingenuity"],
+      "arrivalBonus": [],
+      "diveSites": [
+        { "id": "d1", "tokens": 1, "accessFrom": "left" },
+        { "id": "d2", "tokens": 2, "accessFrom": "up" },
+        { "id": "d3", "tokens": 1, "accessFrom": "right" }
+      ],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 2, "gains": ["ingenuity"], "accessFrom": "left" }
+      ],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "blue", "accessFrom": "up" },
+        { "id": "j2", "fieldSymbol": "yellow", "accessFrom": "right" }
+      ],
+      "connections": [
+        { "between": ["j1", "c1"], "gains": ["reputation"] },
+        { "between": ["j1", "j2"], "gains": ["ingenuity"] },
+        { "between": ["c1", "j2"], "gains": ["inspiration"] }
+      ],
+      "specialRules": [
+        { "trigger": "permanent",
+          "text": "Aucun submersible ne peut entrer dans cette zone, ni la traverser lors d'un Voyage. Les éléments de chacune des trois grottes ne sont accessibles que si vous avez un submersible dans la zone à laquelle la grotte se connecte : grotte du haut → zone au-dessus (profondeur 1), grotte de gauche → zone à gauche, grotte de droite → zone à droite." }
+      ]
+    },
+    {
+      "id": "sunken-ruins",
+      "name": "Sunken Ruins",
+      "depth": 2,
+      "unique": false,
+      "discoverBonus": ["ingenuity", "reputation"],
+      "arrivalBonus": ["disc"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [2, 3] },
+          { "id": "s2", "type": "discover", "levels": [2, 3] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "site-state",
+          "text": "Quand le site de plongée de cette zone est vide, chaque joueur ayant au moins un submersible dans la zone (joueur actif puis sens horaire) peut faire un Voyage depuis cette zone." }
+      ]
+    },
+    {
+      "id": "the-looking-glass",
+      "name": "The Looking Glass",
+      "depth": 2,
+      "unique": true,
+      "discoverBonus": ["anyAttribute", "disc", "research"],
+      "arrivalBonus": ["inspiration"],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [1, 2, 3] },
+          { "id": "s2", "type": "discover", "levels": [1, 2, 3] },
+          { "id": "s3", "type": "discover", "levels": [1, 2, 3] },
+          { "id": "s4", "type": "discover", "levels": [4, 5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "yellow" },
+        { "id": "j2", "fieldSymbol": "blue" }
+      ],
+      "connections": [],
+      "specialRules": []
+    },
+    {
+      "id": "whale-calving-ground",
+      "name": "Whale Calving Grounds",
+      "depth": 2,
+      "unique": false,
+      "discoverBonus": ["reputation", "coordination"],
+      "arrivalBonus": ["research"],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 1, "gains": ["impact"] },
+        { "id": "c2", "cost": 2, "gains": ["reputation", "reputation"] },
+        { "id": "c3", "cost": 4, "gains": ["reputation", "impact"] },
+        { "id": "c4", "cost": 2, "gains": ["reputation", "coordination"] },
+        { "id": "c5", "cost": 0, "gains": ["reputation"] },
+        { "id": "c6", "cost": 2, "gains": ["coordination", "inspiration"] }
+      ],
+      "journalSites": [{ "id": "j1", "fieldSymbol": "green", "markedSite": true }],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["reputation"] },
+        { "between": ["c3", "c5"], "gains": ["impact"] },
+        { "between": ["c4", "c6"], "gains": ["inspiration"] }
+      ],
+      "specialRules": [
+        { "trigger": "conserve", "target": "j1",
+          "text": "Si vous occupez le site de publication marqué au moment où vous faites une Conservation dans cette zone, vous pouvez refaire une Conservation dans cette zone." }
+      ]
+    },
+    {
+      "id": "carbonate-spires",
+      "name": "Carbonate Spires",
+      "depth": 3,
+      "unique": false,
+      "discoverBonus": ["reputation", "reputation"],
+      "arrivalBonus": ["research"],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [3, 4, 5] },
+          { "id": "s2", "type": "discover", "levels": [3, 4, 5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "blue" },
+        { "id": "j2", "fieldSymbol": "brown" },
+        { "id": "j3", "fieldSymbol": "green" },
+        { "id": "j4", "fieldSymbol": "yellow" }
+      ],
+      "connections": [
+        { "between": ["j1", "s1"], "gains": ["research"] },
+        { "between": ["j1", "j2"], "gains": ["reputation"] },
+        { "between": ["j2", "j3"], "gains": ["reputation"] },
+        { "between": ["j3", "j4"], "gains": ["reputation"] },
+        { "between": ["j4", "s2"], "gains": ["research"] }
+      ],
+      "specialRules": []
+    },
+    {
+      "id": "coldwater-reef",
+      "name": "Coldwater Reef",
+      "depth": 3,
+      "unique": false,
+      "discoverBonus": ["inspiration", "inspiration"],
+      "arrivalBonus": ["reputation"],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 1, "gains": ["reputation"] },
+        { "id": "c2", "cost": 2, "gains": ["coordination"] },
+        { "id": "c3", "cost": 2, "gains": ["inspiration"] },
+        { "id": "c4", "cost": 1, "gains": ["reputation"] }
+      ],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "yellow" },
+        { "id": "j2", "fieldSymbol": "green" }
+      ],
+      "connections": [
+        { "between": ["c1", "j1"], "gains": ["impact"] },
+        { "between": ["c1", "c2"], "gains": ["reputation"] },
+        { "between": ["j1", "c2"], "gains": ["impact"] },
+        { "between": ["c2", "c3"], "gains": ["reputation"] },
+        { "between": ["j2", "c3"], "gains": ["inspiration"] },
+        { "between": ["j2", "c4"], "gains": ["coordination"] },
+        { "between": ["c3", "c4"], "gains": ["coordination"] }
+      ],
+      "specialRules": []
+    },
+    {
+      "id": "deepwater-shark",
+      "name": "Deepwater Shark",
+      "depth": 3,
+      "unique": false,
+      "discoverBonus": ["inspiration", "ingenuity"],
+      "arrivalBonus": ["coordination"],
+      "diveSites": [{ "id": "d1", "tokens": 5 }],
+      "sonarTracks": [],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "dive",
+          "text": "Quand vous prenez un jeton de ce site de plongée, gagnez 1 réputation." }
+      ]
+    },
+    {
+      "id": "jellyfish-bloom",
+      "name": "Jellyfish Bloom",
+      "depth": 3,
+      "unique": false,
+      "discoverBonus": ["coordination", "coordination"],
+      "arrivalBonus": ["disc"],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 5, "gains": ["inspiration", "inspiration", "coordination"], "markedSite": true },
+        { "id": "c2", "cost": 5, "gains": ["reputation", "reputation", "coordination"], "markedSite": true }
+      ],
+      "journalSites": [{ "id": "j1", "fieldSymbol": "yellow", "markedSite": true }],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["inspiration"] },
+        { "between": ["c1", "j1"], "gains": ["reputation"] },
+        { "between": ["c2", "j1"], "gains": ["coordination"] }
+      ],
+      "specialRules": [
+        { "trigger": "travel-out",
+          "text": "Si vous avez un disque sur l'une des cases marquées quand vous quittez cette zone par un Voyage, gagnez 1 impact." }
+      ]
+    },
+    {
+      "id": "rift-valley",
+      "name": "Rift Valley",
+      "depth": 3,
+      "unique": false,
+      "discoverBonus": ["coordination", "ingenuity"],
+      "arrivalBonus": ["coordination"],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [2, 3] },
+          { "id": "s2", "type": "reward", "gains": ["reputation", "research"] },
+          { "id": "s3", "type": "discover", "levels": [3, 4, 5] },
+          { "id": "s4", "type": "reward", "gains": ["ingenuity", "research"] },
+          { "id": "s5", "type": "discover", "levels": [3, 4, 5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [{ "id": "j1", "fieldSymbol": "blue" }],
+      "connections": [
+        { "between": ["j1", "s5"], "gains": ["reputation"] },
+        { "between": ["s2", "s4"], "gains": ["research"] }
+      ],
+      "specialRules": []
+    },
+    {
+      "id": "thermal-vents",
+      "name": "Thermal Vents",
+      "depth": 3,
+      "unique": false,
+      "discoverBonus": ["ingenuity", "ingenuity"],
+      "arrivalBonus": ["ingenuity"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "green", "markedSite": true },
+        { "id": "j2", "fieldSymbol": "blue", "markedSite": true }
+      ],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "dive",
+          "text": "Quand vous prenez un jeton de ce site de plongée, gagnez 1 recherche par disque vous appartenant sur les cases marquées." }
+      ]
+    },
+    {
+      "id": "vortex",
+      "name": "Vortex",
+      "depth": 3,
+      "unique": false,
+      "discoverBonus": ["ingenuity", "ingenuity"],
+      "arrivalBonus": ["reputation"],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [3] }
+        ]},
+        { "spots": [
+          { "id": "s2", "type": "reward", "gains": ["coordination", "research"] },
+          { "id": "s3", "type": "discover", "levels": [1, 2, 3, 4] }
+        ]},
+        { "spots": [
+          { "id": "s4", "type": "reward", "gains": ["inspiration", "research"] },
+          { "id": "s5", "type": "discover", "levels": [4, 5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "sonar", "target": "s1",
+          "text": "Quand vous faites Sonar sur cet emplacement, vous pouvez poser une zone de profondeur 3 même sans zone de profondeur 2 au-dessus." },
+        { "trigger": "travel-out",
+          "text": "Quand vous quittez cette zone par un Voyage, votre niveau de technologie compte +1 (votre submersible peut aller une zone plus loin et une profondeur plus bas que d'habitude)." }
+      ]
+    },
+    {
+      "id": "bioluminescent-fauna",
+      "name": "Bioluminescent Fauna",
+      "depth": 4,
+      "unique": false,
+      "discoverBonus": ["inspiration", "inspiration", "impact"],
+      "arrivalBonus": ["ingenuity"],
+      "diveSites": [
+        { "id": "d1", "tokens": 3 },
+        { "id": "d2", "tokens": 3 }
+      ],
+      "sonarTracks": [],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "dive", "target": "d1", "gains": ["research"],
+          "text": "Quand vous plongez sur le site marqué d1, gagnez 1 recherche." },
+        { "trigger": "dive", "target": "d2", "gains": ["disc"],
+          "text": "Quand vous plongez sur le site marqué d2, gagnez 1 disque." }
+      ]
+    },
+    {
+      "id": "brine-pool",
+      "name": "Brine Pool",
+      "depth": 4,
+      "unique": false,
+      "discoverBonus": ["inspiration", "ingenuity", "research"],
+      "arrivalBonus": ["inspiration"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "dive",
+          "text": "Quand vous prenez un jeton de ce site de plongée, gagnez 1 impact." }
+      ]
+    },
+    {
+      "id": "colossal-squid",
+      "name": "Colossal Squid",
+      "depth": 4,
+      "unique": false,
+      "discoverBonus": ["reputation", "reputation", "research"],
+      "arrivalBonus": ["coordination"],
+      "diveSites": [{ "id": "d1", "tokens": 3 }],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 0, "gains": [] },
+        { "id": "c2", "cost": 0, "gains": [] }
+      ],
+      "journalSites": [{ "id": "j1", "fieldSymbol": "yellow" }],
+      "connections": [{ "between": ["c1", "c2"], "gains": ["impact", "impact"] }],
+      "specialRules": []
+    },
+    {
+      "id": "continental-shelf",
+      "name": "Continental Shelf",
+      "depth": 4,
+      "unique": false,
+      "discoverBonus": ["inspiration", "ingenuity", "disc"],
+      "arrivalBonus": ["coordination"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "brown" },
+        { "id": "j2", "fieldSymbol": "blue" }
+      ],
+      "connections": [{ "between": ["j1", "j2"], "gains": ["impact"] }],
+      "specialRules": []
+    },
+    {
+      "id": "seamount",
+      "name": "Seamount",
+      "depth": 4,
+      "unique": false,
+      "discoverBonus": ["ingenuity", "disc", "research"],
+      "arrivalBonus": ["disc"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 1, "gains": ["coordination"], "markedSite": true },
+        { "id": "c2", "cost": 3, "gains": ["coordination", "coordination"], "markedSite": true },
+        { "id": "c3", "cost": 1, "gains": ["coordination"], "markedSite": true }
+      ],
+      "journalSites": [],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["impact"] },
+        { "between": ["c2", "c3"], "gains": ["impact"] }
+      ],
+      "specialRules": [
+        { "trigger": "dive", "gains": ["lowestAttribute"],
+          "text": "Si vous avez un disque sur une case marquée quand vous prenez un jeton de ce site de plongée, gagnez 1 cran sur votre attribut le moins avancé." }
+      ]
+    },
+    {
+      "id": "sponge-gardens",
+      "name": "Sponge Gardens",
+      "depth": 4,
+      "unique": false,
+      "discoverBonus": ["reputation", "ingenuity", "research"],
+      "arrivalBonus": ["research", "research"],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "brown" },
+        { "id": "j2", "fieldSymbol": "green" },
+        { "id": "j3", "fieldSymbol": "blue" }
+      ],
+      "connections": [
+        { "between": ["j1", "j2"], "gains": ["impact"] },
+        { "between": ["j2", "j3"], "gains": ["disc", "research"] }
+      ],
+      "specialRules": []
+    },
+    {
+      "id": "abyssal-plain",
+      "name": "Abyssal Plain",
+      "depth": 5,
+      "unique": false,
+      "discoverBonus": ["inspiration", "ingenuity"],
+      "arrivalBonus": ["anyAttribute"],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "discover", "levels": [5] },
+          { "id": "s2", "type": "discover", "levels": [5] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "sonar",
+          "text": "Quand vous faites Sonar sur ces emplacements, vous pouvez poser une zone de profondeur 5 même sans zone de profondeur 4 au-dessus." }
+      ]
+    },
+    {
+      "id": "abyssal-trench",
+      "name": "Abyssal Trench",
+      "depth": 5,
+      "unique": false,
+      "discoverBonus": ["inspiration", "coordination", "ingenuity"],
+      "arrivalBonus": [],
+      "arrivalActions": [{ "type": "sonar" }],
+      "diveSites": [],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "reward", "gains": ["inspiration", "research"] },
+          { "id": "s2", "type": "reward", "gains": ["reputation", "research"] },
+          { "id": "s3", "type": "reward", "gains": ["inspiration", "impact"] },
+          { "id": "s4", "type": "reward", "gains": ["reputation", "impact"] },
+          { "id": "s5", "type": "reward", "gains": ["impact", "impact"] },
+          { "id": "s6", "type": "reward", "gains": ["impact", "impact", "impact"] }
+        ]}
+      ],
+      "conservationSites": [],
+      "journalSites": [],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "permanent",
+          "text": "Chaque joueur ne peut avoir qu'un seul submersible dans cette zone." }
+      ]
+    },
+    {
+      "id": "black-smoker",
+      "name": "Black Smoker",
+      "depth": 5,
+      "unique": false,
+      "discoverBonus": ["reputation", "ingenuity", "ingenuity"],
+      "arrivalBonus": ["disc", "research"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "brown" },
+        { "id": "j2", "fieldSymbol": "blue" }
+      ],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "dive",
+          "text": "Quand vous prenez un jeton de ce site de plongée, vous pouvez faire un Voyage depuis cette zone (mais pas vers une zone de profondeur 5)." }
+      ]
+    },
+    {
+      "id": "fallen-star",
+      "name": "Fallen Star",
+      "depth": 5,
+      "unique": true,
+      "discoverBonus": ["reputation", "ingenuity", "impact"],
+      "arrivalBonus": ["research", "research"],
+      "diveSites": [{ "id": "d1", "tokens": 4 }],
+      "sonarTracks": [
+        { "spots": [
+          { "id": "s1", "type": "reward", "gains": ["inspiration", "impact"] },
+          { "id": "s2", "type": "reward", "gains": ["inspiration", "impact"] }
+        ]}
+      ],
+      "conservationSites": [
+        { "id": "c1", "cost": 6, "gains": ["reputation", "impact", "impact"] },
+        { "id": "c2", "cost": 6, "gains": ["coordination", "impact", "impact"] }
+      ],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "green", "gains": ["impact"] },
+        { "id": "j2", "fieldSymbol": "brown", "gains": ["impact"] }
+      ],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["inspiration"] },
+        { "between": ["c1", "j1"], "gains": ["reputation"] },
+        { "between": ["c2", "j1"], "gains": ["coordination"] },
+        { "between": ["s2", "j2"], "gains": ["disc"] }
+      ],
+      "specialRules": [
+        { "trigger": "dive",
+          "text": "Quand vous prenez un jeton de ce site de plongée, gagnez 1 impact." }
+      ]
+    },
+    {
+      "id": "scaly-foot-snails",
+      "name": "Scaly-foot Snails",
+      "depth": 5,
+      "unique": false,
+      "discoverBonus": ["coordination", "ingenuity", "ingenuity"],
+      "arrivalBonus": ["disc"],
+      "diveSites": [{ "id": "d1", "tokens": 3 }],
+      "sonarTracks": [],
+      "conservationSites": [],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "blue" },
+        { "id": "j2", "fieldSymbol": "brown" },
+        { "id": "j3", "fieldSymbol": "yellow" }
+      ],
+      "connections": [],
+      "specialRules": [
+        { "trigger": "dive",
+          "text": "Quand vous prenez un jeton de ce site de plongée, vous pouvez ensuite faire une Publication dans cette zone." }
+      ]
+    },
+    {
+      "id": "seafloor-restoration",
+      "name": "Seafloor Restoration",
+      "depth": 5,
+      "unique": false,
+      "discoverBonus": ["reputation", "coordination", "research"],
+      "arrivalBonus": [],
+      "arrivalActions": [{ "type": "conserve" }],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 1, "gains": ["coordination"] },
+        { "id": "c2", "cost": 5, "gains": ["promote"] },
+        { "id": "c3", "cost": 1, "gains": ["reputation"] },
+        { "id": "c4", "cost": 1, "gains": ["reputation"] },
+        { "id": "c5", "cost": 2, "gains": ["impact"] },
+        { "id": "c6", "cost": 1, "gains": ["coordination"] }
+      ],
+      "journalSites": [],
+      "connections": [
+        { "between": ["c1", "c2"], "gains": ["impact"] },
+        { "between": ["c1", "c4"], "gains": ["impact"] },
+        { "between": ["c2", "c3"], "gains": ["impact"] },
+        { "between": ["c3", "c6"], "gains": ["impact"] },
+        { "between": ["c4", "c5"], "gains": ["impact"] },
+        { "between": ["c5", "c6"], "gains": ["impact"] }
+      ],
+      "specialRules": []
+    },
+    {
+      "id": "whale-fall",
+      "name": "Whale Fall",
+      "depth": 5,
+      "unique": false,
+      "discoverBonus": ["inspiration", "coordination", "coordination"],
+      "arrivalBonus": ["inspiration"],
+      "diveSites": [],
+      "sonarTracks": [],
+      "conservationSites": [
+        { "id": "c1", "cost": 2, "gains": ["coordination", "impact"] },
+        { "id": "c2", "cost": 4, "gains": ["impact", "impact"] },
+        { "id": "c3", "cost": 2, "gains": ["inspiration", "impact"] }
+      ],
+      "journalSites": [
+        { "id": "j1", "fieldSymbol": "yellow" },
+        { "id": "j2", "fieldSymbol": "brown" }
+      ],
+      "connections": [
+        { "between": ["c1", "j1"], "gains": ["coordination"] },
+        { "between": ["j1", "c2"], "gains": ["impact"] },
+        { "between": ["c2", "j2"], "gains": ["impact"] },
+        { "between": ["j2", "c3"], "gains": ["inspiration"] }
+      ],
+      "specialRules": []
+    }
+  ]
+}
