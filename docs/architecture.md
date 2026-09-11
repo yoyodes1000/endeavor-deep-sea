@@ -422,6 +422,13 @@ l'identique d'une partie pour déboguer l'IA.
 
 Un instantané périodique pourra s'y ajouter si le rechargement devient lent.
 
+**Emplacement et cycle de vie.** Sauvegarde **locale**, pas sur un service en
+ligne : le jeu est une application locale, sans compte ni réseau. La partie en
+cours tient dans un **fichier unique** `{graine, journal}`, écrasé à chaque
+nouvelle partie — il ne grossit donc jamais. À la fin d'une partie, son journal
+est versé dans une **archive de debug plafonnée** (par taille ou par nombre de
+parties, le plus ancien supprimé), qui alimente le rejeu pour déboguer l'IA.
+
 Corollaire : **le moteur doit être déterministe**. Générateur aléatoire à graine
 injectée, jamais d'appel implicite au hasard.
 
