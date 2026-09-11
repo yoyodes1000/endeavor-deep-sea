@@ -296,6 +296,36 @@ atteignable depuis un départ, de proche en proche. Un parcours du graphe
 d'adjacence après chaque relevé attrape donc les erreurs de coordonnées : une
 case mal placée devient presque toujours inaccessible.
 
+**Révision — 2026-09-11 : les tuiles Océan et les spécialistes s'habillent de
+leurs scans.** Décision prise en phase de maquette de l'interface (carte 10).
+Elle **laisse la décision 7 intacte pour le plateau Impact** — les hexagones des
+missions restent dessinés en DOM depuis `missions.json` — et ne change que
+l'affichage des **tuiles Océan** et des **spécialistes**, désormais rendus à
+partir de leurs images scannées plutôt que redessinés.
+
+La frontière retenue :
+
+- **Affichage = scan, logique = données.** Le scan n'est qu'une image de fond. La
+  vérité reste le JSON (`ocean-tiles.json`, `specialists.json`) : le moteur ne lit
+  jamais une image. Les **zones cliquables** — sites de plongée, sonar,
+  conservation, publication, emplacements de disques — sont des hotspots
+  positionnés *par-dessus* le scan, dont les coordonnées en pixels se relèvent par
+  tuile.
+- **Scans en local seulement.** Ils appartiennent à l'éditeur et restent
+  gitignorés : jamais versionnés, jamais téléversés vers un service externe (une
+  maquette publiée utilise des placeholders). L'application doit donc rester
+  correcte quand un scan manque — un placeholder, pas un écran cassé.
+- **Accessibilité maintenue.** Les hotspots sont des éléments focalisables et
+  étiquetés (boutons superposés avec `aria-label`), pas une simple image-map.
+
+Pourquoi accepter ici les coûts que l'« alternative écartée » ci-dessus refusait
+pour le plateau Impact — coordonnées en pixels à recalibrer, matériel sous licence
+dans le chemin d'affichage : sur les tuiles et les spécialistes, la **fidélité
+visuelle** prime et **aucune adjacence ne se calcule** sur leur dessin. Le plateau
+Impact, lui, tire ses trois bénéfices (source unique, dépôt autonome,
+accessibilité native) du fait d'être dessiné — d'où la frontière, et non un
+revirement général.
+
 ### 8. Le reste de la fiche : mise en place, objectifs, règles spéciales
 
 Le plateau Impact (décision 7) n'est qu'une partie de la fiche. Le reste — la
