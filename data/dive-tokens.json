@@ -1,0 +1,99 @@
+{
+  "diveTokens": [
+    {
+      "id": "research",
+      "copies": 6,
+      "options": [
+        { "gains": ["research", "research", "research", "research"] }
+      ]
+    },
+    {
+      "id": "sonar",
+      "copies": 2,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "action": { "type": "sonar" } }
+      ]
+    },
+    {
+      "id": "publish",
+      "copies": 2,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "action": { "type": "publish" } }
+      ]
+    },
+    {
+      "id": "promote",
+      "copies": 2,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "action": { "type": "promote" } }
+      ]
+    },
+    {
+      "id": "dive",
+      "copies": 2,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "action": { "type": "dive" } }
+      ]
+    },
+    {
+      "id": "lower-attribute",
+      "copies": 2,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "gains": ["lowestAttribute"] }
+      ]
+    },
+    {
+      "id": "travel",
+      "copies": 4,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "action": { "type": "travel" } }
+      ]
+    },
+    {
+      "id": "impact",
+      "copies": 4,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "gains": ["impact"] }
+      ]
+    },
+    {
+      "id": "any-attribute",
+      "copies": 4,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "gains": ["anyAttribute"] }
+      ]
+    },
+    {
+      "id": "disc",
+      "copies": 4,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "gains": ["disc"] }
+      ]
+    },
+    {
+      "id": "cancel-disc",
+      "copies": 2,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "gains": ["research", "research", "research", "research", "research"], "cost": ["disc"] }
+      ]
+    },
+    {
+      "id": "conserve",
+      "copies": 2,
+      "options": [
+        { "gains": ["research", "research", "research"] },
+        { "action": { "type": "conserve", "costModifier": -1 } }
+      ]
+    }
+  ]
+}
