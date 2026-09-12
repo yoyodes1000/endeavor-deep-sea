@@ -1,9 +1,11 @@
 package io.github.yoyodes1000.endeavor.engine.specialist;
 
 /**
- * Les six ressources qu'un spécialiste peut procurer immédiatement à son
- * recrutement : les quatre attributs (inspiration, coordination, ingéniosité,
- * réputation) plus la recherche et l'impact.
+ * Les jetons de gain du jeu, employés aussi bien par les spécialistes que par
+ * les tuiles Océan : les quatre attributs (inspiration, coordination,
+ * ingéniosité, réputation), la recherche, l'impact, le disque d'action, l'avancée
+ * d'un attribut au choix ({@code anyAttribute}) ou du plus bas
+ * ({@code lowestAttribute}), et la promotion d'un spécialiste.
  *
  * <p>Le {@link #code()} est le libellé exact employé dans les données du
  * matériel. Cette correspondance vit dans le moteur pour qu'il n'existe qu'une
@@ -17,7 +19,11 @@ public enum Gain {
     INGENUITY("ingenuity"),
     REPUTATION("reputation"),
     RESEARCH("research"),
-    IMPACT("impact");
+    IMPACT("impact"),
+    DISC("disc"),
+    ANY_ATTRIBUTE("anyAttribute"),
+    LOWEST_ATTRIBUTE("lowestAttribute"),
+    PROMOTE("promote");
 
     private final String code;
 
