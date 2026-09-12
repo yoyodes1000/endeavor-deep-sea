@@ -83,6 +83,14 @@ public final class Player {
         transitDiscs += count;
     }
 
+    /** Ajoute une tuile fraîchement recrutée au plateau du joueur (étape 1a). */
+    public void recruit(HeldSpecialist held) {
+        if (held == null) {
+            throw new IllegalArgumentException("Une tuile recrutée ne peut être nulle");
+        }
+        specialists.add(held);
+    }
+
     /** Copie indépendante, appelée une fois par simulation pour l'isoler (déc. 3). */
     public Player copy() {
         return new Player(attributes.copy(), reserveDiscs, transitDiscs, new ArrayList<>(specialists));

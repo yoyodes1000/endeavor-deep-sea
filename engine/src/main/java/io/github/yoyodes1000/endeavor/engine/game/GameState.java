@@ -7,6 +7,7 @@ import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -127,6 +128,22 @@ public final class GameState {
             throw new IllegalStateException("La partie ne compte que " + LAST_ROUND + " manches");
         }
         round++;
+    }
+
+    /**
+     * Retire du casier la tuile d'identifiant donné et la renvoie (recrutement).
+     *
+     * @throws IllegalArgumentException si aucune tuile ne porte cet identifiant
+     */
+    public Specialist removeFromCasier(String specialistId) {
+        for (Iterator<Specialist> it = casier.iterator(); it.hasNext(); ) {
+            Specialist specialist = it.next();
+            if (specialist.id().equals(specialistId)) {
+                it.remove();
+                return specialist;
+            }
+        }
+        throw new IllegalArgumentException("Tuile absente du casier : " + specialistId);
     }
 
     /** La vue de la partie telle que l'observe le joueur d'indice donné (déc. 2). */
