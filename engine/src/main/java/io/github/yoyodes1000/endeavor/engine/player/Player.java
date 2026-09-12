@@ -18,16 +18,20 @@ import java.util.List;
  */
 public final class Player {
 
+    private static final int RESEARCH_CAP = 12;
+
     private final Attributes attributes;
     private int reserveDiscs;
     private int transitDiscs;
+    private int research;
     private final List<HeldSpecialist> specialists;
 
-    private Player(Attributes attributes, int reserveDiscs, int transitDiscs,
+    private Player(Attributes attributes, int reserveDiscs, int transitDiscs, int research,
                    List<HeldSpecialist> specialists) {
         this.attributes = attributes;
         this.reserveDiscs = reserveDiscs;
         this.transitDiscs = transitDiscs;
+        this.research = research;
         this.specialists = specialists;
     }
 
@@ -46,7 +50,7 @@ public final class Player {
         }
         List<HeldSpecialist> specialists = new ArrayList<>();
         specialists.add(HeldSpecialist.recruited(teamLeader));
-        return new Player(Attributes.atStart(), reserveDiscs, 0, specialists);
+        return new Player(Attributes.atStart(), reserveDiscs, 0, 0, specialists);
     }
 
     public Attributes attributes() {
@@ -59,6 +63,10 @@ public final class Player {
 
     public int transitDiscs() {
         return transitDiscs;
+    }
+
+    public int research() {
+        return research;
     }
 
     public List<HeldSpecialist> specialists() {
@@ -83,6 +91,22 @@ public final class Player {
         transitDiscs += count;
     }
 
+    /** Avance la piste de recherche de {@code count} crans, plafonnée à 12. */
+    public void gainResearch(int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("Gain de recherche négatif : " + count);
+        }
+        research = Math.min(RESEARCH_CAP, research + count);
+    }
+
+    /** Ajoute {@code count} disques d'action à la réserve. */
+    public void gainDiscs(int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("Gain de disques négatif : " + count);
+        }
+        reserveDiscs += count;
+    }
+
     /** Ajoute une tuile fraîchement recrutée au plateau du joueur (étape 1a). */
     public void recruit(HeldSpecialist held) {
         if (held == null) {
@@ -93,6 +117,6 @@ public final class Player {
 
     /** Copie indépendante, appelée une fois par simulation pour l'isoler (déc. 3). */
     public Player copy() {
-        return new Player(attributes.copy(), reserveDiscs, transitDiscs, new ArrayList<>(specialists));
+        return new Player(attributes.copy(), reserveDiscs, transitDiscs, research, new ArrayList<>(specialists));
     }
 }
