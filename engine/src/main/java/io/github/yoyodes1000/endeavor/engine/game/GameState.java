@@ -23,6 +23,7 @@ import java.util.List;
 public final class GameState {
 
     private static final int FIRST_ROUND = 1;
+    private static final int LAST_ROUND = 6;
 
     private final List<Player> players;
     private final List<Specialist> casier;
@@ -101,6 +102,31 @@ public final class GameState {
     /** La source d'aléa de la partie (déterminisme : graine + journal). */
     public RandomSource random() {
         return random;
+    }
+
+    /** Fixe l'indice du premier joueur de la manche (validé). */
+    public void setFirstPlayerIndex(int index) {
+        if (index < 0 || index >= players.size()) {
+            throw new IllegalArgumentException("Indice de premier joueur hors bornes : " + index);
+        }
+        this.firstPlayerIndex = index;
+    }
+
+    /** L'ordre du tour de la manche : les joueurs à partir du premier, en tournant. */
+    public List<Integer> turnOrder() {
+        List<Integer> order = new ArrayList<>(players.size());
+        for (int i = 0; i < players.size(); i++) {
+            order.add((firstPlayerIndex + i) % players.size());
+        }
+        return order;
+    }
+
+    /** Passe à la manche suivante (la partie en compte six). */
+    public void enterNextRound() {
+        if (round >= LAST_ROUND) {
+            throw new IllegalStateException("La partie ne compte que " + LAST_ROUND + " manches");
+        }
+        round++;
     }
 
     /** La vue de la partie telle que l'observe le joueur d'indice donné (déc. 2). */

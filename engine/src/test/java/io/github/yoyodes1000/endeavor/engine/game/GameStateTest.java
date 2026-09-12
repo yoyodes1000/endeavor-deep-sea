@@ -54,4 +54,25 @@ class GameStateTest {
 
         assertEquals(original.random().nextLong(), copie.random().nextLong());
     }
+
+    @Test
+    void lOrdreDuTourPartDuPremierJoueurEnTournant() {
+        GameState state = GameState.newGame(4, GameFixtures.roster(), RandomSource.fromSeed(1), 10);
+        state.setFirstPlayerIndex(2);
+        assertEquals(java.util.List.of(2, 3, 0, 1), state.turnOrder());
+    }
+
+    @Test
+    void laMancheSuivanteIncremente() {
+        GameState state = GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10);
+        assertEquals(1, state.round());
+        state.enterNextRound();
+        assertEquals(2, state.round());
+    }
+
+    @Test
+    void refuseUnPremierJoueurHorsBornes() {
+        GameState state = GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10);
+        assertThrows(IllegalArgumentException.class, () -> state.setFirstPlayerIndex(2));
+    }
 }
