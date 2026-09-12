@@ -65,4 +65,9 @@ public record Specialist(
                     "La face Junior de " + id + " ne peut porter un décompte de fin de partie");
         }
     }
+
+    /** La face demandée de la tuile (Junior au recrutement, Senior après promotion). */
+    public SpecialistSide side(SpecialistFace face) {
+        return face == SpecialistFace.SENIOR ? senior : junior;
+    }
 }
