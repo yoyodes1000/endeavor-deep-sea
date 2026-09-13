@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
+import io.github.yoyodes1000.endeavor.engine.action.Activer;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.Recruter;
+import io.github.yoyodes1000.endeavor.engine.action.TerminerTour;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.support.Fixtures;
 import java.util.List;
@@ -72,5 +74,48 @@ class ActivationDriverTest {
         GameState state = game(2);
         ActivationDriver.begin(state);
         assertThrows(IllegalStateException.class, () -> ActivationDriver.apply(state, new Recruter("pilot")));
+    }
+
+    @Test
+    void activerConsommeUnDisquePuisSeulTerminerOuPasserRestent() {
+        GameState state = game(1);
+        state.player(0).moveReserveToTransit(2);
+        ActivationDriver.begin(state);
+
+        assertTrue(ActivationDriver.legalActions(state).contains(new Activer("team-leader")));
+        ActivationDriver.apply(state, new Activer("team-leader"));
+
+        assertEquals(1, state.player(0).transitDiscs(), "un disque consommé");
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void unSeulSpecialistePeutEtreActiveParTour() {
+        GameState state = game(1);
+        state.player(0).moveReserveToTransit(2);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("team-leader"));
+
+        assertThrows(IllegalStateException.class, () -> ActivationDriver.apply(state, new Activer("team-leader")));
+    }
+
+    @Test
+    void terminerTourRendLaMainSansSortirDeLaManche() {
+        GameState state = game(2);
+        state.player(0).moveReserveToTransit(1);
+        ActivationDriver.begin(state); // ordre du tour [0, 1], joueur courant 0
+        ActivationDriver.apply(state, new Activer("team-leader"));
+        ActivationDriver.apply(state, new TerminerTour());
+
+        assertEquals(1, state.activationCursor().turnPosition(), "au joueur suivant");
+        assertTrue(state.activationCursor().passed().isEmpty(), "personne n'a quitté la manche");
+        assertFalse(ActivationDriver.isDone(state));
+    }
+
+    @Test
+    void terminerTourSansAvoirAgiEstRefuse() {
+        GameState state = game(1);
+        ActivationDriver.begin(state);
+        assertThrows(IllegalStateException.class, () -> ActivationDriver.apply(state, new TerminerTour()));
     }
 }
