@@ -34,9 +34,11 @@ public final class GameState {
     private int firstPlayerIndex;
     private int round;
     private PreparationCursor cursor;
+    private ActivationCursor activationCursor;
 
     private GameState(List<Player> players, List<Specialist> casier, MissionBoard missionBoard,
-                      RandomSource random, int firstPlayerIndex, int round, PreparationCursor cursor) {
+                      RandomSource random, int firstPlayerIndex, int round,
+                      PreparationCursor cursor, ActivationCursor activationCursor) {
         this.players = players;
         this.casier = casier;
         this.missionBoard = missionBoard;
@@ -44,6 +46,7 @@ public final class GameState {
         this.firstPlayerIndex = firstPlayerIndex;
         this.round = round;
         this.cursor = cursor;
+        this.activationCursor = activationCursor;
     }
 
     /**
@@ -79,7 +82,7 @@ public final class GameState {
             }
         }
         return new GameState(players, casier, missionBoard, random, 0, FIRST_ROUND,
-                PreparationCursor.notStarted());
+                PreparationCursor.notStarted(), ActivationCursor.notStarted());
     }
 
     public int playerCount() {
@@ -123,6 +126,19 @@ public final class GameState {
             throw new IllegalArgumentException("Le curseur ne peut être nul");
         }
         this.cursor = cursor;
+    }
+
+    /** La position de la partie dans la Phase 2 (le driver d'activation la fait avancer). */
+    public ActivationCursor activationCursor() {
+        return activationCursor;
+    }
+
+    /** Fixe le curseur d'activation (réservé au driver du moteur). */
+    public void setActivationCursor(ActivationCursor activationCursor) {
+        if (activationCursor == null) {
+            throw new IllegalArgumentException("Le curseur d'activation ne peut être nul");
+        }
+        this.activationCursor = activationCursor;
     }
 
     /** La source d'aléa de la partie (déterminisme : graine + journal). */
@@ -183,6 +199,6 @@ public final class GameState {
             playersCopy.add(player.copy());
         }
         return new GameState(playersCopy, new ArrayList<>(casier), missionBoard.copy(),
-                random.copy(), firstPlayerIndex, round, cursor);
+                random.copy(), firstPlayerIndex, round, cursor, activationCursor);
     }
 }
