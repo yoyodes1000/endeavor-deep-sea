@@ -50,6 +50,11 @@ public final class PreparationDriver {
         settle(state);
     }
 
+    /** Vrai quand la Phase 1 de la manche est terminée pour tous les joueurs. */
+    public static boolean isDone(GameState state) {
+        return state.cursor().step() == Step.DONE;
+    }
+
     /** Les coups légaux au point de décision courant (vide si la phase est finie). */
     public static List<Action> legalActions(GameState state) {
         PreparationCursor cursor = state.cursor();
