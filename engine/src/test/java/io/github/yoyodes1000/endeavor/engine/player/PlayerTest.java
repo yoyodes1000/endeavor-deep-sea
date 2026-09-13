@@ -1,6 +1,7 @@
 package io.github.yoyodes1000.endeavor.engine.player;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -48,6 +49,31 @@ class PlayerTest {
         Player player = Player.start(PlayerFixtures.teamLeader(), 10);
         assertThrows(UnsupportedOperationException.class,
                 () -> player.specialists().add(HeldSpecialist.recruited(PlayerFixtures.ranked("x"))));
+    }
+
+    @Test
+    void laRecuperationRepasseUnDisqueDeLaTuileVersLeTransit() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.recruit(new HeldSpecialist(PlayerFixtures.ranked("pilot"), SpecialistFace.JUNIOR, 2));
+
+        assertTrue(player.hasRecoverableDisc());
+        player.recoverDisc("pilot");
+
+        assertEquals(1, player.transitDiscs(), "le disque repris arrive en transit");
+        assertEquals(1, player.specialists().get(1).placedDiscs(), "un disque de moins sur la tuile");
+    }
+
+    @Test
+    void laRecuperationRefuseUneTuileSansDisque() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        assertFalse(player.hasRecoverableDisc());
+        assertThrows(IllegalArgumentException.class, () -> player.recoverDisc("team-leader"));
+    }
+
+    @Test
+    void laRecuperationRefuseUneTuileNonDetenue() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        assertThrows(IllegalArgumentException.class, () -> player.recoverDisc("inconnu"));
     }
 
     @Test

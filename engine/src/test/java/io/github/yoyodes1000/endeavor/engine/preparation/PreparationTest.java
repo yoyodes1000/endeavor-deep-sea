@@ -13,7 +13,8 @@ import org.junit.jupiter.api.Test;
 class PreparationTest {
 
     private static GameState game(int players, long seed) {
-        return GameState.newGame(players, Fixtures.roster(), RandomSource.fromSeed(seed), 10);
+        return GameState.newGame(players, Fixtures.roster(), RandomSource.fromSeed(seed), 10,
+                Fixtures.missionBoard());
     }
 
     @Test

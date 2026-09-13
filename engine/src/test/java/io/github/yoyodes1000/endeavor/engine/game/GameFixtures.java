@@ -1,5 +1,10 @@
 package io.github.yoyodes1000.endeavor.engine.game;
 
+import io.github.yoyodes1000.endeavor.engine.RandomSource;
+import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
+import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
+import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
+import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistSide;
@@ -12,6 +17,17 @@ import java.util.OptionalInt;
 final class GameFixtures {
 
     private GameFixtures() {
+    }
+
+    /** Un plateau de mission minimal : une seule case de départ, sans gain. */
+    static MissionBoard missionBoard() {
+        ImpactHex start = new ImpactHex(0, 0, 0, List.of(), true, false, false);
+        return new MissionBoard(new ImpactBoard(HexOrientation.POINTY_TOP, List.of(start)));
+    }
+
+    /** Une partie neuve sur le plateau de mission minimal, pour alléger les tests. */
+    static GameState newGame(int players, long seed) {
+        return GameState.newGame(players, roster(), RandomSource.fromSeed(seed), 10, missionBoard());
     }
 
     static SpecialistSide side(String name) {

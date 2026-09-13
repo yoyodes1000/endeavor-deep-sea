@@ -115,6 +115,33 @@ public final class Player {
         specialists.add(held);
     }
 
+    /** Vrai si au moins une tuile détenue porte un disque récupérable (étape 1c). */
+    public boolean hasRecoverableDisc() {
+        return specialists.stream().anyMatch(held -> held.placedDiscs() > 0);
+    }
+
+    /**
+     * Reprend un disque posé sur la tuile d'identifiant donné vers la zone de
+     * transit — un pas de l'étape 1c (Récupération). Mutation en place.
+     *
+     * @throws IllegalArgumentException si le joueur ne détient pas cette tuile, ou
+     *     si aucun disque n'y est posé
+     */
+    public void recoverDisc(String specialistId) {
+        for (int i = 0; i < specialists.size(); i++) {
+            HeldSpecialist held = specialists.get(i);
+            if (held.specialist().id().equals(specialistId)) {
+                if (held.placedDiscs() == 0) {
+                    throw new IllegalArgumentException("Aucun disque à reprendre sur : " + specialistId);
+                }
+                specialists.set(i, new HeldSpecialist(held.specialist(), held.face(), held.placedDiscs() - 1));
+                transitDiscs++;
+                return;
+            }
+        }
+        throw new IllegalArgumentException("Tuile non détenue : " + specialistId);
+    }
+
     /** Copie indépendante, appelée une fois par simulation pour l'isoler (déc. 3). */
     public Player copy() {
         return new Player(attributes.copy(), reserveDiscs, transitDiscs, research, new ArrayList<>(specialists));

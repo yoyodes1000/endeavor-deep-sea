@@ -1,5 +1,9 @@
 package io.github.yoyodes1000.endeavor.engine.support;
 
+import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
+import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
+import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
+import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistSide;
@@ -16,6 +20,12 @@ import java.util.OptionalInt;
 public final class Fixtures {
 
     private Fixtures() {
+    }
+
+    /** Un plateau de mission minimal : une seule case de départ, sans gain. */
+    public static MissionBoard missionBoard() {
+        ImpactHex start = new ImpactHex(0, 0, 0, List.of(), true, false, false);
+        return new MissionBoard(new ImpactBoard(HexOrientation.POINTY_TOP, List.of(start)));
     }
 
     public static SpecialistSide side(String name) {

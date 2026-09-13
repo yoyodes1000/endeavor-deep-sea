@@ -1,6 +1,7 @@
 package io.github.yoyodes1000.endeavor.engine.game;
 
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
+import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.player.Player;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
@@ -28,14 +29,16 @@ public final class GameState {
 
     private final List<Player> players;
     private final List<Specialist> casier;
+    private final MissionBoard missionBoard;
     private final RandomSource random;
     private int firstPlayerIndex;
     private int round;
 
-    private GameState(List<Player> players, List<Specialist> casier, RandomSource random,
-                      int firstPlayerIndex, int round) {
+    private GameState(List<Player> players, List<Specialist> casier, MissionBoard missionBoard,
+                      RandomSource random, int firstPlayerIndex, int round) {
         this.players = players;
         this.casier = casier;
+        this.missionBoard = missionBoard;
         this.random = random;
         this.firstPlayerIndex = firstPlayerIndex;
         this.round = round;
@@ -52,14 +55,15 @@ public final class GameState {
      *
      * @param playerCount   nombre de joueurs, au moins 1
      * @param startingDiscs disques d'action de départ par joueur
+     * @param missionBoard  le plateau Impact de la mission jouée (occupation vide)
      */
     public static GameState newGame(int playerCount, SpecialistRoster roster,
-                                    RandomSource random, int startingDiscs) {
+                                    RandomSource random, int startingDiscs, MissionBoard missionBoard) {
         if (playerCount < 1) {
             throw new IllegalArgumentException("Il faut au moins un joueur : " + playerCount);
         }
-        if (roster == null || random == null) {
-            throw new IllegalArgumentException("Le casier et la source d'aléa sont requis");
+        if (roster == null || random == null || missionBoard == null) {
+            throw new IllegalArgumentException("Le casier, la source d'aléa et le plateau de mission sont requis");
         }
         Specialist teamLeader = roster.teamLeader();
         List<Player> players = new ArrayList<>();
@@ -72,7 +76,7 @@ public final class GameState {
                 casier.add(specialist);
             }
         }
-        return new GameState(players, casier, random, 0, FIRST_ROUND);
+        return new GameState(players, casier, missionBoard, random, 0, FIRST_ROUND);
     }
 
     public int playerCount() {
@@ -90,6 +94,11 @@ public final class GameState {
     /** Le casier partagé des tuiles recrutables. */
     public List<Specialist> casier() {
         return Collections.unmodifiableList(casier);
+    }
+
+    /** Le plateau Impact de la mission et son occupation (où sont posés les pions). */
+    public MissionBoard missionBoard() {
+        return missionBoard;
     }
 
     public int firstPlayerIndex() {
@@ -157,6 +166,7 @@ public final class GameState {
         for (Player player : players) {
             playersCopy.add(player.copy());
         }
-        return new GameState(playersCopy, new ArrayList<>(casier), random.copy(), firstPlayerIndex, round);
+        return new GameState(playersCopy, new ArrayList<>(casier), missionBoard.copy(),
+                random.copy(), firstPlayerIndex, round);
     }
 }

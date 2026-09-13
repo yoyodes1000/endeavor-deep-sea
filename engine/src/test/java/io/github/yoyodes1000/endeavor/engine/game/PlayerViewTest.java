@@ -6,14 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import org.junit.jupiter.api.Test;
 
 class PlayerViewTest {
 
     @Test
     void laVueSepareLeJoueurDeSesAdversaires() {
-        GameState state = GameState.newGame(3, GameFixtures.roster(), RandomSource.fromSeed(1), 10);
+        GameState state = GameFixtures.newGame(3, 1);
         PlayerView view = state.viewFor(1);
 
         assertEquals(1, view.viewerIndex());
@@ -28,7 +27,7 @@ class PlayerViewTest {
 
     @Test
     void refuseUnIndiceHorsBornes() {
-        GameState state = GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10);
+        GameState state = GameFixtures.newGame(2, 1);
         assertThrows(IllegalArgumentException.class, () -> state.viewFor(2));
         assertThrows(IllegalArgumentException.class, () -> state.viewFor(-1));
     }
