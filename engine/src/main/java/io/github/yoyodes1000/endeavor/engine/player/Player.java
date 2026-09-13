@@ -121,6 +121,32 @@ public final class Player {
     }
 
     /**
+     * Active la tuile d'identifiant donné : pose un disque de la zone de transit sur
+     * sa case d'activation libre — le geste central d'un tour de Phase 2. Mutation
+     * en place.
+     *
+     * @throws IllegalArgumentException si le joueur ne détient pas cette tuile, si sa
+     *     case d'activation est déjà occupée, ou si la zone de transit est vide
+     */
+    public void activate(String specialistId) {
+        if (transitDiscs == 0) {
+            throw new IllegalArgumentException("Aucun disque en transit pour activer : " + specialistId);
+        }
+        for (int i = 0; i < specialists.size(); i++) {
+            HeldSpecialist held = specialists.get(i);
+            if (held.specialist().id().equals(specialistId)) {
+                if (held.placedDiscs() > 0) {
+                    throw new IllegalArgumentException("Case d'activation déjà occupée : " + specialistId);
+                }
+                specialists.set(i, new HeldSpecialist(held.specialist(), held.face(), held.placedDiscs() + 1));
+                transitDiscs--;
+                return;
+            }
+        }
+        throw new IllegalArgumentException("Tuile non détenue : " + specialistId);
+    }
+
+    /**
      * Reprend un disque posé sur la tuile d'identifiant donné vers la zone de
      * transit — un pas de l'étape 1c (Récupération). Mutation en place.
      *

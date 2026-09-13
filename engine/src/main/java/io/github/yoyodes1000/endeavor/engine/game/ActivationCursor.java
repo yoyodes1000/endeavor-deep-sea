@@ -15,10 +15,12 @@ import java.util.Set;
  * activé, chaîne d'actions en cours, main de jetons — s'y ajoutera avec la
  * structure complète du tour.
  *
- * @param turnPosition rang du joueur courant dans l'ordre du tour (0-based)
- * @param passed       indices des joueurs sortis de la manche (ont passé)
+ * @param turnPosition      rang du joueur courant dans l'ordre du tour (0-based)
+ * @param passed            indices des joueurs sortis de la manche (ont passé)
+ * @param activatedThisTurn vrai si le joueur courant a déjà activé un spécialiste
+ *                          ce tour (un seul par tour)
  */
-public record ActivationCursor(int turnPosition, Set<Integer> passed) {
+public record ActivationCursor(int turnPosition, Set<Integer> passed, boolean activatedThisTurn) {
 
     public ActivationCursor {
         if (turnPosition < 0) {
@@ -32,6 +34,6 @@ public record ActivationCursor(int turnPosition, Set<Integer> passed) {
 
     /** Le curseur d'entrée en Phase 2 : premier joueur du tour, personne n'a passé. */
     public static ActivationCursor notStarted() {
-        return new ActivationCursor(0, Set.of());
+        return new ActivationCursor(0, Set.of(), false);
     }
 }

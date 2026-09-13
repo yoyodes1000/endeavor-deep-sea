@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.action.Action;
+import io.github.yoyodes1000.endeavor.engine.action.Activer;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.Recruter;
+import io.github.yoyodes1000.endeavor.engine.action.Recuperer;
 import io.github.yoyodes1000.endeavor.engine.game.GamePhase;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.support.Fixtures;
@@ -43,7 +45,11 @@ class GameTest {
         Game.apply(state, new Recruter("pilot")); // pas de gains -> 1a/1b/1c enchaînés
 
         assertEquals(GamePhase.ACTIVATION, state.phase());
-        assertEquals(List.of(new Passer()), Game.legalActions(state));
+        // après l'effort, le joueur a un disque en transit : il peut activer ou passer
+        List<Action> coups = Game.legalActions(state);
+        assertTrue(coups.contains(new Passer()));
+        assertTrue(coups.contains(new Activer("team-leader")));
+        assertTrue(coups.contains(new Activer("pilot")));
     }
 
     @Test
@@ -64,6 +70,20 @@ class GameTest {
         assertEquals(6, state.round(), "la partie s'achève à la sixième manche");
         assertEquals(GamePhase.FINISHED, state.phase());
         assertTrue(Game.legalActions(state).isEmpty());
+    }
+
+    @Test
+    void unDisquePoseEnActivationSeRecupereALaMancheSuivante() {
+        GameState state = game(1);
+        Game.begin(state);
+        Game.apply(state, new Recruter("pilot"));  // prépa manche 1 -> activation (transit = 1)
+        Game.apply(state, new Activer("team-leader")); // pose un disque sur le team-leader
+        Game.apply(state, new Passer());           // fin de l'activation -> manche 2
+
+        assertEquals(2, state.round());
+        assertEquals(GamePhase.PREPARATION, state.phase());
+        // en 1c de la manche 2, le disque posé au tour précédent est récupérable
+        assertEquals(List.of(new Recuperer("team-leader")), Game.legalActions(state));
     }
 
     @Test

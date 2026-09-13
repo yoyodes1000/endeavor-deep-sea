@@ -77,6 +77,39 @@ class PlayerTest {
     }
 
     @Test
+    void lActivationPoseUnDisqueDeTransitSurLaCaseLibre() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.moveReserveToTransit(2);
+
+        player.activate("team-leader");
+
+        assertEquals(1, player.transitDiscs(), "un disque de transit consommé");
+        assertEquals(1, player.specialists().get(0).placedDiscs(), "la case d'activation est occupée");
+    }
+
+    @Test
+    void lActivationRefuseUneCaseDejaOccupee() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.moveReserveToTransit(2);
+        player.activate("team-leader");
+
+        assertThrows(IllegalArgumentException.class, () -> player.activate("team-leader"));
+    }
+
+    @Test
+    void lActivationRefuseSansDisqueEnTransit() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        assertThrows(IllegalArgumentException.class, () -> player.activate("team-leader"));
+    }
+
+    @Test
+    void lActivationRefuseUneTuileNonDetenue() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.moveReserveToTransit(1);
+        assertThrows(IllegalArgumentException.class, () -> player.activate("inconnu"));
+    }
+
+    @Test
     void laCopieEstIndependante() {
         Player original = Player.start(PlayerFixtures.teamLeader(), 10);
 

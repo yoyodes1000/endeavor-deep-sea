@@ -8,5 +8,5 @@ package io.github.yoyodes1000.endeavor.engine.action;
  * <p>Interface scellée : la liste des coups possibles est fermée et connue du
  * compilateur, ce qui rend leur traitement exhaustif vérifiable.
  */
-public sealed interface Action permits Recruter, PoserImpact, Recuperer, Passer {
+public sealed interface Action permits Recruter, PoserImpact, Recuperer, Passer, Activer, TerminerTour {
 }
