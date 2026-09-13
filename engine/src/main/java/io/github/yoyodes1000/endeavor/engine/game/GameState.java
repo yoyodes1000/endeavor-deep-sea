@@ -33,15 +33,17 @@ public final class GameState {
     private final RandomSource random;
     private int firstPlayerIndex;
     private int round;
+    private PreparationCursor cursor;
 
     private GameState(List<Player> players, List<Specialist> casier, MissionBoard missionBoard,
-                      RandomSource random, int firstPlayerIndex, int round) {
+                      RandomSource random, int firstPlayerIndex, int round, PreparationCursor cursor) {
         this.players = players;
         this.casier = casier;
         this.missionBoard = missionBoard;
         this.random = random;
         this.firstPlayerIndex = firstPlayerIndex;
         this.round = round;
+        this.cursor = cursor;
     }
 
     /**
@@ -76,7 +78,8 @@ public final class GameState {
                 casier.add(specialist);
             }
         }
-        return new GameState(players, casier, missionBoard, random, 0, FIRST_ROUND);
+        return new GameState(players, casier, missionBoard, random, 0, FIRST_ROUND,
+                PreparationCursor.notStarted());
     }
 
     public int playerCount() {
@@ -107,6 +110,19 @@ public final class GameState {
 
     public int round() {
         return round;
+    }
+
+    /** La position de la partie dans la Phase 1 (le driver de préparation la fait avancer). */
+    public PreparationCursor cursor() {
+        return cursor;
+    }
+
+    /** Fixe le curseur de préparation (réservé au driver du moteur). */
+    public void setCursor(PreparationCursor cursor) {
+        if (cursor == null) {
+            throw new IllegalArgumentException("Le curseur ne peut être nul");
+        }
+        this.cursor = cursor;
     }
 
     /** La source d'aléa de la partie (déterminisme : graine + journal). */
@@ -167,6 +183,6 @@ public final class GameState {
             playersCopy.add(player.copy());
         }
         return new GameState(playersCopy, new ArrayList<>(casier), missionBoard.copy(),
-                random.copy(), firstPlayerIndex, round);
+                random.copy(), firstPlayerIndex, round, cursor);
     }
 }
