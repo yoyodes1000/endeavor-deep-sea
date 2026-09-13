@@ -33,11 +33,12 @@ public final class GameState {
     private final RandomSource random;
     private int firstPlayerIndex;
     private int round;
+    private GamePhase phase;
     private PreparationCursor cursor;
     private ActivationCursor activationCursor;
 
     private GameState(List<Player> players, List<Specialist> casier, MissionBoard missionBoard,
-                      RandomSource random, int firstPlayerIndex, int round,
+                      RandomSource random, int firstPlayerIndex, int round, GamePhase phase,
                       PreparationCursor cursor, ActivationCursor activationCursor) {
         this.players = players;
         this.casier = casier;
@@ -45,6 +46,7 @@ public final class GameState {
         this.random = random;
         this.firstPlayerIndex = firstPlayerIndex;
         this.round = round;
+        this.phase = phase;
         this.cursor = cursor;
         this.activationCursor = activationCursor;
     }
@@ -82,7 +84,7 @@ public final class GameState {
             }
         }
         return new GameState(players, casier, missionBoard, random, 0, FIRST_ROUND,
-                PreparationCursor.notStarted(), ActivationCursor.notStarted());
+                GamePhase.PREPARATION, PreparationCursor.notStarted(), ActivationCursor.notStarted());
     }
 
     public int playerCount() {
@@ -113,6 +115,24 @@ public final class GameState {
 
     public int round() {
         return round;
+    }
+
+    /** Vrai si la manche courante est la dernière de la partie. */
+    public boolean isLastRound() {
+        return round == LAST_ROUND;
+    }
+
+    /** La phase courante de la manche (préparation, activation, ou partie finie). */
+    public GamePhase phase() {
+        return phase;
+    }
+
+    /** Fixe la phase courante (réservé à la façade du moteur). */
+    public void setPhase(GamePhase phase) {
+        if (phase == null) {
+            throw new IllegalArgumentException("La phase ne peut être nulle");
+        }
+        this.phase = phase;
     }
 
     /** La position de la partie dans la Phase 1 (le driver de préparation la fait avancer). */
@@ -199,6 +219,6 @@ public final class GameState {
             playersCopy.add(player.copy());
         }
         return new GameState(playersCopy, new ArrayList<>(casier), missionBoard.copy(),
-                random.copy(), firstPlayerIndex, round, cursor, activationCursor);
+                random.copy(), firstPlayerIndex, round, phase, cursor, activationCursor);
     }
 }
