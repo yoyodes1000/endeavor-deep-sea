@@ -1,0 +1,53 @@
+package io.github.yoyodes1000.endeavor.engine.game;
+
+import io.github.yoyodes1000.endeavor.engine.RandomSource;
+import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
+import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
+import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
+import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
+import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
+import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
+import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistSide;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
+
+/** Un petit casier valide pour tester l'état sans dépendre du chargeur. */
+final class GameFixtures {
+
+    private GameFixtures() {
+    }
+
+    /** Un plateau de mission minimal : une seule case de départ, sans gain. */
+    static MissionBoard missionBoard() {
+        ImpactHex start = new ImpactHex(0, 0, 0, List.of(), true, false, false);
+        return new MissionBoard(new ImpactBoard(HexOrientation.POINTY_TOP, List.of(start)));
+    }
+
+    /** Une partie neuve sur le plateau de mission minimal, pour alléger les tests. */
+    static GameState newGame(int players, long seed) {
+        return GameState.newGame(players, roster(), RandomSource.fromSeed(seed), 10, missionBoard());
+    }
+
+    static SpecialistSide side(String name) {
+        return new SpecialistSide(name, List.of(), List.of(), Optional.empty(), Optional.empty());
+    }
+
+    static Specialist teamLeader() {
+        return new Specialist("team-leader", OptionalInt.empty(), true, side("Team Leader"), side("Team Leader"));
+    }
+
+    static Specialist ranked(String id, int rank) {
+        return new Specialist(id, OptionalInt.of(rank), false, side(id + "-j"), side(id + "-s"));
+    }
+
+    /** Chef d'équipe + trois tuiles recrutables. */
+    static SpecialistRoster roster() {
+        return new SpecialistRoster(List.of(
+                teamLeader(),
+                ranked("pilot", 1),
+                ranked("ecologist", 2),
+                ranked("navigator", 2)));
+    }
+}
