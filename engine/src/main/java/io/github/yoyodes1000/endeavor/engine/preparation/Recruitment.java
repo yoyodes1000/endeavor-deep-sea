@@ -2,8 +2,11 @@ package io.github.yoyodes1000.endeavor.engine.preparation;
 
 import io.github.yoyodes1000.endeavor.engine.action.Recruter;
 import io.github.yoyodes1000.endeavor.engine.board.Attribute;
+import io.github.yoyodes1000.endeavor.engine.effect.EffectOutcome;
+import io.github.yoyodes1000.endeavor.engine.effect.GainResolver;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.player.HeldSpecialist;
+import io.github.yoyodes1000.endeavor.engine.player.Player;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
 
 import java.util.ArrayList;
@@ -11,12 +14,11 @@ import java.util.List;
 
 /**
  * L'étape de Recrutement (1a) : le joueur choisit une tuile du casier partagé,
- * dans la limite de son niveau de réputation.
+ * dans la limite de son niveau de réputation, puis en résout les gains immédiats.
  *
- * <p>Cette classe ne couvre que la <strong>mécanique</strong> du recrutement —
- * quelles tuiles sont légales, et le déplacement du casier vers le joueur. La
- * résolution des gains de la tuile (le « petit moteur d'effets ») est traitée à
- * part, et suivra.
+ * <p>La résolution des gains est déléguée au {@link GainResolver} : les effets
+ * directs (pistes, recherche, disque) sont appliqués, et les impacts / submersibles
+ * gagnés sont remontés pour être mis en jeu par l'appelant (la cascade).
  */
 public final class Recruitment {
 
@@ -36,17 +38,22 @@ public final class Recruitment {
     }
 
     /**
-     * Applique un recrutement : retire la tuile du casier et la donne au joueur,
-     * face Junior. Mutation en place.
+     * Applique un recrutement : retire la tuile du casier, la donne au joueur
+     * (face Junior), puis résout ses gains immédiats. Mutation en place.
      *
+     * @return les impacts et submersibles gagnés par les gains de la tuile, à
+     *     mettre en jeu à leur tour
      * @throws IllegalArgumentException si le recrutement n'est pas légal (tuile
      *     absente du casier, ou de rang supérieur à la réputation du joueur)
      */
-    public static void applyRecruit(GameState state, int playerIndex, Recruter action) {
+    public static EffectOutcome applyRecruit(GameState state, int playerIndex, Recruter action) {
         if (!legalRecruits(state, playerIndex).contains(action)) {
             throw new IllegalArgumentException("Recrutement illégal : " + action.specialistId());
         }
         Specialist specialist = state.removeFromCasier(action.specialistId());
-        state.player(playerIndex).recruit(HeldSpecialist.recruited(specialist));
+        Player player = state.player(playerIndex);
+        HeldSpecialist held = HeldSpecialist.recruited(specialist);
+        player.recruit(held);
+        return GainResolver.resolve(player, held.activeSide().immediateGains());
     }
 }

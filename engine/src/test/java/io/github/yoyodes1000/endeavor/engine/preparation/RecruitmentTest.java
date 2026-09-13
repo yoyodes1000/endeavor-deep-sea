@@ -7,10 +7,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.action.Recruter;
 import io.github.yoyodes1000.endeavor.engine.board.Attribute;
+import io.github.yoyodes1000.endeavor.engine.effect.EffectOutcome;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.player.Player;
+import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
+import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
+import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
+import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistSide;
 import io.github.yoyodes1000.endeavor.engine.support.Fixtures;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
 
 class RecruitmentTest {
@@ -65,5 +72,21 @@ class RecruitmentTest {
     @Test
     void unRecrutementViseUnIdentifiantNonVide() {
         assertThrows(IllegalArgumentException.class, () -> new Recruter("  "));
+    }
+
+    @Test
+    void recruterResoutLesGainsDeLaTuile() {
+        // un rang 1 qui donne un impact à l'arrivée
+        SpecialistSide junior = new SpecialistSide("Giver", List.of(Gain.IMPACT), List.of(),
+                Optional.empty(), Optional.empty());
+        SpecialistSide senior = new SpecialistSide("Giver S", List.of(), List.of(),
+                Optional.empty(), Optional.empty());
+        Specialist giver = new Specialist("giver", OptionalInt.of(1), false, junior, senior);
+        SpecialistRoster roster = new SpecialistRoster(List.of(Fixtures.teamLeader(), giver));
+        GameState state = GameState.newGame(1, roster, RandomSource.fromSeed(1), 10);
+
+        EffectOutcome outcome = Recruitment.applyRecruit(state, 0, new Recruter("giver"));
+
+        assertEquals(1, outcome.impactsEarned(), "le gain impact de la tuile est remonté");
     }
 }
