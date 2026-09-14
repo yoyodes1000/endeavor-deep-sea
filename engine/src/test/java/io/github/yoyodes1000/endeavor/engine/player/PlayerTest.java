@@ -110,16 +110,46 @@ class PlayerTest {
     }
 
     @Test
+    void auDepartLaReserveDeSubmersiblesEstVide() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        assertEquals(0, player.vesselStock());
+    }
+
+    @Test
+    void leGainDeSubmersiblesAlimenteLaReserve() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.gainVessels(2);
+        assertEquals(2, player.vesselStock());
+    }
+
+    @Test
+    void sortirUnSubmersibleDeLaReserveLaDiminue() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.gainVessels(2);
+        player.takeVesselFromStock();
+        assertEquals(1, player.vesselStock());
+    }
+
+    @Test
+    void onNePeutPasSortirUnSubmersibleDUneReserveVide() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        assertThrows(IllegalArgumentException.class, player::takeVesselFromStock);
+    }
+
+    @Test
     void laCopieEstIndependante() {
         Player original = Player.start(PlayerFixtures.teamLeader(), 10);
 
         Player copie = original.copy();
         copie.moveReserveToTransit(4);
         copie.attributes().advance(Attribute.COORDINATION, 2);
+        copie.gainVessels(2);
 
         assertEquals(10, original.reserveDiscs(), "les disques de l'original ne bougent pas");
         assertEquals(0, original.attributes().step(Attribute.COORDINATION), "les pistes de l'original ne bougent pas");
+        assertEquals(0, original.vesselStock(), "la réserve de submersibles de l'original ne bouge pas");
         assertEquals(6, copie.reserveDiscs());
         assertEquals(2, copie.attributes().step(Attribute.COORDINATION));
+        assertEquals(2, copie.vesselStock());
     }
 }

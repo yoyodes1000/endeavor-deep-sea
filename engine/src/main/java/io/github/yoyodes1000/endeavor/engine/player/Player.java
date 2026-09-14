@@ -9,8 +9,8 @@ import java.util.List;
 
 /**
  * L'état complet du plateau d'un joueur : ses pistes d'attribut, ses disques
- * d'action (en réserve et en zone de transit), et les tuiles spécialistes qu'il
- * détient.
+ * d'action (en réserve et en zone de transit), ses submersibles non déployés, et
+ * les tuiles spécialistes qu'il détient.
  *
  * <p>Objet d'état mutable + {@link #copy()} (décision 3). La liste des tuiles est
  * exposée en lecture seule ; on la fait évoluer par des opérations dédiées (à
@@ -24,14 +24,16 @@ public final class Player {
     private int reserveDiscs;
     private int transitDiscs;
     private int research;
+    private int vesselStock;
     private final List<HeldSpecialist> specialists;
 
     private Player(Attributes attributes, int reserveDiscs, int transitDiscs, int research,
-                   List<HeldSpecialist> specialists) {
+                   int vesselStock, List<HeldSpecialist> specialists) {
         this.attributes = attributes;
         this.reserveDiscs = reserveDiscs;
         this.transitDiscs = transitDiscs;
         this.research = research;
+        this.vesselStock = vesselStock;
         this.specialists = specialists;
     }
 
@@ -50,7 +52,7 @@ public final class Player {
         }
         List<HeldSpecialist> specialists = new ArrayList<>();
         specialists.add(HeldSpecialist.recruited(teamLeader));
-        return new Player(Attributes.atStart(), reserveDiscs, 0, 0, specialists);
+        return new Player(Attributes.atStart(), reserveDiscs, 0, 0, 0, specialists);
     }
 
     public Attributes attributes() {
@@ -67,6 +69,32 @@ public final class Player {
 
     public int research() {
         return research;
+    }
+
+    /** Les submersibles non déployés du joueur (sa réserve, hors grille). */
+    public int vesselStock() {
+        return vesselStock;
+    }
+
+    /** Ajoute des submersibles à la réserve — le gain d'ingéniosité (cases 2 et 7). */
+    public void gainVessels(int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("Gain de submersibles négatif : " + count);
+        }
+        vesselStock += count;
+    }
+
+    /**
+     * Sort un submersible de la réserve pour le mettre en jeu (mise en place sur la
+     * base d'opérations, déploiement). Mutation en place.
+     *
+     * @throws IllegalArgumentException si la réserve de submersibles est vide
+     */
+    public void takeVesselFromStock() {
+        if (vesselStock == 0) {
+            throw new IllegalArgumentException("Aucun submersible en réserve");
+        }
+        vesselStock--;
     }
 
     public List<HeldSpecialist> specialists() {
@@ -170,6 +198,7 @@ public final class Player {
 
     /** Copie indépendante, appelée une fois par simulation pour l'isoler (déc. 3). */
     public Player copy() {
-        return new Player(attributes.copy(), reserveDiscs, transitDiscs, research, new ArrayList<>(specialists));
+        return new Player(attributes.copy(), reserveDiscs, transitDiscs, research, vesselStock,
+                new ArrayList<>(specialists));
     }
 }
