@@ -1,9 +1,12 @@
 package io.github.yoyodes1000.endeavor.engine.ocean;
 
+import io.github.yoyodes1000.endeavor.engine.RandomSource;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +60,58 @@ public final class OceanBoard {
         for (Map.Entry<Cell, Map<Integer, Integer>> entry : vessels.entrySet()) {
             this.vesselsByCell.put(entry.getKey(), new HashMap<>(entry.getValue()));
         }
+    }
+
+    /**
+     * Construit l'océan de départ d'une mission depuis sa mise en place : pose les
+     * tuiles nommées, et tire les tuiles aléatoires ({@code randomLevel}) dans la
+     * pile du niveau demandé — via la {@link RandomSource} injectée, jamais d'aléa
+     * implicite, pour que la même graine rebâtisse le même océan.
+     *
+     * <p>La pile d'un niveau exclut les tuiles <strong>uniques</strong> (réservées
+     * à une mise en place de scénario) et toute tuile déjà posée par la mise en
+     * place. Chargement <strong>strict</strong> (décision 4) : une tuile nommée
+     * inconnue ou une pile épuisée fait échouer la construction.
+     *
+     * @throws IllegalArgumentException si un argument est nul, si une tuile nommée
+     *     est absente du catalogue, ou si un tirage n'a aucun candidat
+     */
+    public static OceanBoard fromSetup(OceanSetup setup, OceanTileCatalog catalog, RandomSource random) {
+        if (setup == null || catalog == null || random == null) {
+            throw new IllegalArgumentException("La mise en place, le catalogue et la source d'aléa sont requis");
+        }
+        OceanBoard board = new OceanBoard(setup.columns());
+        Set<String> used = new HashSet<>();
+        for (StartingTile tile : setup.startingTiles()) {
+            if (tile instanceof StartingTile.Named named) {
+                used.add(named.tileId());
+            }
+        }
+        for (StartingTile tile : setup.startingTiles()) {
+            String tileId = switch (tile) {
+                case StartingTile.Named named -> {
+                    if (catalog.byId(named.tileId()).isEmpty()) {
+                        throw new IllegalArgumentException("Tuile de mise en place inconnue : " + named.tileId());
+                    }
+                    yield named.tileId();
+                }
+                case StartingTile.Random drawn -> drawFromPile(catalog, random, drawn.level(), used);
+            };
+            board.placeTile(new Cell(tile.depth(), tile.col()), tileId);
+            used.add(tileId);
+        }
+        return board;
+    }
+
+    private static String drawFromPile(OceanTileCatalog catalog, RandomSource random, int level, Set<String> used) {
+        List<OceanTile> pile = catalog.ofDepth(level).stream()
+                .filter(tile -> !tile.unique())
+                .filter(tile -> !used.contains(tile.id()))
+                .toList();
+        if (pile.isEmpty()) {
+            throw new IllegalArgumentException("Aucune tuile de niveau " + level + " disponible pour le tirage");
+        }
+        return pile.get(random.nextInt(pile.size())).id();
     }
 
     public int columns() {
