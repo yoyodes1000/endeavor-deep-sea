@@ -18,7 +18,8 @@ import org.junit.jupiter.api.Test;
 class ActivationDriverTest {
 
     private static GameState game(int players) {
-        return GameState.newGame(players, Fixtures.roster(), RandomSource.fromSeed(1), 10, Fixtures.missionBoard());
+        return GameState.newGame(players, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), Fixtures.oceanBoard());
     }
 
     @Test

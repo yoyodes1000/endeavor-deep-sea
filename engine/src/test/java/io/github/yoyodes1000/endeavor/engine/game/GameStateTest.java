@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
+import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import org.junit.jupiter.api.Test;
 
 class GameStateTest {
@@ -34,7 +35,15 @@ class GameStateTest {
     @Test
     void refuseUnePartieSansPlateauDeMission() {
         assertThrows(IllegalArgumentException.class,
-                () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10, null));
+                () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10, null,
+                        GameFixtures.oceanBoard()));
+    }
+
+    @Test
+    void refuseUnePartieSansOcean() {
+        assertThrows(IllegalArgumentException.class,
+                () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
+                        GameFixtures.missionBoard(), null));
     }
 
     @Test
@@ -64,6 +73,17 @@ class GameStateTest {
 
         assertFalse(original.missionBoard().isOccupied(depart), "l'occupation de l'original ne bouge pas");
         assertTrue(copie.missionBoard().isOccupied(depart));
+    }
+
+    @Test
+    void laCopieIsoleLOcean() {
+        GameState original = GameFixtures.newGame(2, 1);
+
+        GameState copie = original.copy();
+        copie.oceanBoard().addVessels(new Cell(1, 0), 0, 1);
+
+        assertEquals(0, original.oceanBoard().vesselCount(new Cell(1, 0), 0), "l'océan de l'original ne bouge pas");
+        assertEquals(1, copie.oceanBoard().vesselCount(new Cell(1, 0), 0));
     }
 
     @Test

@@ -4,6 +4,8 @@ import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
+import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistSide;
@@ -26,6 +28,15 @@ public final class Fixtures {
     public static MissionBoard missionBoard() {
         ImpactHex start = new ImpactHex(0, 0, 0, List.of(), true, false, false);
         return new MissionBoard(new ImpactBoard(HexOrientation.POINTY_TOP, List.of(start)));
+    }
+
+    /** Un océan de départ minimal : quelques zones adjacentes (surface + une descente). */
+    public static OceanBoard oceanBoard() {
+        OceanBoard board = new OceanBoard(3);
+        board.placeTile(new Cell(1, 0), "atoll");
+        board.placeTile(new Cell(1, 1), "reef");
+        board.placeTile(new Cell(2, 1), "trench");
+        return board;
     }
 
     public static SpecialistSide side(String name) {
