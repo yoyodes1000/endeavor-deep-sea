@@ -7,6 +7,8 @@ import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionCatalog;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
+import io.github.yoyodes1000.endeavor.engine.ocean.StartingTile;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 
 import java.io.IOException;
@@ -16,12 +18,14 @@ import java.util.List;
 
 /**
  * Charge le catalogue des missions depuis le JSON du matériel et le traduit vers
- * le modèle du moteur (identité + plateau Impact).
+ * le modèle du moteur (identité + plateau Impact + mise en place de l'océan).
  *
  * <p>Même partage que les autres chargeurs : Jackson lit la forme, le moteur
  * valide le vocabulaire et la sémantique. Agnostique de l'I/O ({@link Reader}).
- * Les champs de la fiche non encore modélisés (mise en place, objectifs, règles,
- * marqueurs d'hexagone) sont tolérés.
+ * La colonne d'une tuile de départ, lettre dans les données, est convertie en
+ * indice numérique ici, à la frontière. Les champs de la fiche non encore
+ * modélisés (objectifs, règles spéciales, base d'opérations, marqueurs
+ * d'hexagone) sont tolérés.
  */
 public final class MissionLoader {
 
@@ -52,7 +56,8 @@ public final class MissionLoader {
         if (entry.number() == null) {
             throw new IllegalArgumentException("Mission sans numéro : " + entry.id());
         }
-        return new Mission(entry.id(), entry.number(), entry.name(), toBoard(entry.id(), entry.impactBoard()));
+        return new Mission(entry.id(), entry.number(), entry.name(), toBoard(entry.id(), entry.impactBoard()),
+                toOceanSetup(entry.id(), entry.setup()));
     }
 
     private static ImpactBoard toBoard(String missionId, MissionsDocument.ImpactBoardDto board) {
@@ -73,5 +78,37 @@ public final class MissionLoader {
         return new ImpactHex(
                 hex.row(), hex.col(), hex.points(), gains,
                 Boolean.TRUE.equals(hex.start()), Boolean.TRUE.equals(hex.offGrid()), unlimited);
+    }
+
+    private static OceanSetup toOceanSetup(String missionId, MissionsDocument.SetupDto setup) {
+        if (setup == null || setup.columns() == null) {
+            throw new IllegalArgumentException("La mission " + missionId + " n'a pas de mise en place d'océan (colonnes)");
+        }
+        List<StartingTile> startingTiles = setup.startingTiles() == null ? List.of()
+                : setup.startingTiles().stream().map(MissionLoader::toStartingTile).toList();
+        return new OceanSetup(setup.columns(), startingTiles);
+    }
+
+    private static StartingTile toStartingTile(MissionsDocument.StartingTileDto tile) {
+        if (tile.depth() == null || tile.col() == null) {
+            throw new IllegalArgumentException("Tuile de mise en place incomplète (depth et col requis)");
+        }
+        int col = columnIndex(tile.col());
+        if (tile.tile() != null) {
+            return new StartingTile.Named(tile.depth(), col, tile.tile());
+        }
+        if (tile.randomLevel() != null) {
+            return new StartingTile.Random(tile.depth(), col, tile.randomLevel());
+        }
+        throw new IllegalArgumentException(
+                "Tuile de mise en place sans « tile » ni « randomLevel » en colonne " + tile.col());
+    }
+
+    /** Convertit une lettre de colonne (A, B, …) en indice 0-based pour le moteur. */
+    private static int columnIndex(String col) {
+        if (col.length() != 1 || col.charAt(0) < 'A' || col.charAt(0) > 'Z') {
+            throw new IllegalArgumentException("Colonne invalide (une lettre A–Z attendue) : " + col);
+        }
+        return col.charAt(0) - 'A';
     }
 }

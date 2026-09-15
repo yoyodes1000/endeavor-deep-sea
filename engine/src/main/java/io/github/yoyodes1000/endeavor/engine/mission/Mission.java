@@ -1,13 +1,16 @@
 package io.github.yoyodes1000.endeavor.engine.mission;
 
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
+
 /**
- * Une mission : son identité et son plateau Impact. La mise en place, les
- * objectifs et les règles spéciales de la fiche ne sont pas encore modélisés
- * (décompte / Phase 2) ; le chargeur les ignore.
+ * Une mission : son identité, son plateau Impact et la mise en place de son océan
+ * ({@link OceanSetup} : colonnes et tuiles de départ). Les objectifs et les règles
+ * spéciales de la fiche ne sont pas encore modélisés (décompte / Phase 2) ; le
+ * chargeur les ignore.
  *
  * @param number le numéro de mission (1 à 10)
  */
-public record Mission(String id, int number, String name, ImpactBoard impactBoard) {
+public record Mission(String id, int number, String name, ImpactBoard impactBoard, OceanSetup oceanSetup) {
 
     public Mission {
         if (id == null || id.isBlank()) {
@@ -21,6 +24,9 @@ public record Mission(String id, int number, String name, ImpactBoard impactBoar
         }
         if (impactBoard == null) {
             throw new IllegalArgumentException("La mission " + id + " doit avoir un plateau Impact");
+        }
+        if (oceanSetup == null) {
+            throw new IllegalArgumentException("La mission " + id + " doit avoir une mise en place d'océan");
         }
     }
 }
