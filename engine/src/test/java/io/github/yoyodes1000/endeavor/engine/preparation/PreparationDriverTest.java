@@ -177,7 +177,7 @@ class PreparationDriverTest {
     }
 
     @Test
-    void lesSubmersiblesGagnesSontComptesMaisPasEncoreResolus() {
+    void lesSubmersiblesGagnesVontAuStockDuJoueur() {
         GameState state = game(roster(tile("ingenious", 1, Gain.INGENUITY, Gain.INGENUITY)),
                 Fixtures.missionBoard(), 1);
         PreparationDriver.begin(state);
@@ -185,7 +185,7 @@ class PreparationDriverTest {
         PreparationDriver.apply(state, new Recruter("ingenious"));
 
         assertEquals(Step.DONE, state.cursor().step());
-        assertEquals(1, state.cursor().pendingVessels(), "ingéniosité case 2 : un submersible, différé");
+        assertEquals(1, state.player(0).vesselStock(), "ingéniosité case 2 : un submersible versé au stock");
     }
 
     @Test
