@@ -16,14 +16,12 @@ package io.github.yoyodes1000.endeavor.engine.game;
  * @param turnPosition       rang du joueur courant dans l'ordre du tour (0-based)
  * @param step               l'étape de décision courante
  * @param pendingImpacts     pions impact restant à poser (cascade en cours)
- * @param pendingVessels     submersibles gagnés, en attente de mise en jeu (différée)
  * @param remainingRecoveries disques encore récupérables ce tour (budget 1c restant)
  */
 public record PreparationCursor(
         int turnPosition,
         Step step,
         int pendingImpacts,
-        int pendingVessels,
         int remainingRecoveries) {
 
     /** Les étapes où la partie s'arrête (ou marque l'entrée/sortie de la phase). */
@@ -44,13 +42,13 @@ public record PreparationCursor(
         if (step == null) {
             throw new IllegalArgumentException("Le curseur a une étape");
         }
-        if (turnPosition < 0 || pendingImpacts < 0 || pendingVessels < 0 || remainingRecoveries < 0) {
+        if (turnPosition < 0 || pendingImpacts < 0 || remainingRecoveries < 0) {
             throw new IllegalArgumentException("Les compteurs du curseur ne peuvent être négatifs");
         }
     }
 
     /** Le curseur d'une partie neuve : la Phase 1 n'est pas encore entamée. */
     public static PreparationCursor notStarted() {
-        return new PreparationCursor(0, Step.NOT_STARTED, 0, 0, 0);
+        return new PreparationCursor(0, Step.NOT_STARTED, 0, 0);
     }
 }

@@ -27,8 +27,9 @@ import java.util.List;
  *
  * <p>Deux étapes de la phase sont automatiques (premier joueur, effort) : elles ne
  * sont pas des coups, {@link #apply} les joue au passage. Les submersibles gagnés
- * sont comptés dans le curseur mais leur arrivée n'est <strong>pas encore</strong>
- * résolue (elle dépend de la mise en place de la mission) : différé assumé.
+ * (recrutement ou cascade d'impact) sont versés au <strong>stock</strong> du joueur
+ * ({@code Player.vesselStock}), comme à l'arrivée d'un Voyage ; leur déploiement en
+ * jeu — les faire arriver sur une tuile — reste différé.
  */
 public final class PreparationDriver {
 
@@ -46,7 +47,7 @@ public final class PreparationDriver {
             throw new IllegalStateException("La phase de préparation est déjà entamée");
         }
         Preparation.chooseFirstPlayer(state);
-        state.setCursor(new PreparationCursor(0, Step.RECRUIT, 0, 0, 0));
+        state.setCursor(new PreparationCursor(0, Step.RECRUIT, 0, 0));
         settle(state);
     }
 
@@ -81,9 +82,11 @@ public final class PreparationDriver {
         switch (cursor.step()) {
             case RECRUIT -> {
                 Recruter recruit = require(action, Recruter.class, cursor.step());
-                EffectOutcome outcome = Recruitment.applyRecruit(state, currentPlayer(state), recruit);
+                int player = currentPlayer(state);
+                EffectOutcome outcome = Recruitment.applyRecruit(state, player, recruit);
+                state.player(player).gainVessels(outcome.vesselsEarned());
                 state.setCursor(new PreparationCursor(cursor.turnPosition(), Step.PLACE_IMPACT,
-                        outcome.impactsEarned(), cursor.pendingVessels() + outcome.vesselsEarned(), 0));
+                        outcome.impactsEarned(), 0));
             }
             case PLACE_IMPACT -> {
                 PoserImpact placement = require(action, PoserImpact.class, cursor.step());
@@ -92,15 +95,15 @@ public final class PreparationDriver {
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "Aucun hexagone en " + placement.row() + "," + placement.col()));
                 EffectOutcome outcome = ImpactPlacement.place(state.missionBoard(), state.player(player), hex, player);
+                state.player(player).gainVessels(outcome.vesselsEarned());
                 int stillPending = cursor.pendingImpacts() - 1 + outcome.impactsEarned();
-                state.setCursor(new PreparationCursor(cursor.turnPosition(), Step.PLACE_IMPACT,
-                        stillPending, cursor.pendingVessels() + outcome.vesselsEarned(), 0));
+                state.setCursor(new PreparationCursor(cursor.turnPosition(), Step.PLACE_IMPACT, stillPending, 0));
             }
             case RECOVER -> {
                 Recuperer recovery = require(action, Recuperer.class, cursor.step());
                 state.player(currentPlayer(state)).recoverDisc(recovery.specialistId());
                 state.setCursor(new PreparationCursor(cursor.turnPosition(), Step.RECOVER,
-                        0, cursor.pendingVessels(), cursor.remainingRecoveries() - 1));
+                        0, cursor.remainingRecoveries() - 1));
             }
             case NOT_STARTED, DONE -> throw new IllegalStateException(
                     "Aucun coup attendu à l'étape " + cursor.step());
@@ -152,14 +155,14 @@ public final class PreparationDriver {
         int player = state.turnOrder().get(cursor.turnPosition());
         Preparation.applyEffort(state.player(player));
         int budget = state.player(player).attributes().level(Attribute.COORDINATION);
-        return new PreparationCursor(cursor.turnPosition(), Step.RECOVER, 0, cursor.pendingVessels(), budget);
+        return new PreparationCursor(cursor.turnPosition(), Step.RECOVER, 0, budget);
     }
 
     /** Passe au joueur suivant du tour, ou clôt la phase après le dernier. */
     private static PreparationCursor nextPlayer(GameState state, PreparationCursor cursor) {
         int next = cursor.turnPosition() + 1;
         Step step = next >= state.playerCount() ? Step.DONE : Step.RECRUIT;
-        return new PreparationCursor(next, step, 0, cursor.pendingVessels(), 0);
+        return new PreparationCursor(next, step, 0, 0);
     }
 
     private static <T extends Action> T require(Action action, Class<T> type, Step step) {
