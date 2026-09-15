@@ -4,6 +4,7 @@ import io.github.yoyodes1000.endeavor.engine.RandomSource;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -202,6 +203,18 @@ public final class OceanBoard {
             vesselsByCell.remove(from);
         }
         addVessels(to, playerIndex, 1);
+    }
+
+    /**
+     * Les zones où ce joueur a au moins un submersible, ordonnées (profondeur puis
+     * colonne) pour une génération de coups déterministe.
+     */
+    public List<Cell> vesselCells(int playerIndex) {
+        return vesselsByCell.entrySet().stream()
+                .filter(entry -> entry.getValue().getOrDefault(playerIndex, 0) > 0)
+                .map(Map.Entry::getKey)
+                .sorted(Comparator.comparingInt(Cell::depth).thenComparingInt(Cell::col))
+                .toList();
     }
 
     /** Les zones voisines occupées (adjacence orthogonale, vides exclus). */

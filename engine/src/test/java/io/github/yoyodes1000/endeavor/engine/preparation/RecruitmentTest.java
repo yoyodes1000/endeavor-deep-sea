@@ -23,7 +23,8 @@ import org.junit.jupiter.api.Test;
 class RecruitmentTest {
 
     private static GameState game() {
-        return GameState.newGame(2, Fixtures.roster(), RandomSource.fromSeed(1), 10, Fixtures.missionBoard());
+        return GameState.newGame(2, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog());
     }
 
     private static List<String> recruitableIds(GameState state, int playerIndex) {
@@ -83,7 +84,8 @@ class RecruitmentTest {
                 Optional.empty(), Optional.empty());
         Specialist giver = new Specialist("giver", OptionalInt.of(1), false, junior, senior);
         SpecialistRoster roster = new SpecialistRoster(List.of(Fixtures.teamLeader(), giver));
-        GameState state = GameState.newGame(1, roster, RandomSource.fromSeed(1), 10, Fixtures.missionBoard());
+        GameState state = GameState.newGame(1, roster, RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog());
 
         EffectOutcome outcome = Recruitment.applyRecruit(state, 0, new Recruter("giver"));
 
