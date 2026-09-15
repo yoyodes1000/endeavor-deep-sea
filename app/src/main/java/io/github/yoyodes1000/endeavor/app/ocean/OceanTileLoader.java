@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
+import io.github.yoyodes1000.endeavor.engine.ocean.SonarSpot;
+import io.github.yoyodes1000.endeavor.engine.ocean.SonarTrack;
 import io.github.yoyodes1000.endeavor.engine.specialist.ActionType;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 
@@ -67,7 +69,8 @@ public final class OceanTileLoader {
                 Boolean.TRUE.equals(entry.unique()),
                 gains(entry.discoverBonus()),
                 gains(entry.arrivalBonus()),
-                actions(entry.arrivalActions()));
+                actions(entry.arrivalActions()),
+                sonarTracks(entry.sonarTracks()));
     }
 
     private static List<Gain> gains(List<String> raw) {
@@ -76,5 +79,25 @@ public final class OceanTileLoader {
 
     private static List<ActionType> actions(List<OceanTileDocument.ArrivalAction> raw) {
         return raw == null ? List.of() : raw.stream().map(action -> ActionType.fromCode(action.type())).toList();
+    }
+
+    private static List<SonarTrack> sonarTracks(List<OceanTileDocument.Track> raw) {
+        return raw == null ? List.of() : raw.stream().map(OceanTileLoader::toTrack).toList();
+    }
+
+    private static SonarTrack toTrack(OceanTileDocument.Track track) {
+        List<OceanTileDocument.Spot> spots = track.spots();
+        if (spots == null) {
+            throw new IllegalArgumentException("Une piste Sonar doit décrire ses cases");
+        }
+        return new SonarTrack(spots.stream().map(OceanTileLoader::toSpot).toList());
+    }
+
+    private static SonarSpot toSpot(OceanTileDocument.Spot spot) {
+        return switch (spot.type() == null ? "" : spot.type()) {
+            case "reward" -> new SonarSpot.Reward(gains(spot.gains()));
+            case "discover" -> new SonarSpot.Discover(spot.levels());
+            default -> throw new IllegalArgumentException("Type de case Sonar inconnu : " + spot.type());
+        };
     }
 }

@@ -42,9 +42,9 @@ final class GameFixtures {
     /** Le catalogue des tuiles de l'océan minimal, avec des bonus d'arrivée simples. */
     static OceanTileCatalog oceanCatalog() {
         return new OceanTileCatalog(List.of(
-                new OceanTile("atoll", "Atoll", 1, false, List.of(), List.of(Gain.INSPIRATION), List.of()),
-                new OceanTile("reef", "Reef", 1, false, List.of(), List.of(Gain.RESEARCH), List.of()),
-                new OceanTile("trench", "Trench", 2, false, List.of(), List.of(Gain.DISC), List.of())));
+                new OceanTile("atoll", "Atoll", 1, false, List.of(), List.of(Gain.INSPIRATION), List.of(), List.of()),
+                new OceanTile("reef", "Reef", 1, false, List.of(), List.of(Gain.RESEARCH), List.of(), List.of()),
+                new OceanTile("trench", "Trench", 2, false, List.of(), List.of(Gain.DISC), List.of(), List.of())));
     }
 
     /** Une partie neuve sur le plateau de mission minimal, pour alléger les tests. */

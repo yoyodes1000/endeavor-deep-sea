@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
+import io.github.yoyodes1000.endeavor.engine.ocean.SonarSpot;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 import java.io.Reader;
 import java.io.StringReader;
@@ -42,6 +43,33 @@ class OceanTileLoaderTest {
         for (int depth = 1; depth <= 5; depth++) {
             assertFalse(catalog.ofDepth(depth).isEmpty(), "profondeur " + depth);
         }
+    }
+
+    @Test
+    void chargeLesPistesSonarRecompenseEtDecouverte() throws Exception {
+        OceanTileCatalog catalog;
+        try (Reader reader = Files.newBufferedReader(CATALOG, StandardCharsets.UTF_8)) {
+            catalog = loader.load(reader);
+        }
+
+        OceanTile calmSeas = catalog.byId("calm-seas").orElseThrow();
+        assertEquals(2, calmSeas.sonarTracks().size(), "calm-seas a deux pistes Sonar");
+
+        List<SonarSpot> firstTrack = calmSeas.sonarTracks().get(0).spots();
+        SonarSpot reward = firstTrack.get(0);
+        assertTrue(reward instanceof SonarSpot.Reward, "la première case est une récompense");
+        assertEquals(List.of(Gain.INSPIRATION, Gain.RESEARCH), ((SonarSpot.Reward) reward).gains());
+        SonarSpot discover = firstTrack.get(1);
+        assertTrue(discover instanceof SonarSpot.Discover, "la seconde case est une découverte");
+        assertEquals(List.of(3, 4, 5), ((SonarSpot.Discover) discover).levels());
+    }
+
+    @Test
+    void refuseUnTypeDeCaseSonarInconnu() {
+        String json = "{\"oceanTiles\":[{\"id\":\"t\",\"name\":\"T\",\"depth\":1,\"unique\":false,"
+                + "\"discoverBonus\":[],\"arrivalBonus\":[],"
+                + "\"sonarTracks\":[{\"spots\":[{\"id\":\"s1\",\"type\":\"echo\"}]}]}]}";
+        assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader(json)));
     }
 
     @Test

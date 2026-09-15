@@ -11,6 +11,7 @@ import io.github.yoyodes1000.endeavor.engine.action.Activer;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.PoserImpact;
 import io.github.yoyodes1000.endeavor.engine.action.Recruter;
+import io.github.yoyodes1000.endeavor.engine.action.Sonar;
 import io.github.yoyodes1000.endeavor.engine.action.TerminerTour;
 import io.github.yoyodes1000.endeavor.engine.action.Voyager;
 import io.github.yoyodes1000.endeavor.engine.board.Attribute;
@@ -19,6 +20,8 @@ import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
+import io.github.yoyodes1000.endeavor.engine.ocean.SonarSpot;
+import io.github.yoyodes1000.endeavor.engine.ocean.SonarTrack;
 import io.github.yoyodes1000.endeavor.engine.player.HeldSpecialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.ActionSlot;
 import io.github.yoyodes1000.endeavor.engine.specialist.ActionType;
@@ -264,13 +267,115 @@ class ActivationDriverTest {
         ocean.placeTile(new Cell(1, 1), "dest");
         ocean.addVessels(new Cell(1, 0), 0, 1);
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
-                new OceanTile("start", "Start", 1, false, List.of(), List.of(), List.of()),
-                new OceanTile("dest", "Dest", 1, false, List.of(), List.of(arrival), List.of())));
+                new OceanTile("start", "Start", 1, false, List.of(), List.of(), List.of(), List.of()),
+                new OceanTile("dest", "Dest", 1, false, List.of(), List.of(arrival), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, catalog);
         state.player(0).recruit(HeldSpecialist.recruited(travelSpecialist()));
         state.player(0).moveReserveToTransit(2);
         ActivationDriver.begin(state);
         return state;
+    }
+
+    // --- Sonar ------------------------------------------------------------
+
+    private static final ActionSlot SONAR_SLOT = new ActionSlot(List.of(ActionType.SONAR));
+
+    /** Un spécialiste dont la chaîne offre {@code slots} emplacements Sonar. */
+    private static Specialist sonarSpecialist(List<ActionSlot> chain) {
+        SpecialistSide junior = new SpecialistSide("Sonarist", List.of(), chain, Optional.empty(), Optional.empty());
+        SpecialistSide senior = new SpecialistSide("Sonarist S", List.of(), List.of(),
+                Optional.empty(), Optional.empty());
+        return new Specialist("sonarist", OptionalInt.of(1), false, junior, senior);
+    }
+
+    /**
+     * Joueur 0 en activation avec un spécialiste Sonar. Deux zones portent un
+     * submersible : en (1,0) une piste dont la case libre la plus à gauche est une
+     * <strong>récompense</strong> ({@code rewardGains}) suivie d'une découverte ; en
+     * (1,1) une piste de <strong>découverte</strong> seule.
+     */
+    private static GameState readyToSonar(List<Gain> rewardGains, int transitDiscs, List<ActionSlot> chain) {
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "reward-tile");
+        ocean.placeTile(new Cell(1, 1), "discover-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        ocean.addVessels(new Cell(1, 1), 0, 1);
+        OceanTileCatalog catalog = new OceanTileCatalog(List.of(
+                new OceanTile("reward-tile", "Reward", 1, false, List.of(), List.of(), List.of(),
+                        List.of(new SonarTrack(List.of(
+                                new SonarSpot.Reward(rewardGains), new SonarSpot.Discover(List.of(1)))))),
+                new OceanTile("discover-tile", "Discover", 1, false, List.of(), List.of(), List.of(),
+                        List.of(new SonarTrack(List.of(new SonarSpot.Discover(List.of(1))))))));
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, catalog);
+        state.player(0).recruit(HeldSpecialist.recruited(sonarSpecialist(chain)));
+        state.player(0).moveReserveToTransit(transitDiscs);
+        ActivationDriver.begin(state);
+        return state;
+    }
+
+    @Test
+    void seulesLesPistesDontLaCaseLibreEstUneRecompenseSontProposees() {
+        GameState state = readyToSonar(List.of(Gain.RESEARCH), 2, List.of(SONAR_SLOT));
+        ActivationDriver.apply(state, new Activer("sonarist"));
+
+        List<Action> legal = ActivationDriver.legalActions(state);
+        assertTrue(legal.contains(new Sonar(new Cell(1, 0), 0)), "la piste à récompense est offerte");
+        assertFalse(legal.contains(new Sonar(new Cell(1, 1), 0)), "la piste en découverte ne l'est pas encore");
+    }
+
+    @Test
+    void leSonarPoseUnDisqueEncaisseLaRecompenseEtConsommeLaChaine() {
+        GameState state = readyToSonar(List.of(Gain.RESEARCH), 2, List.of(SONAR_SLOT));
+        ActivationDriver.apply(state, new Activer("sonarist"));
+        int researchBefore = state.player(0).research();
+
+        ActivationDriver.apply(state, new Sonar(new Cell(1, 0), 0));
+
+        assertEquals(0, state.player(0).transitDiscs(), "le disque d'activation puis celui du Sonar sont dépensés");
+        assertEquals(1, state.oceanBoard().sonarDiscCount(new Cell(1, 0), 0), "un disque posé sur la piste");
+        assertEquals(researchBefore + 1, state.player(0).research(), "la récompense (recherche) est encaissée");
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
+                "chaîne d'un seul emplacement épuisée");
+    }
+
+    @Test
+    void sansDisqueDeTransitAucunSonarNEstPropose() {
+        GameState state = readyToSonar(List.of(Gain.RESEARCH), 1, List.of(SONAR_SLOT));
+        ActivationDriver.apply(state, new Activer("sonarist")); // consomme l'unique disque de transit
+
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void leSonarSurCaseRecompensePeutDeclencherLaCascadeDePoseDImpact() {
+        GameState state = readyToSonar(List.of(Gain.IMPACT), 2, List.of(SONAR_SLOT));
+        ActivationDriver.apply(state, new Activer("sonarist"));
+
+        ActivationDriver.apply(state, new Sonar(new Cell(1, 0), 0));
+
+        // impact gagné : le tour est suspendu sur la pose
+        assertEquals(List.of(new PoserImpact(0, 0)), ActivationDriver.legalActions(state));
+        ActivationDriver.apply(state, new PoserImpact(0, 0));
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void unDeuxiemeSonarSurLaMemePisteButeSurLaCaseDecouverteNonProposee() {
+        GameState state = readyToSonar(List.of(Gain.RESEARCH), 3, List.of(SONAR_SLOT, SONAR_SLOT));
+        ActivationDriver.apply(state, new Activer("sonarist"));
+        ActivationDriver.apply(state, new Sonar(new Cell(1, 0), 0)); // remplit la case récompense
+
+        // la case libre suivante de la piste est une découverte : plus de Sonar offert
+        assertFalse(ActivationDriver.legalActions(state).contains(new Sonar(new Cell(1, 0), 0)));
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void leSonarAvantActivationEstRefuse() {
+        GameState state = readyToSonar(List.of(Gain.RESEARCH), 2, List.of(SONAR_SLOT));
+        assertThrows(IllegalStateException.class,
+                () -> ActivationDriver.apply(state, new Sonar(new Cell(1, 0), 0)));
     }
 }
