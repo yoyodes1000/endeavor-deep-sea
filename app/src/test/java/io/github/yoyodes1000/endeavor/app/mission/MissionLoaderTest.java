@@ -9,6 +9,8 @@ import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionCatalog;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
+import io.github.yoyodes1000.endeavor.engine.ocean.StartingTile;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 import java.io.IOException;
 import java.io.Reader;
@@ -69,6 +71,36 @@ class MissionLoaderTest {
     void refuseUneOrientationInconnue() {
         String json = "{\"missions\":[{\"id\":\"m\",\"number\":1,\"name\":\"M\",\"impactBoard\":"
                 + "{\"orientation\":\"triangle\",\"hexes\":[{\"row\":0,\"col\":0,\"points\":0}]}}]}";
+        assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader(json)));
+    }
+
+    @Test
+    void chargeLaMiseEnPlaceDeLOceanDeMission1() throws Exception {
+        OceanSetup setup = realCatalog().byNumber(1).orElseThrow().oceanSetup();
+
+        assertEquals(5, setup.columns());
+        assertEquals(4, setup.startingTiles().size());
+
+        StartingTile.Named seaStar = setup.startingTiles().stream()
+                .filter(tile -> tile instanceof StartingTile.Named named && named.tileId().equals("the-sea-star"))
+                .map(StartingTile.Named.class::cast)
+                .findFirst().orElseThrow();
+        assertEquals(1, seaStar.depth());
+        assertEquals(2, seaStar.col(), "colonne C → indice 2");
+
+        StartingTile.Random drawn = setup.startingTiles().stream()
+                .filter(StartingTile.Random.class::isInstance)
+                .map(StartingTile.Random.class::cast)
+                .findFirst().orElseThrow();
+        assertEquals(1, drawn.level());
+        assertEquals(3, drawn.col(), "colonne D → indice 3");
+    }
+
+    @Test
+    void refuseUneColonneInvalideDansLaMiseEnPlace() {
+        String json = "{\"missions\":[{\"id\":\"m\",\"number\":1,\"name\":\"M\","
+                + "\"impactBoard\":{\"orientation\":\"pointy-top\",\"hexes\":[{\"row\":0,\"col\":0,\"points\":0}]},"
+                + "\"setup\":{\"columns\":5,\"startingTiles\":[{\"depth\":1,\"col\":\"AA\",\"tile\":\"x\"}]}}]}";
         assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader(json)));
     }
 }

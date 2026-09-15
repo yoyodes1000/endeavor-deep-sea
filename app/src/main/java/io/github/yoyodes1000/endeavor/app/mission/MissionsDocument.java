@@ -3,16 +3,24 @@ package io.github.yoyodes1000.endeavor.app.mission;
 import java.util.List;
 
 /**
- * Reflet brut de {@code missions.json}, limité à l'identité de la mission et à
- * son plateau Impact. La mise en place, les objectifs et les règles spéciales ne
- * sont pas déclarés : le chargeur les ignore (décompte / Phase 2 à venir).
+ * Reflet brut de {@code missions.json}, limité à l'identité de la mission, à son
+ * plateau Impact et à la mise en place de l'océan ({@code setup} : colonnes et
+ * tuiles de départ). Les objectifs et les règles spéciales ne sont pas déclarés :
+ * le chargeur les ignore (décompte / Phase 2 à venir).
  */
 record MissionsDocument(List<Entry> missions) {
 
-    record Entry(String id, Integer number, String name, ImpactBoardDto impactBoard) {
+    record Entry(String id, Integer number, String name, ImpactBoardDto impactBoard, SetupDto setup) {
     }
 
     record ImpactBoardDto(String orientation, List<HexDto> hexes) {
+    }
+
+    record SetupDto(Integer columns, List<StartingTileDto> startingTiles) {
+    }
+
+    /** Une tuile de départ : nommée ({@code tile}) ou tirée ({@code randomLevel}). */
+    record StartingTileDto(Integer depth, String col, String tile, Integer randomLevel) {
     }
 
     record HexDto(
