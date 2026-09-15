@@ -146,16 +146,39 @@ class OceanBoardTest {
     }
 
     @Test
+    void lesDisquesDeSonarSeComptentParPisteEtSeRemplissentDeGaucheADroite() {
+        OceanBoard board = crossBoard();
+        assertEquals(0, board.sonarDiscCount(new Cell(1, 1), 0), "piste vierge : la case libre est la première");
+
+        board.placeSonarDisc(new Cell(1, 1), 0, 0);
+        board.placeSonarDisc(new Cell(1, 1), 0, 1);
+
+        assertEquals(2, board.sonarDiscCount(new Cell(1, 1), 0), "deux disques posés");
+        assertEquals(0, board.sonarDiscCount(new Cell(1, 1), 1), "une autre piste de la même zone reste vierge");
+        assertEquals(0, board.sonarDiscCount(new Cell(1, 2), 0), "une autre zone reste vierge");
+    }
+
+    @Test
+    void onNePeutPasPoserUnDisqueDeSonarSurUneCaseVide() {
+        OceanBoard board = crossBoard();
+        assertThrows(IllegalArgumentException.class, () -> board.placeSonarDisc(new Cell(2, 0), 0, 0));
+    }
+
+    @Test
     void laCopieEstIndependante() {
         OceanBoard original = crossBoard();
         original.addVessels(new Cell(1, 1), 0, 1);
+        original.placeSonarDisc(new Cell(1, 1), 0, 0);
 
         OceanBoard copie = original.copy();
         copie.addVessels(new Cell(1, 1), 0, 3);
         copie.placeTile(new Cell(2, 0), "x");
+        copie.placeSonarDisc(new Cell(1, 1), 0, 0);
 
         assertEquals(1, original.vesselCount(new Cell(1, 1), 0), "les submersibles de l'original ne bougent pas");
         assertFalse(original.isOccupied(new Cell(2, 0)), "la tuile ajoutée à la copie n'existe pas dans l'original");
+        assertEquals(1, original.sonarDiscCount(new Cell(1, 1), 0), "les disques de Sonar de l'original ne bougent pas");
         assertEquals(4, copie.vesselCount(new Cell(1, 1), 0));
+        assertEquals(2, copie.sonarDiscCount(new Cell(1, 1), 0));
     }
 }

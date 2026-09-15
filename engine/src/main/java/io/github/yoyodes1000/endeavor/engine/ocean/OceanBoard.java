@@ -29,8 +29,13 @@ import java.util.Set;
  * tuile — une case vide n'est pas un voisin, ce qui interdit de « franchir un
  * vide ». Le déplacement (Voyage) s'appuie sur {@link #reachableFrom(Cell, int)}.
  *
- * <p>Ne sont modélisés ici que le placement et les submersibles : l'occupation
- * des sites par des disques viendra avec les actions qui l'écrivent.
+ * <p>Première occupation d'un site par des disques : les <strong>pistes
+ * Sonar</strong>, remplies de gauche à droite (l'action Sonar). Le board ne fait
+ * qu'enregistrer les disques posés ({@link #placeSonarDisc}, {@link
+ * #sonarDiscCount}) ; c'est l'appelant qui a le catalogue des tuiles et qui juge
+ * la légalité de la pose — comme le déplacement s'en remet à {@link
+ * #reachableFrom(Cell, int)}. L'occupation des autres sites viendra avec les
+ * actions qui l'écrivent.
  */
 public final class OceanBoard {
 
@@ -40,9 +45,14 @@ public final class OceanBoard {
     /** Voisinage orthogonal : au-dessus, en dessous, à gauche, à droite. */
     private static final int[][] DELTAS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
+    /** Une piste Sonar identifiée sur la grille : sa case et son rang sur la tuile. */
+    private record SonarTrackKey(Cell cell, int trackIndex) {
+    }
+
     private final int columns;
     private final Map<Cell, String> tileByCell;
     private final Map<Cell, Map<Integer, Integer>> vesselsByCell;
+    private final Map<SonarTrackKey, List<Integer>> sonarDiscsByTrack;
 
     /** Un océan vide de {@code columns} colonnes ; les tuiles s'y posent ensuite. */
     public OceanBoard(int columns) {
@@ -52,14 +62,20 @@ public final class OceanBoard {
         this.columns = columns;
         this.tileByCell = new HashMap<>();
         this.vesselsByCell = new HashMap<>();
+        this.sonarDiscsByTrack = new HashMap<>();
     }
 
-    private OceanBoard(int columns, Map<Cell, String> tiles, Map<Cell, Map<Integer, Integer>> vessels) {
+    private OceanBoard(int columns, Map<Cell, String> tiles, Map<Cell, Map<Integer, Integer>> vessels,
+                       Map<SonarTrackKey, List<Integer>> sonarDiscs) {
         this.columns = columns;
         this.tileByCell = new HashMap<>(tiles);
         this.vesselsByCell = new HashMap<>();
         for (Map.Entry<Cell, Map<Integer, Integer>> entry : vessels.entrySet()) {
             this.vesselsByCell.put(entry.getKey(), new HashMap<>(entry.getValue()));
+        }
+        this.sonarDiscsByTrack = new HashMap<>();
+        for (Map.Entry<SonarTrackKey, List<Integer>> entry : sonarDiscs.entrySet()) {
+            this.sonarDiscsByTrack.put(entry.getKey(), new ArrayList<>(entry.getValue()));
         }
     }
 
@@ -217,6 +233,45 @@ public final class OceanBoard {
                 .toList();
     }
 
+    /**
+     * Combien de disques sont déjà posés sur cette piste Sonar — donc l'indice de
+     * la case libre la plus à gauche (0 = aucune case occupée).
+     *
+     * @throws IllegalArgumentException si le rang de piste est négatif
+     */
+    public int sonarDiscCount(Cell cell, int trackIndex) {
+        requireTrackIndex(trackIndex);
+        List<Integer> owners = sonarDiscsByTrack.get(new SonarTrackKey(cell, trackIndex));
+        return owners == null ? 0 : owners.size();
+    }
+
+    /**
+     * Pose le disque d'un joueur sur la case libre la plus à gauche d'une piste
+     * Sonar. Le board ne connaît pas la forme de la piste (nombre de cases, type) :
+     * il fait confiance à l'appelant, qui a le catalogue, pour n'appeler qu'une pose
+     * légale — comme {@link #moveVessel} s'en remet à {@link #reachableFrom}.
+     *
+     * @throws IllegalArgumentException si le joueur ou le rang de piste est invalide,
+     *     ou si la case ne porte pas de tuile
+     */
+    public void placeSonarDisc(Cell cell, int trackIndex, int playerIndex) {
+        requireTrackIndex(trackIndex);
+        if (playerIndex < 0) {
+            throw new IllegalArgumentException("Indice de joueur négatif : " + playerIndex);
+        }
+        if (!isOccupied(cell)) {
+            throw new IllegalArgumentException("Aucune zone où poser un disque de Sonar : " + cell);
+        }
+        sonarDiscsByTrack.computeIfAbsent(new SonarTrackKey(cell, trackIndex), ignored -> new ArrayList<>())
+                .add(playerIndex);
+    }
+
+    private void requireTrackIndex(int trackIndex) {
+        if (trackIndex < 0) {
+            throw new IllegalArgumentException("Rang de piste Sonar négatif : " + trackIndex);
+        }
+    }
+
     /** Les zones voisines occupées (adjacence orthogonale, vides exclus). */
     public List<Cell> neighbors(Cell cell) {
         List<Cell> result = new ArrayList<>();
@@ -276,7 +331,7 @@ public final class OceanBoard {
 
     /** Copie indépendante, pour isoler une simulation (décision 3). */
     public OceanBoard copy() {
-        return new OceanBoard(columns, tileByCell, vesselsByCell);
+        return new OceanBoard(columns, tileByCell, vesselsByCell, sonarDiscsByTrack);
     }
 
     private void requireOnGrid(Cell cell) {

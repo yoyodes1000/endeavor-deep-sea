@@ -11,7 +11,7 @@ class OceanTileTest {
 
     private static OceanTile tile(String id, int depth) {
         return new OceanTile(id, "Nom", depth, false,
-                List.of(Gain.INSPIRATION), List.of(Gain.COORDINATION), List.of());
+                List.of(Gain.INSPIRATION), List.of(Gain.COORDINATION), List.of(), List.of());
     }
 
     @Test
