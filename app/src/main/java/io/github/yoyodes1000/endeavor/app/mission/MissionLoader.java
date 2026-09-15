@@ -7,6 +7,7 @@ import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionCatalog;
+import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
 import io.github.yoyodes1000.endeavor.engine.ocean.StartingTile;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Charge le catalogue des missions depuis le JSON du matériel et le traduit vers
@@ -56,8 +58,24 @@ public final class MissionLoader {
         if (entry.number() == null) {
             throw new IllegalArgumentException("Mission sans numéro : " + entry.id());
         }
+        MissionsDocument.SetupDto setup = entry.setup();
         return new Mission(entry.id(), entry.number(), entry.name(), toBoard(entry.id(), entry.impactBoard()),
-                toOceanSetup(entry.id(), entry.setup()));
+                toOceanSetup(entry.id(), setup), toBaseOfOperations(setup), startingVessels(setup));
+    }
+
+    private static Optional<Cell> toBaseOfOperations(MissionsDocument.SetupDto setup) {
+        MissionsDocument.CellDto base = setup.baseOfOperations();
+        if (base == null) {
+            return Optional.empty();
+        }
+        if (base.depth() == null || base.col() == null) {
+            throw new IllegalArgumentException("Base d'opérations incomplète (depth et col requis)");
+        }
+        return Optional.of(new Cell(base.depth(), columnIndex(base.col())));
+    }
+
+    private static int startingVessels(MissionsDocument.SetupDto setup) {
+        return setup.startingVessels() == null ? 0 : setup.startingVessels();
     }
 
     private static ImpactBoard toBoard(String missionId, MissionsDocument.ImpactBoardDto board) {

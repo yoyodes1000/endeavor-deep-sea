@@ -12,7 +12,9 @@
           { "depth": 1, "col": "C", "tile": "the-sea-star" },
           { "depth": 2, "col": "C", "tile": "the-looking-glass" },
           { "depth": 1, "col": "D", "randomLevel": 1 }
-        ]
+        ],
+        "baseOfOperations": { "depth": 1, "col": "C" },
+        "startingVessels": 1
       },
       "goals": [
         { "number": 1, "units": ["sonar"], "depths": [], "columns": [], "pointsPer": 1, "majorityBonus": { "first": 5, "second": 3 }, "text": "1 point par disque sonar dans l'océan ; +5 au 1er, +3 au 2e." },

@@ -16,11 +16,19 @@ record MissionsDocument(List<Entry> missions) {
     record ImpactBoardDto(String orientation, List<HexDto> hexes) {
     }
 
-    record SetupDto(Integer columns, List<StartingTileDto> startingTiles) {
+    record SetupDto(
+            Integer columns,
+            List<StartingTileDto> startingTiles,
+            CellDto baseOfOperations,
+            Integer startingVessels) {
     }
 
     /** Une tuile de départ : nommée ({@code tile}) ou tirée ({@code randomLevel}). */
     record StartingTileDto(Integer depth, String col, String tile, Integer randomLevel) {
+    }
+
+    /** Une case de l'océan (profondeur + colonne lettre), pour la base d'opérations. */
+    record CellDto(Integer depth, String col) {
     }
 
     record HexDto(
