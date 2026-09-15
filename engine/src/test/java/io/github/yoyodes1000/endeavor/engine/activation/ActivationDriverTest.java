@@ -10,9 +10,19 @@ import io.github.yoyodes1000.endeavor.engine.action.Activer;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.Recruter;
 import io.github.yoyodes1000.endeavor.engine.action.TerminerTour;
+import io.github.yoyodes1000.endeavor.engine.action.Voyager;
+import io.github.yoyodes1000.endeavor.engine.board.Attribute;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
+import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
+import io.github.yoyodes1000.endeavor.engine.player.HeldSpecialist;
+import io.github.yoyodes1000.endeavor.engine.specialist.ActionSlot;
+import io.github.yoyodes1000.endeavor.engine.specialist.ActionType;
+import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
+import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistSide;
 import io.github.yoyodes1000.endeavor.engine.support.Fixtures;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
 
 class ActivationDriverTest {
@@ -118,5 +128,83 @@ class ActivationDriverTest {
         GameState state = game(1);
         ActivationDriver.begin(state);
         assertThrows(IllegalStateException.class, () -> ActivationDriver.apply(state, new TerminerTour()));
+    }
+
+    // --- Voyage -----------------------------------------------------------
+
+    /** Un spécialiste dont la chaîne offre un seul emplacement : le Voyage. */
+    private static Specialist travelSpecialist() {
+        SpecialistSide junior = new SpecialistSide("Pilot", List.of(),
+                List.of(new ActionSlot(List.of(ActionType.TRAVEL))), Optional.empty(), Optional.empty());
+        SpecialistSide senior = new SpecialistSide("Pilot S", List.of(), List.of(),
+                Optional.empty(), Optional.empty());
+        return new Specialist("pilot", OptionalInt.of(1), false, junior, senior);
+    }
+
+    /** Joueur 0 en activation, avec un spécialiste voyageur, des disques et un submersible en (1,0). */
+    private static GameState readyToTravel() {
+        GameState state = game(1);
+        state.player(0).recruit(HeldSpecialist.recruited(travelSpecialist()));
+        state.player(0).moveReserveToTransit(2);
+        state.oceanBoard().addVessels(new Cell(1, 0), 0, 1);
+        ActivationDriver.begin(state);
+        return state;
+    }
+
+    @Test
+    void unSpecialisteVoyageurProposeLesVoyagesAccessibles() {
+        GameState state = readyToTravel();
+        ActivationDriver.apply(state, new Activer("pilot"));
+
+        // niveau de technologie 1 au départ : depuis (1,0), seule (1,1) est accessible
+        assertTrue(ActivationDriver.legalActions(state).contains(new Voyager(new Cell(1, 0), new Cell(1, 1))));
+    }
+
+    @Test
+    void leVoyageDeplaceLeSubmersibleEtConsommeLaChaine() {
+        GameState state = readyToTravel();
+        ActivationDriver.apply(state, new Activer("pilot"));
+
+        ActivationDriver.apply(state, new Voyager(new Cell(1, 0), new Cell(1, 1)));
+
+        assertEquals(0, state.oceanBoard().vesselCount(new Cell(1, 0), 0), "parti du départ");
+        assertEquals(1, state.oceanBoard().vesselCount(new Cell(1, 1), 0), "arrivé à destination");
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
+                "chaîne d'un seul emplacement épuisée");
+    }
+
+    @Test
+    void leVoyageNeDescendPasPlusProfondQueLeNiveau() {
+        GameState state = game(1);
+        state.player(0).recruit(HeldSpecialist.recruited(travelSpecialist()));
+        state.player(0).moveReserveToTransit(2);
+        state.oceanBoard().addVessels(new Cell(1, 1), 0, 1);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("pilot"));
+
+        // niveau 1 : la descente en profondeur 2 (2,1) est refusée
+        assertFalse(ActivationDriver.legalActions(state).contains(new Voyager(new Cell(1, 1), new Cell(2, 1))));
+
+        // niveau 2 : elle devient possible
+        state.player(0).attributes().advance(Attribute.INGENUITY, 2);
+        assertTrue(ActivationDriver.legalActions(state).contains(new Voyager(new Cell(1, 1), new Cell(2, 1))));
+    }
+
+    @Test
+    void sansSubmersibleAucunVoyageNEstPropose() {
+        GameState state = game(1);
+        state.player(0).recruit(HeldSpecialist.recruited(travelSpecialist()));
+        state.player(0).moveReserveToTransit(2);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("pilot"));
+
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void leVoyageAvantActivationEstRefuse() {
+        GameState state = readyToTravel();
+        assertThrows(IllegalStateException.class,
+                () -> ActivationDriver.apply(state, new Voyager(new Cell(1, 0), new Cell(1, 1))));
     }
 }
