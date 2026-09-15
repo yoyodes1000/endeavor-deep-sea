@@ -1,16 +1,23 @@
 package io.github.yoyodes1000.endeavor.engine.mission;
 
+import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
+
+import java.util.Optional;
 
 /**
  * Une mission : son identité, son plateau Impact et la mise en place de son océan
- * ({@link OceanSetup} : colonnes et tuiles de départ). Les objectifs et les règles
- * spéciales de la fiche ne sont pas encore modélisés (décompte / Phase 2) ; le
- * chargeur les ignore.
+ * ({@link OceanSetup} : colonnes et tuiles de départ), plus — quand la fiche est
+ * relevée — sa <strong>base d'opérations</strong> (où chaque joueur pose son
+ * premier submersible) et le nombre de submersibles de départ. Les objectifs et
+ * les règles spéciales ne sont pas encore modélisés (décompte / Phase 2).
  *
- * @param number le numéro de mission (1 à 10)
+ * @param number              le numéro de mission (1 à 10)
+ * @param baseOfOperations    la case de la base d'opérations, si la fiche la déclare
+ * @param startingVessels     submersibles de départ par joueur (0 si non relevé)
  */
-public record Mission(String id, int number, String name, ImpactBoard impactBoard, OceanSetup oceanSetup) {
+public record Mission(String id, int number, String name, ImpactBoard impactBoard, OceanSetup oceanSetup,
+                      Optional<Cell> baseOfOperations, int startingVessels) {
 
     public Mission {
         if (id == null || id.isBlank()) {
@@ -27,6 +34,12 @@ public record Mission(String id, int number, String name, ImpactBoard impactBoar
         }
         if (oceanSetup == null) {
             throw new IllegalArgumentException("La mission " + id + " doit avoir une mise en place d'océan");
+        }
+        if (baseOfOperations == null) {
+            throw new IllegalArgumentException("La base d'opérations de " + id + " ne peut être nulle (Optional attendu)");
+        }
+        if (startingVessels < 0) {
+            throw new IllegalArgumentException("Nombre de submersibles de départ négatif pour " + id);
         }
     }
 }
