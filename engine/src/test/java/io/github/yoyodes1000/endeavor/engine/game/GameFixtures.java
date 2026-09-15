@@ -7,6 +7,9 @@ import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
+import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistSide;
@@ -36,10 +39,18 @@ final class GameFixtures {
         return board;
     }
 
+    /** Le catalogue des tuiles de l'océan minimal, avec des bonus d'arrivée simples. */
+    static OceanTileCatalog oceanCatalog() {
+        return new OceanTileCatalog(List.of(
+                new OceanTile("atoll", "Atoll", 1, false, List.of(), List.of(Gain.INSPIRATION), List.of()),
+                new OceanTile("reef", "Reef", 1, false, List.of(), List.of(Gain.RESEARCH), List.of()),
+                new OceanTile("trench", "Trench", 2, false, List.of(), List.of(Gain.DISC), List.of())));
+    }
+
     /** Une partie neuve sur le plateau de mission minimal, pour alléger les tests. */
     static GameState newGame(int players, long seed) {
         return GameState.newGame(players, roster(), RandomSource.fromSeed(seed), 10,
-                missionBoard(), oceanBoard());
+                missionBoard(), oceanBoard(), oceanCatalog());
     }
 
     static SpecialistSide side(String name) {

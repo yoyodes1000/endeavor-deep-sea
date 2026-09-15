@@ -17,8 +17,11 @@ import java.util.Set;
  *                            {@code null} tant qu'aucun ne l'est (un seul par tour)
  * @param actionStep          index de l'emplacement d'action courant dans la chaîne
  *                            du spécialiste activé (0 juste après l'activation)
+ * @param pendingImpacts      pions impact gagnés (par un bonus d'arrivée, une
+ *                            cascade) restant à poser avant de poursuivre le tour
  */
-public record ActivationCursor(int turnPosition, Set<Integer> passed, String activatedSpecialist, int actionStep) {
+public record ActivationCursor(int turnPosition, Set<Integer> passed, String activatedSpecialist,
+                               int actionStep, int pendingImpacts) {
 
     public ActivationCursor {
         if (turnPosition < 0) {
@@ -30,12 +33,15 @@ public record ActivationCursor(int turnPosition, Set<Integer> passed, String act
         if (actionStep < 0) {
             throw new IllegalArgumentException("L'avancement dans la chaîne ne peut être négatif");
         }
+        if (pendingImpacts < 0) {
+            throw new IllegalArgumentException("Le nombre d'impacts en attente ne peut être négatif");
+        }
         passed = Set.copyOf(passed);
     }
 
     /** Le curseur d'entrée en Phase 2 : premier joueur du tour, personne n'a passé. */
     public static ActivationCursor notStarted() {
-        return new ActivationCursor(0, Set.of(), null, 0);
+        return new ActivationCursor(0, Set.of(), null, 0, 0);
     }
 
     /** Vrai si le joueur courant a déjà activé un spécialiste ce tour. */

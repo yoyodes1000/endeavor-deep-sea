@@ -3,6 +3,7 @@ package io.github.yoyodes1000.endeavor.engine.game;
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
 import io.github.yoyodes1000.endeavor.engine.player.Player;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
@@ -32,6 +33,7 @@ public final class GameState {
     private final List<Specialist> casier;
     private final MissionBoard missionBoard;
     private final OceanBoard oceanBoard;
+    private final OceanTileCatalog oceanTileCatalog;
     private final RandomSource random;
     private int firstPlayerIndex;
     private int round;
@@ -40,12 +42,14 @@ public final class GameState {
     private ActivationCursor activationCursor;
 
     private GameState(List<Player> players, List<Specialist> casier, MissionBoard missionBoard,
-                      OceanBoard oceanBoard, RandomSource random, int firstPlayerIndex, int round,
-                      GamePhase phase, PreparationCursor cursor, ActivationCursor activationCursor) {
+                      OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog, RandomSource random,
+                      int firstPlayerIndex, int round, GamePhase phase, PreparationCursor cursor,
+                      ActivationCursor activationCursor) {
         this.players = players;
         this.casier = casier;
         this.missionBoard = missionBoard;
         this.oceanBoard = oceanBoard;
+        this.oceanTileCatalog = oceanTileCatalog;
         this.random = random;
         this.firstPlayerIndex = firstPlayerIndex;
         this.round = round;
@@ -67,16 +71,19 @@ public final class GameState {
      * @param startingDiscs disques d'action de départ par joueur
      * @param missionBoard  le plateau Impact de la mission jouée (occupation vide)
      * @param oceanBoard    l'océan de départ de la mission (grille et submersibles)
+     * @param oceanTileCatalog le catalogue des tuiles Océan (matériel immuable, pour
+     *                      retrouver les gains d'une tuile à l'arrivée d'un Voyage)
      */
     public static GameState newGame(int playerCount, SpecialistRoster roster,
                                     RandomSource random, int startingDiscs, MissionBoard missionBoard,
-                                    OceanBoard oceanBoard) {
+                                    OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog) {
         if (playerCount < 1) {
             throw new IllegalArgumentException("Il faut au moins un joueur : " + playerCount);
         }
-        if (roster == null || random == null || missionBoard == null || oceanBoard == null) {
+        if (roster == null || random == null || missionBoard == null || oceanBoard == null
+                || oceanTileCatalog == null) {
             throw new IllegalArgumentException(
-                    "Le casier, la source d'aléa, le plateau de mission et l'océan sont requis");
+                    "Le casier, la source d'aléa, le plateau de mission, l'océan et son catalogue sont requis");
         }
         Specialist teamLeader = roster.teamLeader();
         List<Player> players = new ArrayList<>();
@@ -89,8 +96,8 @@ public final class GameState {
                 casier.add(specialist);
             }
         }
-        return new GameState(players, casier, missionBoard, oceanBoard, random, 0, FIRST_ROUND,
-                GamePhase.PREPARATION, PreparationCursor.notStarted(), ActivationCursor.notStarted());
+        return new GameState(players, casier, missionBoard, oceanBoard, oceanTileCatalog, random, 0,
+                FIRST_ROUND, GamePhase.PREPARATION, PreparationCursor.notStarted(), ActivationCursor.notStarted());
     }
 
     public int playerCount() {
@@ -118,6 +125,11 @@ public final class GameState {
     /** L'océan de la partie : la grille des zones et les submersibles qui s'y trouvent. */
     public OceanBoard oceanBoard() {
         return oceanBoard;
+    }
+
+    /** Le catalogue des tuiles Océan (matériel immuable, partagé entre les copies). */
+    public OceanTileCatalog oceanTileCatalog() {
+        return oceanTileCatalog;
     }
 
     public int firstPlayerIndex() {
@@ -230,6 +242,6 @@ public final class GameState {
             playersCopy.add(player.copy());
         }
         return new GameState(playersCopy, new ArrayList<>(casier), missionBoard.copy(), oceanBoard.copy(),
-                random.copy(), firstPlayerIndex, round, phase, cursor, activationCursor);
+                oceanTileCatalog, random.copy(), firstPlayerIndex, round, phase, cursor, activationCursor);
     }
 }

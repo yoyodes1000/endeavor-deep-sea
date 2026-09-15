@@ -36,14 +36,21 @@ class GameStateTest {
     void refuseUnePartieSansPlateauDeMission() {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10, null,
-                        GameFixtures.oceanBoard()));
+                        GameFixtures.oceanBoard(), GameFixtures.oceanCatalog()));
     }
 
     @Test
     void refuseUnePartieSansOcean() {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
-                        GameFixtures.missionBoard(), null));
+                        GameFixtures.missionBoard(), null, GameFixtures.oceanCatalog()));
+    }
+
+    @Test
+    void refuseUnePartieSansCatalogueDeTuiles() {
+        assertThrows(IllegalArgumentException.class,
+                () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
+                        GameFixtures.missionBoard(), GameFixtures.oceanBoard(), null));
     }
 
     @Test

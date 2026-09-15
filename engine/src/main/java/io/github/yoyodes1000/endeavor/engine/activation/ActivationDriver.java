@@ -3,13 +3,19 @@ package io.github.yoyodes1000.endeavor.engine.activation;
 import io.github.yoyodes1000.endeavor.engine.action.Action;
 import io.github.yoyodes1000.endeavor.engine.action.Activer;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
+import io.github.yoyodes1000.endeavor.engine.action.PoserImpact;
 import io.github.yoyodes1000.endeavor.engine.action.TerminerTour;
 import io.github.yoyodes1000.endeavor.engine.action.Voyager;
 import io.github.yoyodes1000.endeavor.engine.board.Attribute;
+import io.github.yoyodes1000.endeavor.engine.effect.EffectOutcome;
+import io.github.yoyodes1000.endeavor.engine.effect.GainResolver;
+import io.github.yoyodes1000.endeavor.engine.effect.ImpactPlacement;
 import io.github.yoyodes1000.endeavor.engine.game.ActivationCursor;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
+import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.player.HeldSpecialist;
 import io.github.yoyodes1000.endeavor.engine.player.Player;
 import io.github.yoyodes1000.endeavor.engine.specialist.ActionSlot;
@@ -31,15 +37,16 @@ import java.util.Set;
  * d'actions, avant {@link TerminerTour} (rendre la main en restant dans la manche)
  * ou {@link Passer} (quitter la manche définitivement). La première action
  * concrète est le {@link Voyager} : déplacer un submersible d'une zone à une zone
- * accessible (portée et profondeur bornées par le niveau de technologie).
+ * accessible (portée et profondeur bornées par le niveau de technologie), puis
+ * encaisser le <strong>bonus d'arrivée</strong> de la zone de destination.
  *
- * <p>Le contexte de tour — spécialiste activé et avancement dans sa chaîne
- * d'emplacements — vit dans l'{@link ActivationCursor}, copié avec l'état pour
- * l'IA (déc. 2 et 3). Chaque {@code Voyager} résout l'emplacement courant et
- * avance d'un cran ; le joueur peut s'arrêter à tout moment (rien n'est
- * obligatoire). Le <strong>bonus d'arrivée</strong> d'un Voyage n'est pas encore
- * résolu ici — il viendra avec le catalogue de tuiles dans l'état et la cascade de
- * gains (brique sœur).
+ * <p>Résoudre un bonus d'arrivée peut relancer une <strong>cascade</strong> :
+ * les submersibles gagnés rejoignent le stock du joueur, et chaque pion impact
+ * gagné doit être posé ({@link PoserImpact}) avant de poursuivre le tour — le
+ * même mécanisme qu'en préparation, réutilisé via {@link ImpactPlacement}.
+ *
+ * <p>Le contexte de tour — spécialiste activé, avancement dans sa chaîne, impacts
+ * en attente — vit dans l'{@link ActivationCursor}, copié avec l'état (déc. 2 et 3).
  */
 public final class ActivationDriver {
 
@@ -60,6 +67,9 @@ public final class ActivationDriver {
     public static List<Action> legalActions(GameState state) {
         if (isDone(state)) {
             return List.of();
+        }
+        if (mustPlaceImpact(state)) {
+            return impactPlacements(state);
         }
         ActivationCursor cursor = state.activationCursor();
         int player = currentPlayer(state);
@@ -87,6 +97,10 @@ public final class ActivationDriver {
         }
         ActivationCursor cursor = state.activationCursor();
         int player = currentPlayer(state);
+        if (mustPlaceImpact(state)) {
+            placePendingImpact(state, player, cursor, action);
+            return;
+        }
         switch (action) {
             case Activer activer -> {
                 if (cursor.activatedThisTurn()) {
@@ -94,7 +108,7 @@ public final class ActivationDriver {
                 }
                 state.player(player).activate(activer.specialistId());
                 state.setActivationCursor(new ActivationCursor(
-                        cursor.turnPosition(), cursor.passed(), activer.specialistId(), 0));
+                        cursor.turnPosition(), cursor.passed(), activer.specialistId(), 0, 0));
             }
             case Voyager voyager -> {
                 if (!cursor.activatedThisTurn()) {
@@ -103,24 +117,66 @@ public final class ActivationDriver {
                 requireTravelSlot(state, player, cursor);
                 requireReachable(state, player, voyager);
                 state.oceanBoard().moveVessel(voyager.from(), voyager.to(), player);
+                EffectOutcome arrival = resolveArrival(state, player, voyager.to());
                 state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                        cursor.activatedSpecialist(), cursor.actionStep() + 1));
+                        cursor.activatedSpecialist(), cursor.actionStep() + 1, arrival.impactsEarned()));
             }
             case TerminerTour ignored -> {
                 if (!cursor.activatedThisTurn()) {
                     throw new IllegalStateException("Rien à terminer : agir ou passer");
                 }
                 state.setActivationCursor(new ActivationCursor(
-                        nextActivePosition(state, cursor, cursor.passed()), cursor.passed(), null, 0));
+                        nextActivePosition(state, cursor, cursor.passed()), cursor.passed(), null, 0, 0));
             }
             case Passer ignored -> {
                 Set<Integer> passed = new HashSet<>(cursor.passed());
                 passed.add(player);
                 state.setActivationCursor(new ActivationCursor(
-                        nextActivePosition(state, cursor, passed), passed, null, 0));
+                        nextActivePosition(state, cursor, passed), passed, null, 0, 0));
             }
             default -> throw new IllegalStateException("Coup inattendu en activation : " + action);
         }
+    }
+
+    /** Vrai s'il reste un impact à poser et de la place pour le faire (le tour est suspendu). */
+    private static boolean mustPlaceImpact(GameState state) {
+        return state.activationCursor().pendingImpacts() > 0
+                && !state.missionBoard().legalPlacements().isEmpty();
+    }
+
+    private static List<Action> impactPlacements(GameState state) {
+        return state.missionBoard().legalPlacements().stream()
+                .map(hex -> (Action) new PoserImpact(hex.row(), hex.col()))
+                .toList();
+    }
+
+    private static void placePendingImpact(GameState state, int player, ActivationCursor cursor, Action action) {
+        if (!(action instanceof PoserImpact placement)) {
+            throw new IllegalStateException("Un impact reste à poser avant de poursuivre le tour");
+        }
+        ImpactHex hex = state.missionBoard().board().hexAt(placement.row(), placement.col())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Aucun hexagone en " + placement.row() + "," + placement.col()));
+        EffectOutcome outcome = ImpactPlacement.place(state.missionBoard(), state.player(player), hex, player);
+        state.player(player).gainVessels(outcome.vesselsEarned());
+        int stillPending = cursor.pendingImpacts() - 1 + outcome.impactsEarned();
+        state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
+                cursor.activatedSpecialist(), cursor.actionStep(), stillPending));
+    }
+
+    /**
+     * Encaisse le bonus d'arrivée de la zone de destination : applique ses gains
+     * directs, verse les submersibles gagnés au stock, et renvoie les impacts gagnés
+     * (à poser par la cascade).
+     */
+    private static EffectOutcome resolveArrival(GameState state, int player, Cell destination) {
+        String tileId = state.oceanBoard().tileAt(destination).orElseThrow(
+                () -> new IllegalStateException("Zone d'arrivée sans tuile : " + destination));
+        OceanTile tile = state.oceanTileCatalog().byId(tileId).orElseThrow(
+                () -> new IllegalStateException("Tuile inconnue au catalogue : " + tileId));
+        EffectOutcome outcome = GainResolver.resolve(state.player(player), tile.arrivalBonus());
+        state.player(player).gainVessels(outcome.vesselsEarned());
+        return outcome;
     }
 
     /** Les activations légales du joueur : une par spécialiste à case libre, s'il a un disque en transit. */
