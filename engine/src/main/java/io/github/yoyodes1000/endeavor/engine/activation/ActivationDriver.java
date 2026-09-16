@@ -2,6 +2,7 @@ package io.github.yoyodes1000.endeavor.engine.activation;
 
 import io.github.yoyodes1000.endeavor.engine.action.Action;
 import io.github.yoyodes1000.endeavor.engine.action.Activer;
+import io.github.yoyodes1000.endeavor.engine.action.ChoisirAttribut;
 import io.github.yoyodes1000.endeavor.engine.action.Conserver;
 import io.github.yoyodes1000.endeavor.engine.action.DepenserJeton;
 import io.github.yoyodes1000.endeavor.engine.action.Dive;
@@ -78,9 +79,7 @@ import java.util.Set;
  * les mêmes coups {@link Sonar}/{@link Voyager}/{@link Dive}/{@link Conserver}/
  * {@link Publier} que la chaîne, mais sans en exiger l'activation ni
  * l'emplacement courant. Au plus un jeton peut rester en main à la fin du tour
- * ({@link TerminerTour}/{@link Passer}) ; les options qui dépendent d'une
- * mécanique encore absente (choix d'attribut : anyAttribute, lowestAttribute)
- * ne sont pas proposées.
+ * ({@link TerminerTour}/{@link Passer}).
  *
  * <p>La {@link Conserver} suit à son tour : payer le coût en recherche du site
  * visé, dépenser un disque de transit pour l'y poser, puis encaisser ses gains.
@@ -90,9 +89,7 @@ import java.util.Set;
  * l'étude visée, dépenser un disque de transit pour le poser sur un site dont
  * le symbole de domaine correspond, encaisser les gains du site puis ceux de
  * la revue — pour le joueur actif et pour chacun de ses adversaires — avant de
- * retirer la revue du marché (réassorti depuis la pioche). Les revues dont un
- * gain dépend d'une mécanique encore absente (choix d'attribut) ne sont pas
- * proposées.
+ * retirer la revue du marché (réassorti depuis la pioche).
  *
  * <p>La {@link Promouvoir} — un <strong>gain</strong> ({@code promote}) comme un
  * autre, encaissé au fil d'une résolution (site, revue, jeton) ou choisi comme
@@ -105,15 +102,23 @@ import java.util.Set;
  * ({@link ActivationCursor#pendingPromotions()}), avant même la pose d'impacts
  * en attente pour que ses propres gains s'y ajoutent.
  *
- * <p>Résoudre un bonus d'arrivée peut relancer une <strong>cascade</strong> :
- * les submersibles gagnés rejoignent le stock du joueur, et chaque pion impact
- * ou promotion gagné doit être résolu ({@link PoserImpact}/{@link Promouvoir})
- * avant de poursuivre le tour — le même mécanisme qu'en préparation, réutilisé
- * via {@link ImpactPlacement}.
+ * <p>Deux autres gains suspendent le tour sur un choix — {@link ChoisirAttribut} —
+ * plutôt qu'un emplacement d'action ou un jeton : {@code anyAttribute} (choix
+ * libre parmi les 4 pistes, toujours ambigu) et {@code lowestAttribute} (la
+ * piste la plus basse, résolue <strong>sans</strong> suspension si elle est
+ * seule à ce niveau — {@link GainResolver} l'avance directement — sinon un choix
+ * entre les pistes à égalité). Même priorité que la Promotion : avant la pose
+ * d'impacts, pour que le cran gagné s'y ajoute au besoin.
  *
- * <p>Le contexte de tour — spécialiste activé, avancement dans sa chaîne, impacts
- * et promotions en attente — vit dans l'{@link ActivationCursor}, copié avec
- * l'état (déc. 2 et 3).
+ * <p>Résoudre un bonus d'arrivée peut relancer une <strong>cascade</strong> :
+ * les submersibles gagnés rejoignent le stock du joueur, et chaque pion impact,
+ * promotion ou choix d'attribut gagné doit être résolu ({@link PoserImpact}/
+ * {@link Promouvoir}/{@link ChoisirAttribut}) avant de poursuivre le tour — le
+ * même mécanisme qu'en préparation, réutilisé via {@link ImpactPlacement}.
+ *
+ * <p>Le contexte de tour — spécialiste activé, avancement dans sa chaîne,
+ * impacts, promotions et choix d'attribut en attente — vit dans
+ * l'{@link ActivationCursor}, copié avec l'état (déc. 2 et 3).
  */
 public final class ActivationDriver {
 
@@ -143,6 +148,12 @@ public final class ActivationDriver {
         }
         if (mustChoosePromotion(state)) {
             return promotionChoices(state, currentPlayer(state));
+        }
+        if (mustChooseAnyAttribute(state)) {
+            return anyAttributeChoices();
+        }
+        if (mustChooseLowestAttribute(state)) {
+            return lowestAttributeChoices(state, currentPlayer(state));
         }
         if (mustPlaceImpact(state)) {
             return impactPlacements(state);
@@ -208,6 +219,14 @@ public final class ActivationDriver {
             placePendingPromotion(state, player, cursor, action);
             return;
         }
+        if (mustChooseAnyAttribute(state)) {
+            placePendingAnyAttribute(state, player, cursor, action);
+            return;
+        }
+        if (mustChooseLowestAttribute(state)) {
+            placePendingLowestAttribute(state, player, cursor, action);
+            return;
+        }
         if (mustPlaceImpact(state)) {
             placePendingImpact(state, player, cursor, action);
             return;
@@ -219,7 +238,7 @@ public final class ActivationDriver {
                 }
                 state.player(player).activate(activer.specialistId());
                 state.setActivationCursor(new ActivationCursor(
-                        cursor.turnPosition(), cursor.passed(), activer.specialistId(), 0, 0, 0, null, null));
+                        cursor.turnPosition(), cursor.passed(), activer.specialistId(), 0, 0, 0, 0, 0, null, null));
             }
             case Voyager voyager -> applyVoyager(state, player, cursor, voyager);
             case Sonar sonar -> applySonar(state, player, cursor, sonar);
@@ -234,14 +253,14 @@ public final class ActivationDriver {
                 }
                 requireAtMostOneHeldToken(state, player);
                 state.setActivationCursor(new ActivationCursor(nextActivePosition(state, cursor, cursor.passed()),
-                        cursor.passed(), null, 0, 0, 0, null, null));
+                        cursor.passed(), null, 0, 0, 0, 0, 0, null, null));
             }
             case Passer ignored -> {
                 requireAtMostOneHeldToken(state, player);
                 Set<Integer> passed = new HashSet<>(cursor.passed());
                 passed.add(player);
                 state.setActivationCursor(new ActivationCursor(
-                        nextActivePosition(state, cursor, passed), passed, null, 0, 0, 0, null, null));
+                        nextActivePosition(state, cursor, passed), passed, null, 0, 0, 0, 0, 0, null, null));
             }
             default -> throw new IllegalStateException("Coup inattendu en activation : " + action);
         }
@@ -265,8 +284,8 @@ public final class ActivationDriver {
         state.oceanBoard().moveVessel(voyager.from(), voyager.to(), player);
         EffectOutcome arrival = resolveArrival(state, player, voyager.to());
         state.setActivationCursor(viaToken
-                ? cursorAfterOffChainResolution(cursor, arrival.impactsEarned(), arrival.promotionsEarned())
-                : cursorAfterChainStep(cursor, arrival.impactsEarned(), arrival.promotionsEarned()));
+                ? cursorAfterOffChainResolution(cursor, arrival)
+                : cursorAfterChainStep(cursor, arrival));
     }
 
     /**
@@ -294,14 +313,14 @@ public final class ActivationDriver {
             case SonarSpot.Reward reward -> {
                 EffectOutcome outcome = resolveAndCollect(state, player, reward.gains());
                 state.setActivationCursor(viaToken
-                        ? cursorAfterOffChainResolution(cursor, outcome.impactsEarned(), outcome.promotionsEarned())
-                        : cursorAfterChainStep(cursor, outcome.impactsEarned(), outcome.promotionsEarned()));
+                        ? cursorAfterOffChainResolution(cursor, outcome)
+                        : cursorAfterChainStep(cursor, outcome));
             }
             case SonarSpot.Discover discover -> {
                 List<String> drawn = state.discoveryPile().draw(
                         DISCOVERY_DRAW, Set.copyOf(discover.levels()), state.random());
                 state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                        cursor.activatedSpecialist(), cursor.actionStep(), 0, 0,
+                        cursor.activatedSpecialist(), cursor.actionStep(), 0, 0, 0, 0,
                         PendingDiscovery.toChooseFrom(drawn), null));
             }
         }
@@ -324,8 +343,8 @@ public final class ActivationDriver {
         String tokenId = state.oceanBoard().takeDiveToken(dive.cell(), dive.siteId());
         state.player(player).receiveDiveToken(tokenId);
         state.setActivationCursor(viaToken
-                ? cursorAfterOffChainResolution(cursor, 0, 0)
-                : cursorAfterChainStep(cursor, 0, 0));
+                ? cursorAfterOffChainResolution(cursor, EffectOutcome.NONE)
+                : cursorAfterChainStep(cursor, EffectOutcome.NONE));
     }
 
     /**
@@ -348,8 +367,8 @@ public final class ActivationDriver {
         state.oceanBoard().placeConservationDisc(move.cell(), move.siteId(), player);
         EffectOutcome outcome = resolveAndCollect(state, player, site.gains());
         state.setActivationCursor(viaToken
-                ? cursorAfterOffChainResolution(cursor, outcome.impactsEarned(), outcome.promotionsEarned())
-                : cursorAfterChainStep(cursor, outcome.impactsEarned(), outcome.promotionsEarned()));
+                ? cursorAfterOffChainResolution(cursor, outcome)
+                : cursorAfterChainStep(cursor, outcome));
     }
 
     /**
@@ -373,14 +392,9 @@ public final class ActivationDriver {
         state.player(player).spendResearch(journal.researchCost());
         state.player(player).spendTransitDisc();
         state.oceanBoard().placeJournalDisc(move.cell(), move.siteId(), player);
-        int pendingImpacts = 0;
-        int pendingPromotions = 0;
         EffectOutcome siteOutcome = resolveAndCollect(state, player, site.gains());
-        pendingImpacts += siteOutcome.impactsEarned();
-        pendingPromotions += siteOutcome.promotionsEarned();
         EffectOutcome publisherOutcome = resolveAndCollect(state, player, journal.publisherGains());
-        pendingImpacts += publisherOutcome.impactsEarned();
-        pendingPromotions += publisherOutcome.promotionsEarned();
+        EffectOutcome outcome = siteOutcome.plus(publisherOutcome);
         for (int other = 0; other < state.playerCount(); other++) {
             if (other == player) {
                 continue;
@@ -395,12 +409,17 @@ public final class ActivationDriver {
                 throw new IllegalStateException(
                         "Promotion gagnée par un adversaire via Publication : résolution non prise en charge");
             }
+            if (opponentOutcome.anyAttributeEarned() > 0 || opponentOutcome.lowestAttributeEarned() > 0) {
+                throw new IllegalStateException(
+                        "Choix d'attribut ambigu gagné par un adversaire via Publication : résolution non prise "
+                                + "en charge");
+            }
         }
         state.player(player).acquireJournal(journal.id());
         state.journalMarket().publish(journal.id(), state.random());
         state.setActivationCursor(viaToken
-                ? cursorAfterOffChainResolution(cursor, pendingImpacts, pendingPromotions)
-                : cursorAfterChainStep(cursor, pendingImpacts, pendingPromotions));
+                ? cursorAfterOffChainResolution(cursor, outcome)
+                : cursorAfterChainStep(cursor, outcome));
     }
 
     /**
@@ -420,10 +439,10 @@ public final class ActivationDriver {
             requireSlotOffers(state, player, cursor, ActionType.PROMOTE);
         }
         requirePromotable(state, player, move.specialistId());
-        EffectOutcome outcome = collectPromotions(state, player, applyPromotion(state, player, move.specialistId()));
+        EffectOutcome outcome = collectPendingDecisions(state, player, applyPromotion(state, player, move.specialistId()));
         state.setActivationCursor(viaToken
-                ? cursorAfterOffChainResolution(cursor, outcome.impactsEarned(), outcome.promotionsEarned())
-                : cursorAfterChainStep(cursor, outcome.impactsEarned(), outcome.promotionsEarned()));
+                ? cursorAfterOffChainResolution(cursor, outcome)
+                : cursorAfterChainStep(cursor, outcome));
     }
 
     /**
@@ -456,11 +475,12 @@ public final class ActivationDriver {
                 payCost(state.player(player), gains.cost());
                 EffectOutcome outcome = resolveAndCollect(state, player, gains.gains());
                 state.setActivationCursor(
-                        cursorAfterOffChainResolution(cursor, outcome.impactsEarned(), outcome.promotionsEarned()));
+                        cursorAfterOffChainResolution(cursor, outcome));
             }
             case DiveOption.TriggersAction trigger -> state.setActivationCursor(new ActivationCursor(
                     cursor.turnPosition(), cursor.passed(), cursor.activatedSpecialist(),
-                    cursor.actionStep(), cursor.pendingImpacts(), cursor.pendingPromotions(), null, trigger.type()));
+                    cursor.actionStep(), cursor.pendingImpacts(), cursor.pendingPromotions(),
+                    cursor.pendingAnyAttribute(), cursor.pendingLowestAttribute(), null, trigger.type()));
         }
     }
 
@@ -475,10 +495,10 @@ public final class ActivationDriver {
     }
 
     /** Le curseur après une action résolue en entier au fil de la chaîne : avance l'emplacement courant. */
-    private static ActivationCursor cursorAfterChainStep(ActivationCursor cursor, int pendingImpacts,
-                                                          int pendingPromotions) {
+    private static ActivationCursor cursorAfterChainStep(ActivationCursor cursor, EffectOutcome outcome) {
         return new ActivationCursor(cursor.turnPosition(), cursor.passed(), cursor.activatedSpecialist(),
-                cursor.actionStep() + 1, pendingImpacts, pendingPromotions, null, null);
+                cursor.actionStep() + 1, outcome.impactsEarned(), outcome.promotionsEarned(),
+                outcome.anyAttributeEarned(), outcome.lowestAttributeEarned(), null, null);
     }
 
     /**
@@ -486,10 +506,10 @@ public final class ActivationDriver {
      * un jeton, ou un lot de gains d'une option de jeton — sans avancer l'emplacement
      * courant de la chaîne du spécialiste.
      */
-    private static ActivationCursor cursorAfterOffChainResolution(ActivationCursor cursor, int pendingImpacts,
-                                                                   int pendingPromotions) {
+    private static ActivationCursor cursorAfterOffChainResolution(ActivationCursor cursor, EffectOutcome outcome) {
         return new ActivationCursor(cursor.turnPosition(), cursor.passed(), cursor.activatedSpecialist(),
-                cursor.actionStep(), pendingImpacts, pendingPromotions, null, null);
+                cursor.actionStep(), outcome.impactsEarned(), outcome.promotionsEarned(),
+                outcome.anyAttributeEarned(), outcome.lowestAttributeEarned(), null, null);
     }
 
     /** Vrai s'il reste un impact à poser et de la place pour le faire (le tour est suspendu). */
@@ -511,18 +531,18 @@ public final class ActivationDriver {
         ImpactHex hex = state.missionBoard().board().hexAt(placement.row(), placement.col())
                 .orElseThrow(() -> new IllegalArgumentException(
                         "Aucun hexagone en " + placement.row() + "," + placement.col()));
-        EffectOutcome outcome = collectPromotions(state, player,
+        EffectOutcome outcome = collectPendingDecisions(state, player,
                 ImpactPlacement.place(state.missionBoard(), state.player(player), hex, player));
         int stillPending = cursor.pendingImpacts() - 1 + outcome.impactsEarned();
         state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
                 cursor.activatedSpecialist(), cursor.actionStep(), stillPending, outcome.promotionsEarned(),
-                null, null));
+                outcome.anyAttributeEarned(), outcome.lowestAttributeEarned(), null, null));
     }
 
     /**
      * Vrai s'il reste une promotion à résoudre (le tour est suspendu) — vérifié
      * avant la pose d'impacts pour que les gains propres d'une promotion (senior
-     * fraîchement promu) s'y ajoutent. {@link #collectPromotions} garantit qu'un
+     * fraîchement promu) s'y ajoutent. {@link #collectPendingDecisions} garantit qu'un
      * compte en attente n'est jamais positif sans au moins un Junior promouvable :
      * pas besoin de le revérifier ici.
      */
@@ -541,7 +561,7 @@ public final class ActivationDriver {
      * promeut la tuile visée, encaisse ses gains immédiats, et rend la main sur le
      * reste du lot d'origine (moins celui-ci) combiné aux gains de la promotion —
      * l'ensemble repassé au filtre « aucun Junior restant » de {@link
-     * #collectPromotions}.
+     * #collectPendingDecisions}.
      */
     private static void placePendingPromotion(GameState state, int player, ActivationCursor cursor, Action action) {
         if (!(action instanceof Promouvoir move)) {
@@ -550,19 +570,21 @@ public final class ActivationDriver {
         requirePromotable(state, player, move.specialistId());
         EffectOutcome raw = applyPromotion(state, player, move.specialistId());
         int totalPromotions = cursor.pendingPromotions() - 1 + raw.promotionsEarned();
-        EffectOutcome collected = collectPromotions(state, player,
-                new EffectOutcome(raw.impactsEarned(), raw.vesselsEarned(), totalPromotions));
+        EffectOutcome collected = collectPendingDecisions(state, player,
+                new EffectOutcome(raw.impactsEarned(), raw.vesselsEarned(), totalPromotions,
+                        raw.anyAttributeEarned(), raw.lowestAttributeEarned()));
         state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
                 cursor.activatedSpecialist(), cursor.actionStep(), cursor.pendingImpacts() + collected.impactsEarned(),
-                collected.promotionsEarned(), null, null));
+                collected.promotionsEarned(), cursor.pendingAnyAttribute() + collected.anyAttributeEarned(),
+                cursor.pendingLowestAttribute() + collected.lowestAttributeEarned(), null, null));
     }
 
     /**
      * Résout un lot de gains et encaisse aussitôt ses submersibles et promotions
-     * triviales — via {@link #collectPromotions}.
+     * triviales — via {@link #collectPendingDecisions}.
      */
     private static EffectOutcome resolveAndCollect(GameState state, int player, List<Gain> gains) {
-        return collectPromotions(state, player, GainResolver.resolve(state.player(player), gains));
+        return collectPendingDecisions(state, player, GainResolver.resolve(state.player(player), gains));
     }
 
     /**
@@ -570,13 +592,16 @@ public final class ActivationDriver {
      * si le joueur ne détient alors aucun Junior promouvable, elles sont
      * silencieusement perdues ; sinon elles restent en attente d'un coup
      * {@link Promouvoir} explicite, même s'il n'y en a qu'un seul possible — jamais
-     * appliqué à la place du joueur.
+     * appliqué à la place du joueur. Les choix d'attribut ({@code anyAttribute},
+     * {@code lowestAttribute} ambigu) traversent tels quels : ils n'ont pas de cas
+     * « perdu », un choix reste toujours possible entre au moins deux pistes.
      */
-    private static EffectOutcome collectPromotions(GameState state, int player, EffectOutcome outcome) {
+    private static EffectOutcome collectPendingDecisions(GameState state, int player, EffectOutcome outcome) {
         state.player(player).gainVessels(outcome.vesselsEarned());
         boolean resolvable = !promotableJuniors(state.player(player)).isEmpty();
         int promotions = resolvable ? outcome.promotionsEarned() : 0;
-        return new EffectOutcome(outcome.impactsEarned(), 0, promotions);
+        return new EffectOutcome(outcome.impactsEarned(), 0, promotions, outcome.anyAttributeEarned(),
+                outcome.lowestAttributeEarned());
     }
 
     /** Retourne le Junior visé côté Senior et renvoie ses gains immédiats, non encore encaissés. */
@@ -598,6 +623,72 @@ public final class ActivationDriver {
         if (!promotable) {
             throw new IllegalStateException("Tuile non promouvable : " + specialistId);
         }
+    }
+
+    /**
+     * Vrai s'il reste un choix d'attribut libre à résoudre (le tour est suspendu) —
+     * toujours ambigu, les 4 pistes sont toujours valides.
+     */
+    private static boolean mustChooseAnyAttribute(GameState state) {
+        return state.activationCursor().pendingAnyAttribute() > 0;
+    }
+
+    /** Les 4 pistes, toujours valides pour un choix {@code anyAttribute}. */
+    private static List<Action> anyAttributeChoices() {
+        return List.of(Attribute.values()).stream()
+                .map(attribute -> (Action) new ChoisirAttribut(attribute))
+                .toList();
+    }
+
+    private static void placePendingAnyAttribute(GameState state, int player, ActivationCursor cursor,
+                                                  Action action) {
+        if (!(action instanceof ChoisirAttribut choice)) {
+            throw new IllegalStateException("Un choix d'attribut reste à faire avant de poursuivre le tour");
+        }
+        EffectOutcome outcome = resolveAttributeChoice(state, player, choice.attribute());
+        state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
+                cursor.activatedSpecialist(), cursor.actionStep(),
+                cursor.pendingImpacts() + outcome.impactsEarned(),
+                cursor.pendingPromotions() + outcome.promotionsEarned(),
+                cursor.pendingAnyAttribute() - 1 + outcome.anyAttributeEarned(),
+                cursor.pendingLowestAttribute() + outcome.lowestAttributeEarned(), null, null));
+    }
+
+    /**
+     * Vrai s'il reste un choix {@code lowestAttribute} ambigu à résoudre (le tour
+     * est suspendu) — ne vaut jamais plus de 0 sans égalité entre pistes au plus
+     * bas niveau, {@link GainResolver} ayant déjà résolu le cas non ambigu.
+     */
+    private static boolean mustChooseLowestAttribute(GameState state) {
+        return state.activationCursor().pendingLowestAttribute() > 0;
+    }
+
+    private static List<Action> lowestAttributeChoices(GameState state, int playerIndex) {
+        return GainResolver.lowestAttributes(state.player(playerIndex)).stream()
+                .map(attribute -> (Action) new ChoisirAttribut(attribute))
+                .toList();
+    }
+
+    private static void placePendingLowestAttribute(GameState state, int player, ActivationCursor cursor,
+                                                     Action action) {
+        if (!(action instanceof ChoisirAttribut choice)) {
+            throw new IllegalStateException("Un choix d'attribut reste à faire avant de poursuivre le tour");
+        }
+        if (!GainResolver.lowestAttributes(state.player(player)).contains(choice.attribute())) {
+            throw new IllegalStateException("Piste hors égalité au plus bas niveau : " + choice.attribute());
+        }
+        EffectOutcome outcome = resolveAttributeChoice(state, player, choice.attribute());
+        state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
+                cursor.activatedSpecialist(), cursor.actionStep(),
+                cursor.pendingImpacts() + outcome.impactsEarned(),
+                cursor.pendingPromotions() + outcome.promotionsEarned(),
+                cursor.pendingAnyAttribute() + outcome.anyAttributeEarned(),
+                cursor.pendingLowestAttribute() - 1 + outcome.lowestAttributeEarned(), null, null));
+    }
+
+    /** Avance la piste choisie d'un cran — même résolveur qu'un gain fixe, même cascade. */
+    private static EffectOutcome resolveAttributeChoice(GameState state, int player, Attribute attribute) {
+        return resolveAndCollect(state, player, List.of(Gain.fromCode(attribute.code())));
     }
 
     /** Les coups légaux d'une découverte en cours : choisir une tuile, puis la poser. */
@@ -637,7 +728,7 @@ public final class ActivationDriver {
                         "Aucune pose valide pour " + keep.tileId() + " (règle « aire pleine → 1 impact » à venir)");
             }
             state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                    cursor.activatedSpecialist(), cursor.actionStep(), 0, 0, pending.kept(keep.tileId()), null));
+                    cursor.activatedSpecialist(), cursor.actionStep(), 0, 0, 0, 0, pending.kept(keep.tileId()), null));
             return;
         }
         if (!(action instanceof PoserTuile placement)) {
@@ -648,7 +739,7 @@ public final class ActivationDriver {
         DiveSiteSetup.stack(state.oceanBoard(), state.diveTokenPile(), state.random(),
                 placement.cell(), tileById(state, pending.keptTile()));
         EffectOutcome outcome = resolveDiscoverBonus(state, player, pending.keptTile());
-        state.setActivationCursor(cursorAfterChainStep(cursor, outcome.impactsEarned(), outcome.promotionsEarned()));
+        state.setActivationCursor(cursorAfterChainStep(cursor, outcome));
     }
 
     /**
@@ -813,11 +904,10 @@ public final class ActivationDriver {
 
     /**
      * Les Publications légales s'il reste un disque en transit à poser : pour
-     * chaque revue à l'étude dont les gains sont déjà résolvables (aucune
-     * mécanique de choix d'attribut) et le coût payable, chaque zone où le
-     * joueur a un submersible, chaque site de publication encore libre dont le
-     * symbole de domaine y correspond. Ne juge pas si l'action est offerte —
-     * c'est l'affaire de l'appelant.
+     * chaque revue à l'étude dont le coût est payable, chaque zone où le joueur
+     * a un submersible, chaque site de publication encore libre dont le symbole
+     * de domaine y correspond. Ne juge pas si l'action est offerte — c'est
+     * l'affaire de l'appelant.
      */
     private static List<Publier> publierOf(GameState state, int playerIndex) {
         if (state.player(playerIndex).transitDiscs() == 0) {
@@ -828,7 +918,7 @@ public final class ActivationDriver {
         List<Publier> publications = new ArrayList<>();
         for (String journalId : state.journalMarket().underStudy()) {
             Journal journal = journalById(state, journalId);
-            if (research < journal.researchCost() || !publishableGains(journal)) {
+            if (research < journal.researchCost()) {
                 continue;
             }
             for (Cell cell : ocean.vesselCells(playerIndex)) {
@@ -841,15 +931,6 @@ public final class ActivationDriver {
             }
         }
         return publications;
-    }
-
-    /**
-     * Vrai si la revue est publiable dès maintenant : ses gains — pour le
-     * publicateur comme pour les adversaires — ne dépendent d'aucune mécanique
-     * encore absente (choix d'attribut).
-     */
-    private static boolean publishableGains(Journal journal) {
-        return resolvableGains(journal.publisherGains()) && resolvableGains(journal.opponentsGains());
     }
 
     /**
@@ -922,15 +1003,15 @@ public final class ActivationDriver {
     }
 
     /**
-     * Vrai si l'option est réalisable maintenant : un lot de gains que le résolveur
-     * sait déjà traiter (donc payable), ou une action déjà jouable par le moteur
-     * (Sonar, Voyage, Plongée, Conservation, Publication, Promotion) qui a au moins
-     * un coup possible.
+     * Vrai si l'option est réalisable maintenant : un lot de gains dont le coût est
+     * payable (tout gain est désormais résolvable, au besoin via une décision
+     * suspendue), ou une action déjà jouable par le moteur (Sonar, Voyage,
+     * Plongée, Conservation, Publication, Promotion) qui a au moins un coup
+     * possible.
      */
     private static boolean isPlayable(GameState state, int playerIndex, DiveOption option) {
         return switch (option) {
-            case DiveOption.Gains gains ->
-                    resolvableGains(gains.gains()) && affordable(state, playerIndex, gains.cost());
+            case DiveOption.Gains gains -> affordable(state, playerIndex, gains.cost());
             case DiveOption.TriggersAction trigger -> switch (trigger.type()) {
                 case SONAR -> !sonarsOf(state, playerIndex).isEmpty();
                 case TRAVEL -> !voyagesOf(state, playerIndex).isEmpty();
@@ -940,14 +1021,6 @@ public final class ActivationDriver {
                 case PROMOTE -> !promotionChoices(state, playerIndex).isEmpty();
             };
         };
-    }
-
-    /**
-     * Vrai si aucun des gains ne dépend d'une décision que le moteur ne sait pas
-     * encore résoudre (anyAttribute, lowestAttribute : mécanique de choix à venir).
-     */
-    private static boolean resolvableGains(List<Gain> gains) {
-        return gains.stream().noneMatch(gain -> gain == Gain.ANY_ATTRIBUTE || gain == Gain.LOWEST_ATTRIBUTE);
     }
 
     /** Vrai si le joueur peut payer ce coût — seul le disque de réserve est pris en charge. */

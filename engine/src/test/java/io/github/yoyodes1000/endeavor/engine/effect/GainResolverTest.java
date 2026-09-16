@@ -88,10 +88,43 @@ class GainResolverTest {
     }
 
     @Test
-    void lesGainsDeChoixDAttributNeSontPasEncoreResolus() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> GainResolver.resolve(player(), List.of(Gain.ANY_ATTRIBUTE)));
-        assertThrows(UnsupportedOperationException.class,
-                () -> GainResolver.resolve(player(), List.of(Gain.LOWEST_ATTRIBUTE)));
+    void anyAttributeEstToujoursUnChoixEnAttente() {
+        EffectOutcome outcome = GainResolver.resolve(player(), List.of(Gain.ANY_ATTRIBUTE));
+        assertEquals(1, outcome.anyAttributeEarned());
+    }
+
+    @Test
+    void lowestAttributeEstAmbiguQuandLesQuatrePistesSontAEgalite() {
+        // un joueur neuf a ses 4 pistes à 0 : égalité totale
+        EffectOutcome outcome = GainResolver.resolve(player(), List.of(Gain.LOWEST_ATTRIBUTE));
+        assertEquals(1, outcome.lowestAttributeEarned());
+    }
+
+    @Test
+    void lowestAttributeAvanceDirectementLUniquePisteAuPlusBas() {
+        Player player = player();
+        player.attributes().advance(Attribute.INSPIRATION, 3);
+        player.attributes().advance(Attribute.COORDINATION, 3);
+        player.attributes().advance(Attribute.REPUTATION, 3);
+        // ingéniosité reste à 0 : seule la plus basse
+
+        EffectOutcome outcome = GainResolver.resolve(player, List.of(Gain.LOWEST_ATTRIBUTE));
+
+        assertEquals(0, outcome.lowestAttributeEarned(), "pas d'égalité : résolu directement, sans décision");
+        assertEquals(1, player.attributes().step(Attribute.INGENUITY));
+    }
+
+    @Test
+    void lowestAttributeDeclencheLaMemeCascadeQuUnGainFixe() {
+        Player player = player();
+        player.attributes().advance(Attribute.INSPIRATION, 5);
+        player.attributes().advance(Attribute.COORDINATION, 5);
+        player.attributes().advance(Attribute.REPUTATION, 5);
+        player.attributes().advance(Attribute.INGENUITY, 1); // seule la plus basse, juste sous la case 2
+
+        EffectOutcome outcome = GainResolver.resolve(player, List.of(Gain.LOWEST_ATTRIBUTE));
+
+        assertEquals(2, player.attributes().step(Attribute.INGENUITY));
+        assertEquals(1, outcome.vesselsEarned(), "case 2 d'ingéniosité : submersible gagné");
     }
 }

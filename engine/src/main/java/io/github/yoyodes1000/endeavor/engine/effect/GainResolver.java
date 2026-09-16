@@ -4,6 +4,7 @@ import io.github.yoyodes1000.endeavor.engine.board.Attribute;
 import io.github.yoyodes1000.endeavor.engine.player.Player;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,8 +18,14 @@ import java.util.List;
  * remonte le nombre d'impacts et de submersibles gagnés dans un
  * {@link EffectOutcome}.
  *
- * <p>Il ne <strong>pose</strong> rien : la mise en jeu de ces impacts et
- * submersibles demande une décision et une cascade, laissées à l'appelant.
+ * <p>{@code lowestAttribute} avance lui aussi une piste sans décision <strong>si
+ * une seule</strong> est au plus bas niveau — sinon (égalité) le choix reste en
+ * attente, comme {@code anyAttribute}, qui n'est jamais résolu ici (les 4 pistes
+ * sont toujours valides).
+ *
+ * <p>Il ne <strong>pose</strong> rien : la mise en jeu de ces impacts,
+ * promotions et choix d'attribut demande une décision et une cascade, laissées
+ * à l'appelant.
  */
 public final class GainResolver {
 
@@ -31,35 +38,71 @@ public final class GainResolver {
 
     /**
      * Applique les gains dans l'ordre et renvoie les effets restant à mettre en
-     * jeu (impacts et submersibles gagnés).
+     * jeu (impacts, promotions et choix d'attribut ambigus gagnés), et les
+     * submersibles gagnés.
      */
     public static EffectOutcome resolve(Player player, List<Gain> gains) {
         int impacts = 0;
         int vessels = 0;
         int promotions = 0;
+        int anyAttributeChoices = 0;
+        int lowestAttributeChoices = 0;
         for (Gain gain : gains) {
             switch (gain) {
                 case INSPIRATION, COORDINATION, REPUTATION, INGENUITY -> {
-                    Attribute attribute = Attribute.fromCode(gain.code());
-                    player.attributes().advance(attribute, 1);
-                    int step = player.attributes().step(attribute);
-                    if (attribute == Attribute.INGENUITY
-                            && (step == INGENUITY_VESSEL_LOW || step == INGENUITY_VESSEL_HIGH)) {
-                        vessels++;
-                    }
-                    if (step == IMPACT_CELL) {
-                        impacts++;
-                    }
+                    Advance advance = advanceAttribute(player, Attribute.fromCode(gain.code()));
+                    impacts += advance.impacts();
+                    vessels += advance.vessels();
                 }
                 case RESEARCH -> player.gainResearch(1);
                 case DISC -> player.gainDiscs(1);
                 case IMPACT -> impacts++;
                 case PROMOTE -> promotions++;
-                case ANY_ATTRIBUTE, LOWEST_ATTRIBUTE ->
-                        throw new UnsupportedOperationException(
-                                "Résolution du gain « " + gain.code() + " » à venir");
+                case ANY_ATTRIBUTE -> anyAttributeChoices++;
+                case LOWEST_ATTRIBUTE -> {
+                    List<Attribute> lowest = lowestAttributes(player);
+                    if (lowest.size() == 1) {
+                        Advance advance = advanceAttribute(player, lowest.get(0));
+                        impacts += advance.impacts();
+                        vessels += advance.vessels();
+                    } else {
+                        lowestAttributeChoices++;
+                    }
+                }
             }
         }
-        return new EffectOutcome(impacts, vessels, promotions);
+        return new EffectOutcome(impacts, vessels, promotions, anyAttributeChoices, lowestAttributeChoices);
+    }
+
+    /**
+     * Les pistes d'attribut actuellement au plus bas niveau (une seule, sauf
+     * égalité) — public pour que le driver d'activation puisse offrir le même
+     * choix quand {@code lowestAttribute} est ambigu (résolution différée).
+     */
+    public static List<Attribute> lowestAttributes(Player player) {
+        int min = Integer.MAX_VALUE;
+        for (Attribute attribute : Attribute.values()) {
+            min = Math.min(min, player.attributes().step(attribute));
+        }
+        List<Attribute> lowest = new ArrayList<>();
+        for (Attribute attribute : Attribute.values()) {
+            if (player.attributes().step(attribute) == min) {
+                lowest.add(attribute);
+            }
+        }
+        return lowest;
+    }
+
+    /** Avance une piste d'un cran et détecte les franchissements (submersible, impact). */
+    private static Advance advanceAttribute(Player player, Attribute attribute) {
+        player.attributes().advance(attribute, 1);
+        int step = player.attributes().step(attribute);
+        int vessels = attribute == Attribute.INGENUITY
+                && (step == INGENUITY_VESSEL_LOW || step == INGENUITY_VESSEL_HIGH) ? 1 : 0;
+        int impacts = step == IMPACT_CELL ? 1 : 0;
+        return new Advance(impacts, vessels);
+    }
+
+    private record Advance(int impacts, int vessels) {
     }
 }
