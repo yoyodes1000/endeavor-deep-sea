@@ -2,8 +2,10 @@ package io.github.yoyodes1000.endeavor.engine.activation;
 
 import io.github.yoyodes1000.endeavor.engine.action.Action;
 import io.github.yoyodes1000.endeavor.engine.action.Activer;
+import io.github.yoyodes1000.endeavor.engine.action.GarderTuile;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.PoserImpact;
+import io.github.yoyodes1000.endeavor.engine.action.PoserTuile;
 import io.github.yoyodes1000.endeavor.engine.action.Sonar;
 import io.github.yoyodes1000.endeavor.engine.action.TerminerTour;
 import io.github.yoyodes1000.endeavor.engine.action.Voyager;
@@ -13,6 +15,7 @@ import io.github.yoyodes1000.endeavor.engine.effect.GainResolver;
 import io.github.yoyodes1000.endeavor.engine.effect.ImpactPlacement;
 import io.github.yoyodes1000.endeavor.engine.game.ActivationCursor;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
+import io.github.yoyodes1000.endeavor.engine.game.PendingDiscovery;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
@@ -45,9 +48,11 @@ import java.util.Set;
  *
  * <p>Le {@link Sonar} suit : dépenser un disque de transit pour le poser sur la
  * case libre la plus à gauche d'une piste Sonar d'une zone où le joueur a un
- * submersible. Pour l'instant, seules les cases <strong>récompense</strong> sont
- * offertes (leurs gains passent par le résolveur et la même cascade d'impacts) ;
- * les cases <strong>découverte</strong> attendent leur propre mécanisme.
+ * submersible. Une case <strong>récompense</strong> encaisse ses gains (via le
+ * résolveur et la même cascade d'impacts) ; une case <strong>découverte</strong>
+ * pioche deux tuiles et suspend le tour sur deux décisions — {@link GarderTuile}
+ * (garder l'une, l'autre retourne à la pioche) puis {@link PoserTuile} (poser la
+ * gardée sur une case valide, ce qui encaisse son bonus de découverte).
  *
  * <p>Résoudre un bonus d'arrivée peut relancer une <strong>cascade</strong> :
  * les submersibles gagnés rejoignent le stock du joueur, et chaque pion impact
@@ -58,6 +63,9 @@ import java.util.Set;
  * en attente — vit dans l'{@link ActivationCursor}, copié avec l'état (déc. 2 et 3).
  */
 public final class ActivationDriver {
+
+    /** Une découverte fait piocher deux tuiles, dont une est gardée. */
+    private static final int DISCOVERY_DRAW = 2;
 
     private ActivationDriver() {
     }
@@ -76,6 +84,9 @@ public final class ActivationDriver {
     public static List<Action> legalActions(GameState state) {
         if (isDone(state)) {
             return List.of();
+        }
+        if (state.activationCursor().discovering()) {
+            return discoveryActions(state);
         }
         if (mustPlaceImpact(state)) {
             return impactPlacements(state);
@@ -107,6 +118,10 @@ public final class ActivationDriver {
         }
         ActivationCursor cursor = state.activationCursor();
         int player = currentPlayer(state);
+        if (cursor.discovering()) {
+            applyDiscovery(state, player, cursor, action);
+            return;
+        }
         if (mustPlaceImpact(state)) {
             placePendingImpact(state, player, cursor, action);
             return;
@@ -118,7 +133,7 @@ public final class ActivationDriver {
                 }
                 state.player(player).activate(activer.specialistId());
                 state.setActivationCursor(new ActivationCursor(
-                        cursor.turnPosition(), cursor.passed(), activer.specialistId(), 0, 0));
+                        cursor.turnPosition(), cursor.passed(), activer.specialistId(), 0, 0, null));
             }
             case Voyager voyager -> {
                 if (!cursor.activatedThisTurn()) {
@@ -129,35 +144,56 @@ public final class ActivationDriver {
                 state.oceanBoard().moveVessel(voyager.from(), voyager.to(), player);
                 EffectOutcome arrival = resolveArrival(state, player, voyager.to());
                 state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                        cursor.activatedSpecialist(), cursor.actionStep() + 1, arrival.impactsEarned()));
+                        cursor.activatedSpecialist(), cursor.actionStep() + 1, arrival.impactsEarned(), null));
             }
-            case Sonar sonar -> {
-                if (!cursor.activatedThisTurn()) {
-                    throw new IllegalStateException("Sonar sans spécialiste activé");
-                }
-                requireSlotOffers(state, player, cursor, ActionType.SONAR);
-                SonarSpot.Reward reward = requireSonarReward(state, player, sonar);
-                state.player(player).spendTransitDisc();
-                state.oceanBoard().placeSonarDisc(sonar.cell(), sonar.trackIndex(), player);
-                EffectOutcome outcome = GainResolver.resolve(state.player(player), reward.gains());
-                state.player(player).gainVessels(outcome.vesselsEarned());
-                state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                        cursor.activatedSpecialist(), cursor.actionStep() + 1, outcome.impactsEarned()));
-            }
+            case Sonar sonar -> applySonar(state, player, cursor, sonar);
             case TerminerTour ignored -> {
                 if (!cursor.activatedThisTurn()) {
                     throw new IllegalStateException("Rien à terminer : agir ou passer");
                 }
                 state.setActivationCursor(new ActivationCursor(
-                        nextActivePosition(state, cursor, cursor.passed()), cursor.passed(), null, 0, 0));
+                        nextActivePosition(state, cursor, cursor.passed()), cursor.passed(), null, 0, 0, null));
             }
             case Passer ignored -> {
                 Set<Integer> passed = new HashSet<>(cursor.passed());
                 passed.add(player);
                 state.setActivationCursor(new ActivationCursor(
-                        nextActivePosition(state, cursor, passed), passed, null, 0, 0));
+                        nextActivePosition(state, cursor, passed), passed, null, 0, 0, null));
             }
             default -> throw new IllegalStateException("Coup inattendu en activation : " + action);
+        }
+    }
+
+    /**
+     * Applique un Sonar : dépenser un disque de transit, le poser sur la case libre
+     * la plus à gauche de la piste, puis résoudre cette case. Une <strong>récompense</strong>
+     * encaisse ses gains ; une <strong>découverte</strong> tire deux tuiles et suspend le
+     * tour sur le choix de celle à garder (le reste de la découverte s'enchaîne ensuite).
+     */
+    private static void applySonar(GameState state, int player, ActivationCursor cursor, Sonar sonar) {
+        if (!cursor.activatedThisTurn()) {
+            throw new IllegalStateException("Sonar sans spécialiste activé");
+        }
+        requireSlotOffers(state, player, cursor, ActionType.SONAR);
+        SonarSpot spot = requireSonarSpot(state, player, sonar);
+        if (exhaustedDiscovery(state, spot)) {
+            throw new IllegalStateException("Pioche épuisée pour cette découverte (règle limite à venir)");
+        }
+        state.player(player).spendTransitDisc();
+        state.oceanBoard().placeSonarDisc(sonar.cell(), sonar.trackIndex(), player);
+        switch (spot) {
+            case SonarSpot.Reward reward -> {
+                EffectOutcome outcome = GainResolver.resolve(state.player(player), reward.gains());
+                state.player(player).gainVessels(outcome.vesselsEarned());
+                state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
+                        cursor.activatedSpecialist(), cursor.actionStep() + 1, outcome.impactsEarned(), null));
+            }
+            case SonarSpot.Discover discover -> {
+                List<String> drawn = state.discoveryPile().draw(
+                        DISCOVERY_DRAW, Set.copyOf(discover.levels()), state.random());
+                state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
+                        cursor.activatedSpecialist(), cursor.actionStep(), 0, PendingDiscovery.toChooseFrom(drawn)));
+            }
         }
     }
 
@@ -184,7 +220,92 @@ public final class ActivationDriver {
         state.player(player).gainVessels(outcome.vesselsEarned());
         int stillPending = cursor.pendingImpacts() - 1 + outcome.impactsEarned();
         state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                cursor.activatedSpecialist(), cursor.actionStep(), stillPending));
+                cursor.activatedSpecialist(), cursor.actionStep(), stillPending, null));
+    }
+
+    /** Les coups légaux d'une découverte en cours : choisir une tuile, puis la poser. */
+    private static List<Action> discoveryActions(GameState state) {
+        PendingDiscovery pending = state.activationCursor().pendingDiscovery();
+        if (pending.awaitingChoice()) {
+            return pending.candidates().stream()
+                    .map(tileId -> (Action) new GarderTuile(tileId))
+                    .toList();
+        }
+        return validPlacements(state, pending.keptTile()).stream()
+                .map(cell -> (Action) new PoserTuile(cell))
+                .toList();
+    }
+
+    /**
+     * Applique un coup pendant une découverte : d'abord garder l'une des tuiles
+     * piochées (l'autre retourne à la pioche), puis poser la tuile gardée sur une
+     * case valide, ce qui encaisse son bonus de découverte et clôt le pas de Sonar.
+     */
+    private static void applyDiscovery(GameState state, int player, ActivationCursor cursor, Action action) {
+        PendingDiscovery pending = cursor.pendingDiscovery();
+        if (pending.awaitingChoice()) {
+            if (!(action instanceof GarderTuile keep)) {
+                throw new IllegalStateException("Une tuile de découverte reste à choisir");
+            }
+            if (!pending.candidates().contains(keep.tileId())) {
+                throw new IllegalStateException("Tuile hors des candidates de découverte : " + keep.tileId());
+            }
+            for (String candidate : pending.candidates()) {
+                if (!candidate.equals(keep.tileId())) {
+                    state.discoveryPile().returnTile(candidate);
+                }
+            }
+            if (validPlacements(state, keep.tileId()).isEmpty()) {
+                throw new IllegalStateException(
+                        "Aucune pose valide pour " + keep.tileId() + " (règle « aire pleine → 1 impact » à venir)");
+            }
+            state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
+                    cursor.activatedSpecialist(), cursor.actionStep(), 0, pending.kept(keep.tileId())));
+            return;
+        }
+        if (!(action instanceof PoserTuile placement)) {
+            throw new IllegalStateException("La tuile de découverte reste à poser");
+        }
+        requireValidPlacement(state, pending.keptTile(), placement.cell());
+        state.oceanBoard().placeTile(placement.cell(), pending.keptTile());
+        EffectOutcome outcome = resolveDiscoverBonus(state, player, pending.keptTile());
+        state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
+                cursor.activatedSpecialist(), cursor.actionStep() + 1, outcome.impactsEarned(), null));
+    }
+
+    /**
+     * Les cases où poser une tuile de découverte : une case libre de la profondeur
+     * de la tuile, et — hors niveau 1 — sous une zone déjà en jeu (la case juste
+     * au-dessus est occupée).
+     */
+    private static List<Cell> validPlacements(GameState state, String tileId) {
+        int depth = tileById(state, tileId).depth();
+        OceanBoard ocean = state.oceanBoard();
+        List<Cell> cells = new ArrayList<>();
+        for (int col = 0; col < ocean.columns(); col++) {
+            Cell cell = new Cell(depth, col);
+            if (ocean.isOccupied(cell)) {
+                continue;
+            }
+            if (depth == 1 || ocean.isOccupied(new Cell(depth - 1, col))) {
+                cells.add(cell);
+            }
+        }
+        return cells;
+    }
+
+    private static void requireValidPlacement(GameState state, String tileId, Cell cell) {
+        if (!validPlacements(state, tileId).contains(cell)) {
+            throw new IllegalStateException("Pose de tuile de découverte invalide en " + cell);
+        }
+    }
+
+    /** Encaisse le bonus de découverte d'une tuile fraîchement posée (gains + submersibles). */
+    private static EffectOutcome resolveDiscoverBonus(GameState state, int player, String tileId) {
+        OceanTile tile = tileById(state, tileId);
+        EffectOutcome outcome = GainResolver.resolve(state.player(player), tile.discoverBonus());
+        state.player(player).gainVessels(outcome.vesselsEarned());
+        return outcome;
     }
 
     /**
@@ -203,6 +324,11 @@ public final class ActivationDriver {
     private static OceanTile tileAt(GameState state, Cell cell) {
         String tileId = state.oceanBoard().tileAt(cell).orElseThrow(
                 () -> new IllegalStateException("Zone sans tuile : " + cell));
+        return tileById(state, tileId);
+    }
+
+    /** La tuile d'identifiant donné dans le catalogue. */
+    private static OceanTile tileById(GameState state, String tileId) {
         return state.oceanTileCatalog().byId(tileId).orElseThrow(
                 () -> new IllegalStateException("Tuile inconnue au catalogue : " + tileId));
     }
@@ -245,8 +371,8 @@ public final class ActivationDriver {
     /**
      * Les Sonars légaux si l'emplacement d'action courant offre le sonar et qu'il
      * reste un disque en transit à poser : pour chaque zone où le joueur a un
-     * submersible, chaque piste dont la case libre la plus à gauche est une
-     * récompense (les cases de découverte, non encore gérées, ne sont pas offertes).
+     * submersible, chaque piste qui a encore une case libre — récompense (gains
+     * immédiats) ou découverte (piocher et poser une tuile).
      */
     private static List<Sonar> sonarsOf(GameState state, int playerIndex, ActivationCursor cursor) {
         if (!currentSlotOffers(state, playerIndex, cursor, ActionType.SONAR)) {
@@ -262,12 +388,18 @@ public final class ActivationDriver {
             for (int trackIndex = 0; trackIndex < tracks.size(); trackIndex++) {
                 SonarSpot spot = leftmostFreeSpot(tracks.get(trackIndex),
                         ocean.sonarDiscCount(cell, trackIndex)).orElse(null);
-                if (spot instanceof SonarSpot.Reward) {
+                if (spot != null && !exhaustedDiscovery(state, spot)) {
                     sonars.add(new Sonar(cell, trackIndex));
                 }
             }
         }
         return sonars;
+    }
+
+    /** Vrai si la case est une découverte dont les niveaux n'ont plus de tuile à piocher. */
+    private static boolean exhaustedDiscovery(GameState state, SonarSpot spot) {
+        return spot instanceof SonarSpot.Discover discover
+                && state.discoveryPile().availableAtLevels(Set.copyOf(discover.levels())).isEmpty();
     }
 
     /** La case libre la plus à gauche d'une piste, ou vide si la piste est pleine. */
@@ -313,14 +445,14 @@ public final class ActivationDriver {
     }
 
     /**
-     * Résout la case libre la plus à gauche de la piste visée et exige qu'elle soit
-     * une récompense (seul cas géré à ce stade). Vérifie au passage la présence d'un
-     * submersible et l'existence de la piste.
+     * Résout la case libre la plus à gauche de la piste visée — récompense ou
+     * découverte. Vérifie au passage la présence d'un submersible et l'existence de
+     * la piste.
      *
      * @throws IllegalStateException si le joueur n'a pas de submersible dans la zone,
-     *     si la piste n'existe pas ou est pleine, ou si la case libre est une découverte
+     *     ou si la piste n'existe pas ou est pleine
      */
-    private static SonarSpot.Reward requireSonarReward(GameState state, int playerIndex, Sonar sonar) {
+    private static SonarSpot requireSonarSpot(GameState state, int playerIndex, Sonar sonar) {
         if (state.oceanBoard().vesselCount(sonar.cell(), playerIndex) == 0) {
             throw new IllegalStateException("Aucun submersible dans la zone du Sonar : " + sonar.cell());
         }
@@ -330,12 +462,8 @@ public final class ActivationDriver {
                     "Piste Sonar inexistante en " + sonar.cell() + " : " + sonar.trackIndex());
         }
         int filled = state.oceanBoard().sonarDiscCount(sonar.cell(), sonar.trackIndex());
-        SonarSpot spot = leftmostFreeSpot(tracks.get(sonar.trackIndex()), filled).orElseThrow(
+        return leftmostFreeSpot(tracks.get(sonar.trackIndex()), filled).orElseThrow(
                 () -> new IllegalStateException("Piste Sonar déjà pleine : " + sonar.cell()));
-        if (!(spot instanceof SonarSpot.Reward reward)) {
-            throw new IllegalStateException("La case Sonar libre n'est pas une récompense (découverte à venir)");
-        }
-        return reward;
     }
 
     private static int currentPlayer(GameState state) {

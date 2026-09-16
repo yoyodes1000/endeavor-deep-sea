@@ -19,9 +19,11 @@ import java.util.Set;
  *                            du spécialiste activé (0 juste après l'activation)
  * @param pendingImpacts      pions impact gagnés (par un bonus d'arrivée, une
  *                            cascade) restant à poser avant de poursuivre le tour
+ * @param pendingDiscovery    la découverte en cours (tuiles piochées à départager
+ *                            puis à poser), ou {@code null} hors découverte
  */
 public record ActivationCursor(int turnPosition, Set<Integer> passed, String activatedSpecialist,
-                               int actionStep, int pendingImpacts) {
+                               int actionStep, int pendingImpacts, PendingDiscovery pendingDiscovery) {
 
     public ActivationCursor {
         if (turnPosition < 0) {
@@ -41,11 +43,16 @@ public record ActivationCursor(int turnPosition, Set<Integer> passed, String act
 
     /** Le curseur d'entrée en Phase 2 : premier joueur du tour, personne n'a passé. */
     public static ActivationCursor notStarted() {
-        return new ActivationCursor(0, Set.of(), null, 0, 0);
+        return new ActivationCursor(0, Set.of(), null, 0, 0, null);
     }
 
     /** Vrai si le joueur courant a déjà activé un spécialiste ce tour. */
     public boolean activatedThisTurn() {
         return activatedSpecialist != null;
+    }
+
+    /** Vrai si une découverte est en cours et suspend le tour. */
+    public boolean discovering() {
+        return pendingDiscovery != null;
     }
 }

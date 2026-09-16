@@ -163,6 +163,11 @@ public final class OceanBoard {
         return Optional.ofNullable(tileByCell.get(cell));
     }
 
+    /** Les identifiants des tuiles actuellement en jeu sur la grille. */
+    public Set<String> placedTileIds() {
+        return new HashSet<>(tileByCell.values());
+    }
+
     /**
      * Ajoute des submersibles d'un joueur dans une zone (mise en jeu, arrivée d'un
      * Voyage). Une zone peut en porter plusieurs, de joueurs différents.
