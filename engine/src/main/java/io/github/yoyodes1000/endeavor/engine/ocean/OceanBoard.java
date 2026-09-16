@@ -39,8 +39,9 @@ import java.util.Set;
  * dont l'action Plongée prend le sommet ({@link #takeDiveToken}). Les
  * <strong>sites de conservation</strong> suivent le même patron mais à un seul
  * disque, jamais repris ({@link #placeConservationDisc}, {@link
- * #conservationSiteOccupied}). L'occupation des autres sites viendra avec les
- * actions qui l'écrivent.
+ * #conservationSiteOccupied}) — comme les <strong>sites de publication</strong>
+ * ({@link #placeJournalDisc}, {@link #journalSiteOccupied}). L'occupation des
+ * autres sites viendra avec les actions qui l'écrivent.
  */
 public final class OceanBoard {
 
@@ -62,12 +63,17 @@ public final class OceanBoard {
     private record ConservationSiteKey(Cell cell, String siteId) {
     }
 
+    /** Un site de publication identifié sur la grille : sa case et son identifiant sur la tuile. */
+    private record JournalSiteKey(Cell cell, String siteId) {
+    }
+
     private final int columns;
     private final Map<Cell, String> tileByCell;
     private final Map<Cell, Map<Integer, Integer>> vesselsByCell;
     private final Map<SonarTrackKey, List<Integer>> sonarDiscsByTrack;
     private final Map<DiveSiteKey, Deque<String>> diveTokensBySite;
     private final Map<ConservationSiteKey, Integer> conservationOccupantBySite;
+    private final Map<JournalSiteKey, Integer> journalOccupantBySite;
 
     /** Un océan vide de {@code columns} colonnes ; les tuiles s'y posent ensuite. */
     public OceanBoard(int columns) {
@@ -80,11 +86,13 @@ public final class OceanBoard {
         this.sonarDiscsByTrack = new HashMap<>();
         this.diveTokensBySite = new HashMap<>();
         this.conservationOccupantBySite = new HashMap<>();
+        this.journalOccupantBySite = new HashMap<>();
     }
 
     private OceanBoard(int columns, Map<Cell, String> tiles, Map<Cell, Map<Integer, Integer>> vessels,
                        Map<SonarTrackKey, List<Integer>> sonarDiscs, Map<DiveSiteKey, Deque<String>> diveTokens,
-                       Map<ConservationSiteKey, Integer> conservationOccupants) {
+                       Map<ConservationSiteKey, Integer> conservationOccupants,
+                       Map<JournalSiteKey, Integer> journalOccupants) {
         this.columns = columns;
         this.tileByCell = new HashMap<>(tiles);
         this.vesselsByCell = new HashMap<>();
@@ -100,6 +108,7 @@ public final class OceanBoard {
             this.diveTokensBySite.put(entry.getKey(), new ArrayDeque<>(entry.getValue()));
         }
         this.conservationOccupantBySite = new HashMap<>(conservationOccupants);
+        this.journalOccupantBySite = new HashMap<>(journalOccupants);
     }
 
     /**
@@ -391,6 +400,40 @@ public final class OceanBoard {
         }
     }
 
+    /** Vrai si un disque occupe déjà ce site de publication. */
+    public boolean journalSiteOccupied(Cell cell, String siteId) {
+        requireJournalSiteId(siteId);
+        return journalOccupantBySite.containsKey(new JournalSiteKey(cell, siteId));
+    }
+
+    /**
+     * Pose le disque d'un joueur sur un site de publication (l'action
+     * Publication) — un site n'accueille qu'un seul disque, jamais repris.
+     *
+     * @throws IllegalArgumentException si le joueur est invalide, si la case ne
+     *     porte pas de tuile, ou si le site est déjà occupé
+     */
+    public void placeJournalDisc(Cell cell, String siteId, int playerIndex) {
+        requireJournalSiteId(siteId);
+        if (playerIndex < 0) {
+            throw new IllegalArgumentException("Indice de joueur négatif : " + playerIndex);
+        }
+        if (!isOccupied(cell)) {
+            throw new IllegalArgumentException("Aucune zone où poser un disque de publication : " + cell);
+        }
+        JournalSiteKey key = new JournalSiteKey(cell, siteId);
+        if (journalOccupantBySite.containsKey(key)) {
+            throw new IllegalArgumentException("Site de publication déjà occupé : " + cell + "/" + siteId);
+        }
+        journalOccupantBySite.put(key, playerIndex);
+    }
+
+    private void requireJournalSiteId(String siteId) {
+        if (siteId == null || siteId.isBlank()) {
+            throw new IllegalArgumentException("Un site de publication doit avoir un identifiant");
+        }
+    }
+
     /** Les zones voisines occupées (adjacence orthogonale, vides exclus). */
     public List<Cell> neighbors(Cell cell) {
         List<Cell> result = new ArrayList<>();
@@ -451,7 +494,7 @@ public final class OceanBoard {
     /** Copie indépendante, pour isoler une simulation (décision 3). */
     public OceanBoard copy() {
         return new OceanBoard(columns, tileByCell, vesselsByCell, sonarDiscsByTrack, diveTokensBySite,
-                conservationOccupantBySite);
+                conservationOccupantBySite, journalOccupantBySite);
     }
 
     private void requireOnGrid(Cell cell) {

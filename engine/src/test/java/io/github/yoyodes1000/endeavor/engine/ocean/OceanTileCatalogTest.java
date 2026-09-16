@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test;
 class OceanTileCatalogTest {
 
     private static OceanTile tile(String id, int depth) {
-        return new OceanTile(id, id, depth, false, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+        return new OceanTile(id, id, depth, false, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
+                List.of());
     }
 
     @Test

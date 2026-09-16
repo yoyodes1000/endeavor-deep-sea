@@ -12,7 +12,8 @@ class OceanTileTest {
 
     private static OceanTile tile(String id, int depth) {
         return new OceanTile(id, "Nom", depth, false,
-                List.of(Gain.INSPIRATION), List.of(Gain.COORDINATION), List.of(), List.of(), List.of(), List.of());
+                List.of(Gain.INSPIRATION), List.of(Gain.COORDINATION), List.of(), List.of(), List.of(), List.of(),
+                List.of());
     }
 
     @Test
@@ -40,7 +41,7 @@ class OceanTileTest {
     @Test
     void lesSitesDeConservationSeRelisent() {
         OceanTile tuile = new OceanTile("x", "Nom", 1, false, List.of(), List.of(), List.of(), List.of(), List.of(),
-                List.of(new ConservationSite("c1", 2, List.of(Gain.REPUTATION))));
+                List.of(new ConservationSite("c1", 2, List.of(Gain.REPUTATION))), List.of());
         assertEquals(1, tuile.conservationSites().size());
         assertEquals("c1", tuile.conservationSites().get(0).id());
     }

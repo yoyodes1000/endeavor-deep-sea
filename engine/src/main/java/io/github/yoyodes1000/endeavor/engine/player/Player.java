@@ -27,9 +27,11 @@ public final class Player {
     private int vesselStock;
     private final List<HeldSpecialist> specialists;
     private final List<String> heldDiveTokens;
+    private final List<String> journals;
 
     private Player(Attributes attributes, int reserveDiscs, int transitDiscs, int research,
-                   int vesselStock, List<HeldSpecialist> specialists, List<String> heldDiveTokens) {
+                   int vesselStock, List<HeldSpecialist> specialists, List<String> heldDiveTokens,
+                   List<String> journals) {
         this.attributes = attributes;
         this.reserveDiscs = reserveDiscs;
         this.transitDiscs = transitDiscs;
@@ -37,6 +39,7 @@ public final class Player {
         this.vesselStock = vesselStock;
         this.specialists = specialists;
         this.heldDiveTokens = heldDiveTokens;
+        this.journals = journals;
     }
 
     /**
@@ -54,7 +57,8 @@ public final class Player {
         }
         List<HeldSpecialist> specialists = new ArrayList<>();
         specialists.add(HeldSpecialist.recruited(teamLeader));
-        return new Player(Attributes.atStart(), reserveDiscs, 0, 0, 0, specialists, new ArrayList<>());
+        return new Player(Attributes.atStart(), reserveDiscs, 0, 0, 0, specialists, new ArrayList<>(),
+                new ArrayList<>());
     }
 
     public Attributes attributes() {
@@ -269,9 +273,25 @@ public final class Player {
         return heldDiveTokens.remove(index);
     }
 
+    /**
+     * Les revues acquises par publication, dans l'ordre où elles ont été publiées
+     * (comptées au décompte final pour leurs points imprimés).
+     */
+    public List<String> journals() {
+        return Collections.unmodifiableList(journals);
+    }
+
+    /** Ajoute une revue tout juste publiée à la collection du joueur. */
+    public void acquireJournal(String journalId) {
+        if (journalId == null || journalId.isBlank()) {
+            throw new IllegalArgumentException("Une revue acquise doit avoir un identifiant");
+        }
+        journals.add(journalId);
+    }
+
     /** Copie indépendante, appelée une fois par simulation pour l'isoler (déc. 3). */
     public Player copy() {
         return new Player(attributes.copy(), reserveDiscs, transitDiscs, research, vesselStock,
-                new ArrayList<>(specialists), new ArrayList<>(heldDiveTokens));
+                new ArrayList<>(specialists), new ArrayList<>(heldDiveTokens), new ArrayList<>(journals));
     }
 }

@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 class OceanBoardSetupTest {
 
     private static OceanTile tile(String id, int depth, boolean unique) {
-        return new OceanTile(id, id, depth, unique, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+        return new OceanTile(id, id, depth, unique, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
+                List.of());
     }
 
     /** Trois tuiles de surface hors pioche des uniques, une unique, une de profondeur 2. */

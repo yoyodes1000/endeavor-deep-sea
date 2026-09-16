@@ -2,8 +2,10 @@ package io.github.yoyodes1000.endeavor.app.ocean;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
 import io.github.yoyodes1000.endeavor.engine.ocean.ConservationSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
+import io.github.yoyodes1000.endeavor.engine.ocean.JournalSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
 import io.github.yoyodes1000.endeavor.engine.ocean.SonarSpot;
@@ -74,7 +76,8 @@ public final class OceanTileLoader {
                 actions(entry.arrivalActions()),
                 sonarTracks(entry.sonarTracks()),
                 diveSites(entry.diveSites()),
-                conservationSites(entry.conservationSites()));
+                conservationSites(entry.conservationSites()),
+                journalSites(entry.journalSites()));
     }
 
     private static List<Gain> gains(List<String> raw) {
@@ -125,5 +128,16 @@ public final class OceanTileLoader {
             throw new IllegalArgumentException("Coût manquant pour le site de conservation " + site.id());
         }
         return new ConservationSite(site.id(), site.cost(), gains(site.gains()));
+    }
+
+    private static List<JournalSite> journalSites(List<OceanTileDocument.JournalSite> raw) {
+        return raw == null ? List.of() : raw.stream().map(OceanTileLoader::toJournalSite).toList();
+    }
+
+    private static JournalSite toJournalSite(OceanTileDocument.JournalSite site) {
+        if (site.fieldSymbol() == null) {
+            throw new IllegalArgumentException("Symbole de domaine manquant pour le site de publication " + site.id());
+        }
+        return new JournalSite(site.id(), FieldSymbol.fromCode(site.fieldSymbol()), gains(site.gains()));
     }
 }

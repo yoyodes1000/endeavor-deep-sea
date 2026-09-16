@@ -9,6 +9,7 @@ import io.github.yoyodes1000.endeavor.engine.action.GarderTuile;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.PoserImpact;
 import io.github.yoyodes1000.endeavor.engine.action.PoserTuile;
+import io.github.yoyodes1000.endeavor.engine.action.Publier;
 import io.github.yoyodes1000.endeavor.engine.action.Sonar;
 import io.github.yoyodes1000.endeavor.engine.action.TerminerTour;
 import io.github.yoyodes1000.endeavor.engine.action.Voyager;
@@ -22,10 +23,12 @@ import io.github.yoyodes1000.endeavor.engine.effect.ImpactPlacement;
 import io.github.yoyodes1000.endeavor.engine.game.ActivationCursor;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.game.PendingDiscovery;
+import io.github.yoyodes1000.endeavor.engine.journal.Journal;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.ConservationSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
+import io.github.yoyodes1000.endeavor.engine.ocean.JournalSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.SonarSpot;
@@ -70,15 +73,26 @@ import java.util.Set;
  * ou à la place de l'activation. Si l'option choisie accorde une action (Sonar,
  * Voyage, Plongée, Conservation), le tour se suspend sur cette seule action
  * ({@link ActivationCursor#pendingTokenAction()}) jusqu'à ce qu'elle soit jouée —
- * les mêmes coups {@link Sonar}/{@link Voyager}/{@link Dive}/{@link Conserver} que
- * la chaîne, mais sans en exiger l'activation ni l'emplacement courant. Au plus un
- * jeton peut rester en main à la fin du tour ({@link TerminerTour}/{@link Passer}) ;
- * les options qui dépendent d'une mécanique encore absente (anyAttribute,
- * lowestAttribute, publication, promotion) ne sont pas proposées.
+ * les mêmes coups {@link Sonar}/{@link Voyager}/{@link Dive}/{@link Conserver}/
+ * {@link Publier} que la chaîne, mais sans en exiger l'activation ni
+ * l'emplacement courant. Au plus un jeton peut rester en main à la fin du tour
+ * ({@link TerminerTour}/{@link Passer}) ; les options qui dépendent d'une
+ * mécanique encore absente (anyAttribute, lowestAttribute, promotion) ne sont
+ * pas proposées.
  *
  * <p>La {@link Conserver} suit à son tour : payer le coût en recherche du site
  * visé, dépenser un disque de transit pour l'y poser, puis encaisser ses gains.
  * Un site n'accueille qu'un seul disque, jamais repris.
+ *
+ * <p>La {@link Publier} suit : payer le coût en recherche de la revue à
+ * l'étude visée, dépenser un disque de transit pour le poser sur un site dont
+ * le symbole de domaine correspond, encaisser les gains du site puis ceux de
+ * la revue — pour le joueur actif et pour chacun de ses adversaires — avant de
+ * retirer la revue du marché (réassorti depuis la pioche). Les revues dont un
+ * gain dépend d'une mécanique encore absente (promotion, choix d'attribut) ne
+ * sont pas proposées ; comme les 8 revues de départ portent toutes
+ * {@code promote}, le marché initial est ainsi injouable tant que la
+ * promotion n'est pas codée — dette assumée, cf. classe {@code Journal}.
  *
  * <p>Résoudre un bonus d'arrivée peut relancer une <strong>cascade</strong> :
  * les submersibles gagnés rejoignent le stock du joueur, et chaque pion impact
@@ -137,6 +151,9 @@ public final class ActivationDriver {
             if (currentSlotOffers(state, player, cursor, ActionType.CONSERVE)) {
                 actions.addAll(conservationsOf(state, player));
             }
+            if (currentSlotOffers(state, player, cursor, ActionType.PUBLISH)) {
+                actions.addAll(publierOf(state, player));
+            }
             actions.addAll(spendTokenChoices(state, player));
             if (canEndTurn) {
                 actions.add(new TerminerTour());
@@ -185,6 +202,7 @@ public final class ActivationDriver {
             case Sonar sonar -> applySonar(state, player, cursor, sonar);
             case Dive dive -> applyDive(state, player, cursor, dive);
             case Conserver conserver -> applyConserver(state, player, cursor, conserver);
+            case Publier publier -> applyPublier(state, player, cursor, publier);
             case DepenserJeton depenser -> applyDepenserJeton(state, player, cursor, depenser);
             case TerminerTour ignored -> {
                 if (!cursor.activatedThisTurn()) {
@@ -310,6 +328,52 @@ public final class ActivationDriver {
         state.setActivationCursor(viaToken
                 ? cursorAfterOffChainResolution(cursor, outcome.impactsEarned())
                 : cursorAfterChainStep(cursor, outcome.impactsEarned()));
+    }
+
+    /**
+     * Applique une Publication : paie le coût en recherche de la revue à l'étude
+     * visée, y pose un disque de transit sur le site correspondant, encaisse les
+     * gains propres du site, ceux de la revue pour le joueur actif et ceux
+     * réservés aux adversaires, puis retire la revue du marché (réassort depuis
+     * la pioche). Hors chaîne du spécialiste quand elle vient d'une dépense de
+     * jeton — sinon exige l'activation et l'emplacement courant.
+     */
+    private static void applyPublier(GameState state, int player, ActivationCursor cursor, Publier move) {
+        boolean viaToken = cursor.pendingTokenAction() == ActionType.PUBLISH;
+        if (!viaToken) {
+            if (!cursor.activatedThisTurn()) {
+                throw new IllegalStateException("Publication sans spécialiste activé");
+            }
+            requireSlotOffers(state, player, cursor, ActionType.PUBLISH);
+        }
+        Journal journal = requirePublishableJournal(state, player, move);
+        JournalSite site = requireJournalSite(state, player, journal, move);
+        state.player(player).spendResearch(journal.researchCost());
+        state.player(player).spendTransitDisc();
+        state.oceanBoard().placeJournalDisc(move.cell(), move.siteId(), player);
+        int pendingImpacts = 0;
+        EffectOutcome siteOutcome = GainResolver.resolve(state.player(player), site.gains());
+        state.player(player).gainVessels(siteOutcome.vesselsEarned());
+        pendingImpacts += siteOutcome.impactsEarned();
+        EffectOutcome publisherOutcome = GainResolver.resolve(state.player(player), journal.publisherGains());
+        state.player(player).gainVessels(publisherOutcome.vesselsEarned());
+        pendingImpacts += publisherOutcome.impactsEarned();
+        for (int other = 0; other < state.playerCount(); other++) {
+            if (other == player) {
+                continue;
+            }
+            EffectOutcome opponentOutcome = GainResolver.resolve(state.player(other), journal.opponentsGains());
+            state.player(other).gainVessels(opponentOutcome.vesselsEarned());
+            if (opponentOutcome.impactsEarned() > 0) {
+                throw new IllegalStateException(
+                        "Impact gagné par un adversaire via Publication : pose non prise en charge");
+            }
+        }
+        state.player(player).acquireJournal(journal.id());
+        state.journalMarket().publish(journal.id(), state.random());
+        state.setActivationCursor(viaToken
+                ? cursorAfterOffChainResolution(cursor, pendingImpacts)
+                : cursorAfterChainStep(cursor, pendingImpacts));
     }
 
     /**
@@ -618,6 +682,98 @@ public final class ActivationDriver {
     }
 
     /**
+     * Les Publications légales s'il reste un disque en transit à poser : pour
+     * chaque revue à l'étude dont les gains sont déjà résolvables (ni
+     * {@code promote}, ni les mécaniques de choix d'attribut) et le coût
+     * payable, chaque zone où le joueur a un submersible, chaque site de
+     * publication encore libre dont le symbole de domaine y correspond. Ne juge
+     * pas si l'action est offerte — c'est l'affaire de l'appelant.
+     */
+    private static List<Publier> publierOf(GameState state, int playerIndex) {
+        if (state.player(playerIndex).transitDiscs() == 0) {
+            return List.of();
+        }
+        OceanBoard ocean = state.oceanBoard();
+        int research = state.player(playerIndex).research();
+        List<Publier> publications = new ArrayList<>();
+        for (String journalId : state.journalMarket().underStudy()) {
+            Journal journal = journalById(state, journalId);
+            if (research < journal.researchCost() || !publishableGains(journal)) {
+                continue;
+            }
+            for (Cell cell : ocean.vesselCells(playerIndex)) {
+                for (JournalSite site : tileAt(state, cell).journalSites()) {
+                    if (!ocean.journalSiteOccupied(cell, site.id())
+                            && journal.fieldSymbols().contains(site.fieldSymbol())) {
+                        publications.add(new Publier(journalId, cell, site.id()));
+                    }
+                }
+            }
+        }
+        return publications;
+    }
+
+    /**
+     * Vrai si la revue est publiable dès maintenant : ses gains — pour le
+     * publicateur comme pour les adversaires — ne dépendent d'aucune mécanique
+     * encore absente (promotion, choix d'attribut).
+     */
+    private static boolean publishableGains(Journal journal) {
+        return resolvableGains(journal.publisherGains()) && resolvableGains(journal.opponentsGains());
+    }
+
+    /**
+     * Vérifie la légalité d'une Publication et renvoie la revue visée : à
+     * l'étude au marché, et coût payable.
+     *
+     * @throws IllegalStateException si l'une de ces conditions n'est pas remplie
+     */
+    private static Journal requirePublishableJournal(GameState state, int playerIndex, Publier move) {
+        if (!state.journalMarket().underStudy().contains(move.journalId())) {
+            throw new IllegalStateException("Revue absente du marché à l'étude : " + move.journalId());
+        }
+        Journal journal = journalById(state, move.journalId());
+        if (state.player(playerIndex).research() < journal.researchCost()) {
+            throw new IllegalStateException("Recherche insuffisante pour la publication : " + journal.researchCost());
+        }
+        return journal;
+    }
+
+    /**
+     * Vérifie la légalité du site visé par une Publication et le renvoie :
+     * présence d'un submersible, existence du site, site encore libre, et
+     * symbole de domaine correspondant à la revue.
+     *
+     * @throws IllegalStateException si l'une de ces conditions n'est pas remplie
+     */
+    private static JournalSite requireJournalSite(GameState state, int playerIndex, Journal journal, Publier move) {
+        if (state.oceanBoard().vesselCount(move.cell(), playerIndex) == 0) {
+            throw new IllegalStateException("Aucun submersible dans la zone de la Publication : " + move.cell());
+        }
+        JournalSite site = tileAt(state, move.cell()).journalSites().stream()
+                .filter(candidate -> candidate.id().equals(move.siteId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Site de publication inexistant en " + move.cell() + " : " + move.siteId()));
+        if (state.oceanBoard().journalSiteOccupied(move.cell(), move.siteId())) {
+            throw new IllegalStateException(
+                    "Site de publication déjà occupé : " + move.cell() + "/" + move.siteId());
+        }
+        if (!journal.fieldSymbols().contains(site.fieldSymbol())) {
+            throw new IllegalStateException(
+                    "Symbole de domaine du site incompatible avec la revue " + journal.id() + " : "
+                            + site.fieldSymbol());
+        }
+        return site;
+    }
+
+    /** La revue d'identifiant donné dans le catalogue. */
+    private static Journal journalById(GameState state, String journalId) {
+        return state.journalCatalog().byId(journalId).orElseThrow(
+                () -> new IllegalStateException("Revue inconnue au catalogue : " + journalId));
+    }
+
+    /**
      * Les dépenses de jeton légales : pour chaque jeton en main, chacune de ses
      * options actuellement réalisable.
      */
@@ -638,8 +794,8 @@ public final class ActivationDriver {
     /**
      * Vrai si l'option est réalisable maintenant : un lot de gains que le résolveur
      * sait déjà traiter (donc payable), ou une action déjà jouable par le moteur
-     * (Sonar, Voyage, Plongée, Conservation) qui a au moins un coup possible.
-     * Publication et promotion n'ont encore aucun coup : jamais proposées.
+     * (Sonar, Voyage, Plongée, Conservation, Publication) qui a au moins un coup
+     * possible. La promotion n'a encore aucun coup : jamais proposée.
      */
     private static boolean isPlayable(GameState state, int playerIndex, DiveOption option) {
         return switch (option) {
@@ -650,7 +806,8 @@ public final class ActivationDriver {
                 case TRAVEL -> !voyagesOf(state, playerIndex).isEmpty();
                 case DIVE -> !divesOf(state, playerIndex).isEmpty();
                 case CONSERVE -> !conservationsOf(state, playerIndex).isEmpty();
-                case PUBLISH, PROMOTE -> false;
+                case PUBLISH -> !publierOf(state, playerIndex).isEmpty();
+                case PROMOTE -> false;
             };
         };
     }
@@ -815,6 +972,7 @@ public final class ActivationDriver {
             case SONAR -> actions.addAll(sonarsOf(state, playerIndex));
             case DIVE -> actions.addAll(divesOf(state, playerIndex));
             case CONSERVE -> actions.addAll(conservationsOf(state, playerIndex));
+            case PUBLISH -> actions.addAll(publierOf(state, playerIndex));
             default -> throw new IllegalStateException(
                     "Action de jeton inattendue : " + cursor.pendingTokenAction());
         }

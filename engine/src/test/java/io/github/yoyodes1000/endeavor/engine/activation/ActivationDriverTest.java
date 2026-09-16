@@ -15,6 +15,7 @@ import io.github.yoyodes1000.endeavor.engine.action.GarderTuile;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.PoserImpact;
 import io.github.yoyodes1000.endeavor.engine.action.PoserTuile;
+import io.github.yoyodes1000.endeavor.engine.action.Publier;
 import io.github.yoyodes1000.endeavor.engine.action.Recruter;
 import io.github.yoyodes1000.endeavor.engine.action.Sonar;
 import io.github.yoyodes1000.endeavor.engine.action.TerminerTour;
@@ -24,9 +25,13 @@ import io.github.yoyodes1000.endeavor.engine.dive.DiveOption;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveToken;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
+import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
+import io.github.yoyodes1000.endeavor.engine.journal.Journal;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalCatalog;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.ConservationSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
+import io.github.yoyodes1000.endeavor.engine.ocean.JournalSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
@@ -49,7 +54,8 @@ class ActivationDriverTest {
 
     private static GameState game(int players) {
         return GameState.newGame(players, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog(),
+                Fixtures.journalCatalog());
     }
 
     @Test
@@ -279,11 +285,11 @@ class ActivationDriverTest {
         ocean.addVessels(new Cell(1, 0), 0, 1);
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("start", "Start", 1, false, List.of(), List.of(), List.of(), List.of(), List.of(),
-                        List.of()),
+                        List.of(), List.of()),
                 new OceanTile("dest", "Dest", 1, false, List.of(), List.of(arrival), List.of(), List.of(),
-                        List.of(), List.of())));
+                        List.of(), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog(), Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(travelSpecialist()));
         state.player(0).moveReserveToTransit(2);
         ActivationDriver.begin(state);
@@ -318,14 +324,15 @@ class ActivationDriverTest {
                 new OceanTile("reward-tile", "Reward", 1, false, List.of(), List.of(), List.of(),
                         List.of(new SonarTrack(List.of(
                                 new SonarSpot.Reward(rewardGains), new SonarSpot.Discover(List.of(1))))),
-                        List.of(), List.of()),
+                        List.of(), List.of(), List.of()),
                 new OceanTile("discover-tile", "Discover", 1, false, List.of(), List.of(), List.of(),
-                        List.of(new SonarTrack(List.of(new SonarSpot.Discover(List.of(1))))), List.of(), List.of()),
+                        List.of(new SonarTrack(List.of(new SonarSpot.Discover(List.of(1))))), List.of(), List.of(),
+                        List.of()),
                 // tuiles non posées : garnissent la pioche pour que les cases découverte soient jouables
                 discovered("pile-x", 1, List.of(Gain.RESEARCH)),
                 discovered("pile-y", 1, List.of(Gain.RESEARCH))));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog(), Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(sonarSpecialist(chain)));
         state.player(0).moveReserveToTransit(transitDiscs);
         ActivationDriver.begin(state);
@@ -399,7 +406,7 @@ class ActivationDriverTest {
 
     private static OceanTile discovered(String id, int depth, List<Gain> discoverBonus) {
         return new OceanTile(id, id, depth, false, discoverBonus, List.of(), List.of(), List.of(), List.of(),
-                List.of());
+                List.of(), List.of());
     }
 
     /**
@@ -413,10 +420,12 @@ class ActivationDriverTest {
         ocean.addVessels(new Cell(1, 0), 0, 1);
         List<OceanTile> tiles = new ArrayList<>();
         tiles.add(new OceanTile("disco-start", "Disco Start", 1, false, List.of(), List.of(), List.of(),
-                List.of(new SonarTrack(List.of(new SonarSpot.Discover(discoverLevels)))), List.of(), List.of()));
+                List.of(new SonarTrack(List.of(new SonarSpot.Discover(discoverLevels)))), List.of(), List.of(),
+                List.of()));
         tiles.addAll(pileTiles);
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, new OceanTileCatalog(tiles), Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), ocean, new OceanTileCatalog(tiles), Fixtures.diveTokenCatalog(),
+                Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(sonarSpecialist(List.of(SONAR_SLOT))));
         state.player(0).moveReserveToTransit(2);
         ActivationDriver.begin(state);
@@ -528,9 +537,9 @@ class ActivationDriverTest {
         ocean.stackDiveTokens(new Cell(1, 0), "d1", stackedTokens);
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(new DiveSite("d1", Math.max(1, stackedTokens.size()))), List.of())));
+                        List.of(new DiveSite("d1", Math.max(1, stackedTokens.size()))), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, diveTokens);
+                Fixtures.missionBoard(), ocean, catalog, diveTokens, Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(chain)));
         state.player(0).moveReserveToTransit(2);
         ActivationDriver.begin(state);
@@ -613,11 +622,11 @@ class ActivationDriverTest {
         ocean.stackDiveTokens(new Cell(1, 0), "d1", List.of("sonar-token"));
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(new DiveSite("d1", 1)), List.of()),
+                        List.of(new DiveSite("d1", 1)), List.of(), List.of()),
                 new OceanTile("dest-tile", "Dest Tile", 1, false, List.of(), List.of(Gain.RESEARCH), List.of(),
-                        List.of(), List.of(), List.of())));
+                        List.of(), List.of(), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog());
+                Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog(), Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(List.of(DIVE_SLOT))));
         state.player(0).moveReserveToTransit(2);
         ActivationDriver.begin(state);
@@ -646,11 +655,11 @@ class ActivationDriverTest {
         ocean.addVessels(new Cell(1, 0), 0, 1);
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(), List.of()),
+                        List.of(), List.of(), List.of()),
                 new OceanTile("dest-tile", "Dest Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(), List.of())));
+                        List.of(), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog());
+                Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog(), Fixtures.journalCatalog());
         state.player(0).receiveDiveToken("sonar-token"); // déjà en main, conservé d'un tour précédent
         ActivationDriver.begin(state);
 
@@ -676,11 +685,11 @@ class ActivationDriverTest {
         ocean.stackDiveTokens(new Cell(1, 0), "d1", List.of("sonar-token"));
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(new DiveSite("d1", 1)), List.of()),
+                        List.of(new DiveSite("d1", 1)), List.of(), List.of()),
                 new OceanTile("dest-tile", "Dest Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(), List.of())));
+                        List.of(), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog());
+                Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog(), Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(List.of(DIVE_SLOT))));
         state.player(0).moveReserveToTransit(2);
         ActivationDriver.begin(state);
@@ -808,9 +817,9 @@ class ActivationDriverTest {
         ocean.addVessels(new Cell(1, 0), 0, 1);
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("conserve-tile", "Conserve Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(), List.of(new ConservationSite("c1", cost, gains)))));
+                        List.of(), List.of(new ConservationSite("c1", cost, gains)), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog(), Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(conservationSpecialist(chain)));
         state.player(0).moveReserveToTransit(transitDiscs);
         state.player(0).gainResearch(research);
@@ -869,9 +878,9 @@ class ActivationDriverTest {
                 new OceanTile("conserve-tile", "Conserve Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
                         List.of(), List.of(
                                 new ConservationSite("c1", 0, List.of()),
-                                new ConservationSite("c2", 0, List.of())))));
+                                new ConservationSite("c2", 0, List.of())), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog(), Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(
                 conservationSpecialist(List.of(CONSERVE_SLOT, CONSERVE_SLOT))));
         state.player(0).moveReserveToTransit(3);
@@ -918,9 +927,9 @@ class ActivationDriverTest {
         OceanTileCatalog oceanCatalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
                         List.of(new DiveSite("d1", 1)),
-                        List.of(new ConservationSite("c1", 1, List.of(Gain.REPUTATION))))));
+                        List.of(new ConservationSite("c1", 1, List.of(Gain.REPUTATION))), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, oceanCatalog, catalog);
+                Fixtures.missionBoard(), ocean, oceanCatalog, catalog, Fixtures.journalCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(List.of(DIVE_SLOT))));
         state.player(0).moveReserveToTransit(2);
         state.player(0).gainResearch(1);
@@ -935,6 +944,233 @@ class ActivationDriverTest {
         ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
 
         assertTrue(state.oceanBoard().conservationSiteOccupied(new Cell(1, 0), "c1"));
+        assertTrue(state.player(0).heldDiveTokens().isEmpty());
+    }
+
+    // --- Publication ------------------------------------------------------
+
+    private static final ActionSlot PUBLISH_SLOT = new ActionSlot(List.of(ActionType.PUBLISH));
+
+    /** Un spécialiste dont la chaîne offre {@code slots} emplacements Publication. */
+    private static Specialist publisherSpecialist(List<ActionSlot> chain) {
+        SpecialistSide junior = new SpecialistSide("Publisher", List.of(), chain, Optional.empty(), Optional.empty());
+        SpecialistSide senior = new SpecialistSide("Publisher S", List.of(), List.of(),
+                Optional.empty(), Optional.empty());
+        return new Specialist("publisher", OptionalInt.of(1), false, junior, senior);
+    }
+
+    /**
+     * Joueur 0 en activation avec un spécialiste Publication, un submersible en
+     * (1,0) dont la tuile porte l'unique site {@code j1} au symbole
+     * {@code siteSymbol}. Le marché compte 4 revues de départ, dont seule
+     * {@code anchor-1} porte le symbole {@code journalSymbol} (les trois autres
+     * portent {@code GREEN}, jamais utilisé par les tests) — un coup
+     * {@code Publier("anchor-1", ...)} est donc le seul possible sur ce site.
+     */
+    private static GameState readyToPublish(FieldSymbol siteSymbol, FieldSymbol journalSymbol, int cost,
+                                            List<Gain> gains, int research, int transitDiscs,
+                                            List<ActionSlot> chain) {
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "publish-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        OceanTileCatalog oceanCatalog = new OceanTileCatalog(List.of(
+                new OceanTile("publish-tile", "Publish Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
+                        List.of(), List.of(), List.of(new JournalSite("j1", siteSymbol, List.of())))));
+        JournalCatalog journalCatalog = new JournalCatalog(List.of(
+                new Journal("anchor-1", true, "Anchor One", cost, 0, List.of(journalSymbol), gains, List.of()),
+                new Journal("anchor-2", true, "Anchor Two", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-3", true, "Anchor Three", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-4", true, "Anchor Four", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of())));
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, oceanCatalog, Fixtures.diveTokenCatalog(), journalCatalog);
+        state.player(0).recruit(HeldSpecialist.recruited(publisherSpecialist(chain)));
+        state.player(0).moveReserveToTransit(transitDiscs);
+        state.player(0).gainResearch(research);
+        ActivationDriver.begin(state);
+        return state;
+    }
+
+    @Test
+    void unSpecialisteDePublicationProposeLaRevueSiLeSiteCorrespond() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 1, List.of(Gain.RESEARCH), 2, 2,
+                List.of(PUBLISH_SLOT));
+        ActivationDriver.apply(state, new Activer("publisher"));
+
+        assertTrue(ActivationDriver.legalActions(state)
+                .contains(new Publier("anchor-1", new Cell(1, 0), "j1")));
+    }
+
+    @Test
+    void sansDisqueDeTransitAucunePublicationNEstProposee() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 0, List.of(), 0, 1,
+                List.of(PUBLISH_SLOT));
+        ActivationDriver.apply(state, new Activer("publisher")); // consomme l'unique disque de transit
+
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void uneRechercheInsuffisanteNOffrePasLaPublication() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 3, List.of(), 2, 2,
+                List.of(PUBLISH_SLOT));
+        ActivationDriver.apply(state, new Activer("publisher"));
+
+        assertFalse(ActivationDriver.legalActions(state)
+                .contains(new Publier("anchor-1", new Cell(1, 0), "j1")));
+    }
+
+    @Test
+    void unSymboleDeDomaineIncompatibleNOffrePasLaPublication() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.YELLOW, 0, List.of(), 0, 2,
+                List.of(PUBLISH_SLOT));
+        ActivationDriver.apply(state, new Activer("publisher"));
+
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
+                "aucune revue à l'étude ne porte le symbole du site");
+    }
+
+    @Test
+    void uneRevueAuGainNonResolvableNEstPasProposee() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 0, List.of(Gain.PROMOTE), 0, 2,
+                List.of(PUBLISH_SLOT));
+        ActivationDriver.apply(state, new Activer("publisher"));
+
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
+                "promote n'est pas encore résolu : la revue n'est pas proposée");
+    }
+
+    @Test
+    void laPublicationPaieLeCoutPoseUnDisqueEncaisseLesGainsEtRetireLaRevueDuMarche() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 2, List.of(Gain.REPUTATION), 3, 2,
+                List.of(PUBLISH_SLOT));
+        ActivationDriver.apply(state, new Activer("publisher"));
+        int reputationBefore = state.player(0).attributes().step(Attribute.REPUTATION);
+
+        ActivationDriver.apply(state, new Publier("anchor-1", new Cell(1, 0), "j1"));
+
+        assertEquals(1, state.player(0).research(), "coût de 2 payé sur 3");
+        assertEquals(0, state.player(0).transitDiscs(),
+                "le disque d'activation puis celui de la Publication sont dépensés");
+        assertTrue(state.oceanBoard().journalSiteOccupied(new Cell(1, 0), "j1"), "le site porte un disque");
+        assertEquals(reputationBefore + 1, state.player(0).attributes().step(Attribute.REPUTATION),
+                "la récompense (réputation) est encaissée");
+        assertEquals(List.of("anchor-1"), state.player(0).journals(), "la revue rejoint la collection du joueur");
+        assertFalse(state.journalMarket().underStudy().contains("anchor-1"), "la revue a quitté le marché");
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
+                "chaîne d'un seul emplacement épuisée");
+    }
+
+    @Test
+    void laPublicationPeutDeclencherLaCascadeDePoseDImpact() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 0, List.of(Gain.IMPACT), 0, 2,
+                List.of(PUBLISH_SLOT));
+        ActivationDriver.apply(state, new Activer("publisher"));
+
+        ActivationDriver.apply(state, new Publier("anchor-1", new Cell(1, 0), "j1"));
+
+        // impact gagné : le tour est suspendu sur la pose
+        assertEquals(List.of(new PoserImpact(0, 0)), ActivationDriver.legalActions(state));
+        ActivationDriver.apply(state, new PoserImpact(0, 0));
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void laPublicationEncaisseAussiLesGainsPropresDuSite() {
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "publish-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        OceanTileCatalog oceanCatalog = new OceanTileCatalog(List.of(
+                new OceanTile("publish-tile", "Publish Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
+                        List.of(), List.of(),
+                        List.of(new JournalSite("j1", FieldSymbol.BLUE, List.of(Gain.IMPACT))))));
+        JournalCatalog journalCatalog = new JournalCatalog(List.of(
+                new Journal("anchor-1", true, "Anchor One", 0, 0, List.of(FieldSymbol.BLUE), List.of(), List.of()),
+                new Journal("anchor-2", true, "Anchor Two", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-3", true, "Anchor Three", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-4", true, "Anchor Four", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of())));
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, oceanCatalog, Fixtures.diveTokenCatalog(), journalCatalog);
+        state.player(0).recruit(HeldSpecialist.recruited(publisherSpecialist(List.of(PUBLISH_SLOT))));
+        state.player(0).moveReserveToTransit(2);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("publisher"));
+
+        ActivationDriver.apply(state, new Publier("anchor-1", new Cell(1, 0), "j1"));
+
+        // le gain du site (impact) suspend le tour sur sa pose
+        assertEquals(List.of(new PoserImpact(0, 0)), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void laPublicationEncaisseLesGainsDesAdversaires() {
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "publish-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        OceanTileCatalog oceanCatalog = new OceanTileCatalog(List.of(
+                new OceanTile("publish-tile", "Publish Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
+                        List.of(), List.of(), List.of(new JournalSite("j1", FieldSymbol.BLUE, List.of())))));
+        JournalCatalog journalCatalog = new JournalCatalog(List.of(
+                new Journal("anchor-1", true, "Anchor One", 0, 0, List.of(FieldSymbol.BLUE), List.of(),
+                        List.of(Gain.RESEARCH)),
+                new Journal("anchor-2", true, "Anchor Two", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-3", true, "Anchor Three", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-4", true, "Anchor Four", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of())));
+        GameState state = GameState.newGame(2, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, oceanCatalog, Fixtures.diveTokenCatalog(), journalCatalog);
+        state.player(0).recruit(HeldSpecialist.recruited(publisherSpecialist(List.of(PUBLISH_SLOT))));
+        state.player(0).moveReserveToTransit(2);
+        ActivationDriver.begin(state);
+        int opponentResearchBefore = state.player(1).research();
+
+        ActivationDriver.apply(state, new Activer("publisher"));
+        ActivationDriver.apply(state, new Publier("anchor-1", new Cell(1, 0), "j1"));
+
+        assertEquals(opponentResearchBefore + 1, state.player(1).research(),
+                "l'adversaire encaisse aussi ses gains, sans avoir joué");
+    }
+
+    @Test
+    void laPublicationAvantActivationEstRefusee() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 0, List.of(), 0, 2,
+                List.of(PUBLISH_SLOT));
+        assertThrows(IllegalStateException.class,
+                () -> ActivationDriver.apply(state, new Publier("anchor-1", new Cell(1, 0), "j1")));
+    }
+
+    @Test
+    void unJetonPeutDeclencherUnePublication() {
+        DiveTokenCatalog diveTokens = new DiveTokenCatalog(List.of(
+                new DiveToken("publish-token", 2, List.of(
+                        new DiveOption.Gains(List.of(Gain.RESEARCH), List.of()),
+                        new DiveOption.TriggersAction(ActionType.PUBLISH, OptionalInt.empty())))));
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "dive-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        ocean.stackDiveTokens(new Cell(1, 0), "d1", List.of("publish-token"));
+        OceanTileCatalog oceanCatalog = new OceanTileCatalog(List.of(
+                new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
+                        List.of(new DiveSite("d1", 1)), List.of(),
+                        List.of(new JournalSite("j1", FieldSymbol.BLUE, List.of())))));
+        JournalCatalog journalCatalog = new JournalCatalog(List.of(
+                new Journal("anchor-1", true, "Anchor One", 0, 0, List.of(FieldSymbol.BLUE), List.of(), List.of()),
+                new Journal("anchor-2", true, "Anchor Two", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-3", true, "Anchor Three", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-4", true, "Anchor Four", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of())));
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, oceanCatalog, diveTokens, journalCatalog);
+        state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(List.of(DIVE_SLOT))));
+        state.player(0).moveReserveToTransit(2);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("diver"));
+        ActivationDriver.apply(state, new Dive(new Cell(1, 0), "d1"));
+
+        ActivationDriver.apply(state, new DepenserJeton(0, 1)); // déclenche une Publication
+
+        assertEquals(List.of(new Publier("anchor-1", new Cell(1, 0), "j1")), ActivationDriver.legalActions(state),
+                "le tour se suspend sur la seule Publication accordée");
+        ActivationDriver.apply(state, new Publier("anchor-1", new Cell(1, 0), "j1"));
+
+        assertTrue(state.oceanBoard().journalSiteOccupied(new Cell(1, 0), "j1"));
         assertTrue(state.player(0).heldDiveTokens().isEmpty());
     }
 }

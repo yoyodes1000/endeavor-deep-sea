@@ -23,7 +23,8 @@ class GameSetupTest {
 
     private static GameState game(int players) {
         return GameState.newGame(players, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog(),
+                Fixtures.journalCatalog());
     }
 
     @Test
@@ -61,9 +62,9 @@ class GameSetupTest {
         ocean.placeTile(new Cell(1, 0), "base");
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("base", "Base", 1, false, List.of(), List.of(Gain.IMPACT), List.of(), List.of(),
-                        List.of(), List.of())));
+                        List.of(), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog(), Fixtures.journalCatalog());
 
         assertThrows(IllegalStateException.class,
                 () -> GameSetup.deployStartingVessels(state, new Cell(1, 0), 1));
@@ -76,14 +77,14 @@ class GameSetupTest {
         ocean.placeTile(new Cell(1, 1), "plain");
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("diving-spot", "Diving Spot", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(new DiveSite("d1", 3)), List.of()),
+                        List.of(new DiveSite("d1", 3)), List.of(), List.of()),
                 new OceanTile("plain", "Plain", 1, false, List.of(), List.of(), List.of(), List.of(), List.of(),
-                        List.of())));
+                        List.of(), List.of())));
         DiveTokenCatalog diveTokenCatalog = new DiveTokenCatalog(List.of(
                 new DiveToken("research", 5,
                         List.of(new DiveOption.Gains(List.of(Gain.RESEARCH), List.of())))));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), ocean, catalog, diveTokenCatalog);
+                Fixtures.missionBoard(), ocean, catalog, diveTokenCatalog, Fixtures.journalCatalog());
 
         GameSetup.stackInitialDiveSites(state);
 

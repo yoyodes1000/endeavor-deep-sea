@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.github.yoyodes1000.endeavor.app.dive.DiveTokenLoader;
+import io.github.yoyodes1000.endeavor.app.journal.JournalLoader;
 import io.github.yoyodes1000.endeavor.app.mission.MissionLoader;
 import io.github.yoyodes1000.endeavor.app.ocean.OceanTileLoader;
 import io.github.yoyodes1000.endeavor.app.specialist.SpecialistLoader;
@@ -11,6 +12,7 @@ import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
 import io.github.yoyodes1000.endeavor.engine.game.GamePhase;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalCatalog;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
@@ -59,13 +61,17 @@ class RealGameM1Test {
         try (Reader source = reader("dive-tokens.json")) {
             diveTokenCatalog = new DiveTokenLoader().load(source);
         }
+        JournalCatalog journalCatalog;
+        try (Reader source = reader("journals.json")) {
+            journalCatalog = new JournalLoader().load(source);
+        }
 
         RandomSource random = RandomSource.fromSeed(2026);
         OceanBoard ocean = OceanBoard.fromSetup(mission1.oceanSetup(), oceanCatalog, random);
 
         int players = 3;
         GameState state = GameState.newGame(players, roster, random, 6,
-                new MissionBoard(mission1.impactBoard()), ocean, oceanCatalog, diveTokenCatalog);
+                new MissionBoard(mission1.impactBoard()), ocean, oceanCatalog, diveTokenCatalog, journalCatalog);
         GameSetup.deployStartingVessels(state, mission1.baseOfOperations().orElseThrow(), mission1.startingVessels());
         GameSetup.stackInitialDiveSites(state);
         Game.begin(state);
