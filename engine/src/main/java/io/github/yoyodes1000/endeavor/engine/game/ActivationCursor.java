@@ -1,5 +1,7 @@
 package io.github.yoyodes1000.endeavor.engine.game;
 
+import io.github.yoyodes1000.endeavor.engine.specialist.ActionType;
+
 import java.util.Set;
 
 /**
@@ -21,9 +23,15 @@ import java.util.Set;
  *                            cascade) restant à poser avant de poursuivre le tour
  * @param pendingDiscovery    la découverte en cours (tuiles piochées à départager
  *                            puis à poser), ou {@code null} hors découverte
+ * @param pendingTokenAction  l'action accordée par la dépense d'un jeton de
+ *                            plongée en cours de résolution (ex. le Sonar promis
+ *                            par un jeton), ou {@code null} hors dépense de ce
+ *                            type — suspend le tour sur ce seul type d'action,
+ *                            hors chaîne du spécialiste
  */
 public record ActivationCursor(int turnPosition, Set<Integer> passed, String activatedSpecialist,
-                               int actionStep, int pendingImpacts, PendingDiscovery pendingDiscovery) {
+                               int actionStep, int pendingImpacts, PendingDiscovery pendingDiscovery,
+                               ActionType pendingTokenAction) {
 
     public ActivationCursor {
         if (turnPosition < 0) {
@@ -43,7 +51,7 @@ public record ActivationCursor(int turnPosition, Set<Integer> passed, String act
 
     /** Le curseur d'entrée en Phase 2 : premier joueur du tour, personne n'a passé. */
     public static ActivationCursor notStarted() {
-        return new ActivationCursor(0, Set.of(), null, 0, 0, null);
+        return new ActivationCursor(0, Set.of(), null, 0, 0, null, null);
     }
 
     /** Vrai si le joueur courant a déjà activé un spécialiste ce tour. */
@@ -54,5 +62,10 @@ public record ActivationCursor(int turnPosition, Set<Integer> passed, String act
     /** Vrai si une découverte est en cours et suspend le tour. */
     public boolean discovering() {
         return pendingDiscovery != null;
+    }
+
+    /** Vrai si la dépense d'un jeton de plongée a accordé une action encore à jouer. */
+    public boolean resolvingTokenAction() {
+        return pendingTokenAction != null;
     }
 }

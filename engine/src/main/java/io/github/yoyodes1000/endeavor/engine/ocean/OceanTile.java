@@ -10,10 +10,10 @@ import java.util.List;
  * d'activation — les <strong>pistes Sonar</strong>, sur lesquelles l'action
  * Sonar pose un disque.
  *
- * <p>Le reste de la structure d'activation (sites de plongée, de conservation,
- * revues, connexions, règles spéciales) n'est <strong>pas</strong> encore
- * modélisé : il relève de la Phase 2 et sera conçu sur des cas réels (cf.
- * architecture, points ouverts). Le chargeur tolère ces champs sans les lire.
+ * <p>Le reste de la structure d'activation (conservation, revues, connexions,
+ * règles spéciales) n'est <strong>pas</strong> encore modélisé : il relève de la
+ * Phase 2 et sera conçu sur des cas réels (cf. architecture, points ouverts). Le
+ * chargeur tolère ces champs sans les lire.
  *
  * @param depth          la profondeur, de 1 à 5
  * @param unique         tuile de scénario, hors pioche de découverte
@@ -21,6 +21,7 @@ import java.util.List;
  * @param arrivalBonus   gains quand un submersible arrive sur la tuile
  * @param arrivalActions actions accordées à l'arrivée
  * @param sonarTracks    les pistes Sonar de la tuile (souvent aucune)
+ * @param diveSites      les sites de plongée de la tuile (souvent aucun)
  */
 public record OceanTile(
         String id,
@@ -30,7 +31,8 @@ public record OceanTile(
         List<Gain> discoverBonus,
         List<Gain> arrivalBonus,
         List<ActionType> arrivalActions,
-        List<SonarTrack> sonarTracks) {
+        List<SonarTrack> sonarTracks,
+        List<DiveSite> diveSites) {
 
     private static final int MIN_DEPTH = 1;
     private static final int MAX_DEPTH = 5;
@@ -50,5 +52,6 @@ public record OceanTile(
         arrivalBonus = List.copyOf(arrivalBonus);
         arrivalActions = List.copyOf(arrivalActions);
         sonarTracks = List.copyOf(sonarTracks);
+        diveSites = List.copyOf(diveSites);
     }
 }

@@ -3,10 +3,12 @@ package io.github.yoyodes1000.endeavor.app;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import io.github.yoyodes1000.endeavor.app.dive.DiveTokenLoader;
 import io.github.yoyodes1000.endeavor.app.mission.MissionLoader;
 import io.github.yoyodes1000.endeavor.app.ocean.OceanTileLoader;
 import io.github.yoyodes1000.endeavor.app.specialist.SpecialistLoader;
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
 import io.github.yoyodes1000.endeavor.engine.game.GamePhase;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
@@ -53,14 +55,19 @@ class RealGameM1Test {
         try (Reader source = reader("specialists.json")) {
             roster = new SpecialistLoader().load(source);
         }
+        DiveTokenCatalog diveTokenCatalog;
+        try (Reader source = reader("dive-tokens.json")) {
+            diveTokenCatalog = new DiveTokenLoader().load(source);
+        }
 
         RandomSource random = RandomSource.fromSeed(2026);
         OceanBoard ocean = OceanBoard.fromSetup(mission1.oceanSetup(), oceanCatalog, random);
 
         int players = 3;
         GameState state = GameState.newGame(players, roster, random, 6,
-                new MissionBoard(mission1.impactBoard()), ocean, oceanCatalog);
+                new MissionBoard(mission1.impactBoard()), ocean, oceanCatalog, diveTokenCatalog);
         GameSetup.deployStartingVessels(state, mission1.baseOfOperations().orElseThrow(), mission1.startingVessels());
+        GameSetup.stackInitialDiveSites(state);
         Game.begin(state);
 
         // la base d'opérations de M1 : the-sea-star en C1 (colonne C → indice 2)
@@ -71,6 +78,10 @@ class RealGameM1Test {
             assertEquals(1, ocean.vesselCount(base, player), "un submersible de chaque joueur sur la base");
             assertEquals(0, state.player(player).vesselStock(), "départ à 1, déployé 1");
         }
+
+        // les deux sites de plongée de départ (volcanic-island B1, the-sea-star C1) sont empilés
+        assertEquals(2, state.oceanBoard().diveTokenCount(new Cell(1, 1), "d1"), "volcanic-island : 2 jetons");
+        assertEquals(4, state.oceanBoard().diveTokenCount(base, "d1"), "the-sea-star : 4 jetons");
 
         // la partie est démarrée et attend une décision (le premier recrutement)
         assertEquals(GamePhase.PREPARATION, state.phase());

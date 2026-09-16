@@ -34,8 +34,10 @@ import java.util.Set;
  * qu'enregistrer les disques posés ({@link #placeSonarDisc}, {@link
  * #sonarDiscCount}) ; c'est l'appelant qui a le catalogue des tuiles et qui juge
  * la légalité de la pose — comme le déplacement s'en remet à {@link
- * #reachableFrom(Cell, int)}. L'occupation des autres sites viendra avec les
- * actions qui l'écrivent.
+ * #reachableFrom(Cell, int)}. Même patron pour les <strong>sites de plongée</strong> :
+ * une pile de jetons empilée à la création de la zone ({@link #stackDiveTokens}),
+ * dont l'action Plongée prend le sommet ({@link #takeDiveToken}). L'occupation
+ * des autres sites viendra avec les actions qui l'écrivent.
  */
 public final class OceanBoard {
 
@@ -49,10 +51,15 @@ public final class OceanBoard {
     private record SonarTrackKey(Cell cell, int trackIndex) {
     }
 
+    /** Un site de plongée identifié sur la grille : sa case et son identifiant sur la tuile. */
+    private record DiveSiteKey(Cell cell, String siteId) {
+    }
+
     private final int columns;
     private final Map<Cell, String> tileByCell;
     private final Map<Cell, Map<Integer, Integer>> vesselsByCell;
     private final Map<SonarTrackKey, List<Integer>> sonarDiscsByTrack;
+    private final Map<DiveSiteKey, Deque<String>> diveTokensBySite;
 
     /** Un océan vide de {@code columns} colonnes ; les tuiles s'y posent ensuite. */
     public OceanBoard(int columns) {
@@ -63,10 +70,11 @@ public final class OceanBoard {
         this.tileByCell = new HashMap<>();
         this.vesselsByCell = new HashMap<>();
         this.sonarDiscsByTrack = new HashMap<>();
+        this.diveTokensBySite = new HashMap<>();
     }
 
     private OceanBoard(int columns, Map<Cell, String> tiles, Map<Cell, Map<Integer, Integer>> vessels,
-                       Map<SonarTrackKey, List<Integer>> sonarDiscs) {
+                       Map<SonarTrackKey, List<Integer>> sonarDiscs, Map<DiveSiteKey, Deque<String>> diveTokens) {
         this.columns = columns;
         this.tileByCell = new HashMap<>(tiles);
         this.vesselsByCell = new HashMap<>();
@@ -76,6 +84,10 @@ public final class OceanBoard {
         this.sonarDiscsByTrack = new HashMap<>();
         for (Map.Entry<SonarTrackKey, List<Integer>> entry : sonarDiscs.entrySet()) {
             this.sonarDiscsByTrack.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
+        this.diveTokensBySite = new HashMap<>();
+        for (Map.Entry<DiveSiteKey, Deque<String>> entry : diveTokens.entrySet()) {
+            this.diveTokensBySite.put(entry.getKey(), new ArrayDeque<>(entry.getValue()));
         }
     }
 
@@ -166,6 +178,13 @@ public final class OceanBoard {
     /** Les identifiants des tuiles actuellement en jeu sur la grille. */
     public Set<String> placedTileIds() {
         return new HashSet<>(tileByCell.values());
+    }
+
+    /** Les cases occupées par une tuile, dans un ordre déterministe (profondeur puis colonne). */
+    public List<Cell> occupiedCells() {
+        return tileByCell.keySet().stream()
+                .sorted(Comparator.comparingInt(Cell::depth).thenComparingInt(Cell::col))
+                .toList();
     }
 
     /**
@@ -277,6 +296,56 @@ public final class OceanBoard {
         }
     }
 
+    /**
+     * Empile les jetons de plongée d'un site fraîchement en jeu (mise en place ou
+     * découverte). L'ordre de la liste fixe l'empilement — index 0 devient le
+     * sommet, premier pris. Le board ne connaît pas le nombre attendu (le
+     * {@code tokenCount} du site) : c'est à l'appelant de fournir le bon compte,
+     * comme pour {@link #placeSonarDisc}.
+     *
+     * @throws IllegalArgumentException si la case ne porte pas de tuile, ou si le
+     *     site est déjà empilé (un site n'est créé qu'une fois)
+     */
+    public void stackDiveTokens(Cell cell, String siteId, List<String> tokenIds) {
+        requireSiteId(siteId);
+        if (!isOccupied(cell)) {
+            throw new IllegalArgumentException("Aucune zone où empiler des jetons de plongée : " + cell);
+        }
+        DiveSiteKey key = new DiveSiteKey(cell, siteId);
+        if (diveTokensBySite.containsKey(key)) {
+            throw new IllegalArgumentException("Site de plongée déjà empilé : " + cell + "/" + siteId);
+        }
+        diveTokensBySite.put(key, new ArrayDeque<>(tokenIds));
+    }
+
+    /** Combien de jetons restent empilés sur ce site (0 si le site n'a pas encore été empilé). */
+    public int diveTokenCount(Cell cell, String siteId) {
+        requireSiteId(siteId);
+        Deque<String> stack = diveTokensBySite.get(new DiveSiteKey(cell, siteId));
+        return stack == null ? 0 : stack.size();
+    }
+
+    /**
+     * Prend le jeton du sommet d'un site de plongée (l'action Plongée) et le
+     * retire de la pile.
+     *
+     * @throws IllegalArgumentException si le site est vide ou n'a jamais été empilé
+     */
+    public String takeDiveToken(Cell cell, String siteId) {
+        requireSiteId(siteId);
+        Deque<String> stack = diveTokensBySite.get(new DiveSiteKey(cell, siteId));
+        if (stack == null || stack.isEmpty()) {
+            throw new IllegalArgumentException("Site de plongée vide : " + cell + "/" + siteId);
+        }
+        return stack.removeFirst();
+    }
+
+    private void requireSiteId(String siteId) {
+        if (siteId == null || siteId.isBlank()) {
+            throw new IllegalArgumentException("Un site de plongée doit avoir un identifiant");
+        }
+    }
+
     /** Les zones voisines occupées (adjacence orthogonale, vides exclus). */
     public List<Cell> neighbors(Cell cell) {
         List<Cell> result = new ArrayList<>();
@@ -336,7 +405,7 @@ public final class OceanBoard {
 
     /** Copie indépendante, pour isoler une simulation (décision 3). */
     public OceanBoard copy() {
-        return new OceanBoard(columns, tileByCell, vesselsByCell, sonarDiscsByTrack);
+        return new OceanBoard(columns, tileByCell, vesselsByCell, sonarDiscsByTrack, diveTokensBySite);
     }
 
     private void requireOnGrid(Cell cell) {
