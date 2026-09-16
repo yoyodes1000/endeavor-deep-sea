@@ -2,6 +2,8 @@ package io.github.yoyodes1000.endeavor.engine.activation;
 
 import io.github.yoyodes1000.endeavor.engine.action.Action;
 import io.github.yoyodes1000.endeavor.engine.action.Activer;
+import io.github.yoyodes1000.endeavor.engine.action.DepenserJeton;
+import io.github.yoyodes1000.endeavor.engine.action.Dive;
 import io.github.yoyodes1000.endeavor.engine.action.GarderTuile;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.PoserImpact;
@@ -10,6 +12,9 @@ import io.github.yoyodes1000.endeavor.engine.action.Sonar;
 import io.github.yoyodes1000.endeavor.engine.action.TerminerTour;
 import io.github.yoyodes1000.endeavor.engine.action.Voyager;
 import io.github.yoyodes1000.endeavor.engine.board.Attribute;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveOption;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveSiteSetup;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveToken;
 import io.github.yoyodes1000.endeavor.engine.effect.EffectOutcome;
 import io.github.yoyodes1000.endeavor.engine.effect.GainResolver;
 import io.github.yoyodes1000.endeavor.engine.effect.ImpactPlacement;
@@ -18,6 +23,7 @@ import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.game.PendingDiscovery;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
+import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.SonarSpot;
@@ -26,6 +32,7 @@ import io.github.yoyodes1000.endeavor.engine.player.HeldSpecialist;
 import io.github.yoyodes1000.endeavor.engine.player.Player;
 import io.github.yoyodes1000.endeavor.engine.specialist.ActionSlot;
 import io.github.yoyodes1000.endeavor.engine.specialist.ActionType;
+import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -53,6 +60,19 @@ import java.util.Set;
  * pioche deux tuiles et suspend le tour sur deux décisions — {@link GarderTuile}
  * (garder l'une, l'autre retourne à la pioche) puis {@link PoserTuile} (poser la
  * gardée sur une case valide, ce qui encaisse son bonus de découverte).
+ *
+ * <p>Le {@link Dive} suit sans coût : prendre le jeton du sommet d'un site de
+ * plongée d'une zone où le joueur a un submersible. Le jeton rejoint la main du
+ * joueur, non résolu ; {@link DepenserJeton} en choisit l'option plus tard —
+ * <strong>hors chaîne</strong>, à tout point de décision normal du tour, en plus
+ * ou à la place de l'activation. Si l'option choisie accorde une action (Sonar,
+ * Voyage, Plongée), le tour se suspend sur cette seule action
+ * ({@link ActivationCursor#pendingTokenAction()}) jusqu'à ce qu'elle soit jouée —
+ * les mêmes coups {@link Sonar}/{@link Voyager}/{@link Dive} que la chaîne, mais
+ * sans en exiger l'activation ni l'emplacement courant. Au plus un jeton peut
+ * rester en main à la fin du tour ({@link TerminerTour}/{@link Passer}) ; les
+ * options qui dépendent d'une mécanique encore absente (anyAttribute,
+ * lowestAttribute, conservation, publication, promotion) ne sont pas proposées.
  *
  * <p>Résoudre un bonus d'arrivée peut relancer une <strong>cascade</strong> :
  * les submersibles gagnés rejoignent le stock du joueur, et chaque pion impact
@@ -93,15 +113,32 @@ public final class ActivationDriver {
         }
         ActivationCursor cursor = state.activationCursor();
         int player = currentPlayer(state);
+        if (cursor.resolvingTokenAction()) {
+            return tokenActionMoves(state, player, cursor);
+        }
         List<Action> actions = new ArrayList<>();
+        boolean canEndTurn = state.player(player).heldDiveTokens().size() <= 1;
         if (cursor.activatedThisTurn()) {
-            actions.addAll(voyagesOf(state, player, cursor));
-            actions.addAll(sonarsOf(state, player, cursor));
-            actions.add(new TerminerTour());
-            actions.add(new Passer());
+            if (currentSlotOffers(state, player, cursor, ActionType.TRAVEL)) {
+                actions.addAll(voyagesOf(state, player));
+            }
+            if (currentSlotOffers(state, player, cursor, ActionType.SONAR)) {
+                actions.addAll(sonarsOf(state, player));
+            }
+            if (currentSlotOffers(state, player, cursor, ActionType.DIVE)) {
+                actions.addAll(divesOf(state, player));
+            }
+            actions.addAll(spendTokenChoices(state, player));
+            if (canEndTurn) {
+                actions.add(new TerminerTour());
+                actions.add(new Passer());
+            }
         } else {
             actions.addAll(activationsOf(state, player));
-            actions.add(new Passer());
+            actions.addAll(spendTokenChoices(state, player));
+            if (canEndTurn) {
+                actions.add(new Passer());
+            }
         }
         return actions;
     }
@@ -133,35 +170,51 @@ public final class ActivationDriver {
                 }
                 state.player(player).activate(activer.specialistId());
                 state.setActivationCursor(new ActivationCursor(
-                        cursor.turnPosition(), cursor.passed(), activer.specialistId(), 0, 0, null));
+                        cursor.turnPosition(), cursor.passed(), activer.specialistId(), 0, 0, null, null));
             }
-            case Voyager voyager -> {
-                if (!cursor.activatedThisTurn()) {
-                    throw new IllegalStateException("Voyage sans spécialiste activé");
-                }
-                requireSlotOffers(state, player, cursor, ActionType.TRAVEL);
-                requireReachable(state, player, voyager);
-                state.oceanBoard().moveVessel(voyager.from(), voyager.to(), player);
-                EffectOutcome arrival = resolveArrival(state, player, voyager.to());
-                state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                        cursor.activatedSpecialist(), cursor.actionStep() + 1, arrival.impactsEarned(), null));
-            }
+            case Voyager voyager -> applyVoyager(state, player, cursor, voyager);
             case Sonar sonar -> applySonar(state, player, cursor, sonar);
+            case Dive dive -> applyDive(state, player, cursor, dive);
+            case DepenserJeton depenser -> applyDepenserJeton(state, player, cursor, depenser);
             case TerminerTour ignored -> {
                 if (!cursor.activatedThisTurn()) {
                     throw new IllegalStateException("Rien à terminer : agir ou passer");
                 }
-                state.setActivationCursor(new ActivationCursor(
-                        nextActivePosition(state, cursor, cursor.passed()), cursor.passed(), null, 0, 0, null));
+                requireAtMostOneHeldToken(state, player);
+                state.setActivationCursor(new ActivationCursor(nextActivePosition(state, cursor, cursor.passed()),
+                        cursor.passed(), null, 0, 0, null, null));
             }
             case Passer ignored -> {
+                requireAtMostOneHeldToken(state, player);
                 Set<Integer> passed = new HashSet<>(cursor.passed());
                 passed.add(player);
                 state.setActivationCursor(new ActivationCursor(
-                        nextActivePosition(state, cursor, passed), passed, null, 0, 0, null));
+                        nextActivePosition(state, cursor, passed), passed, null, 0, 0, null, null));
             }
             default -> throw new IllegalStateException("Coup inattendu en activation : " + action);
         }
+    }
+
+    /**
+     * Applique un Voyage : déplace le submersible puis encaisse le bonus d'arrivée.
+     * Hors chaîne du spécialiste quand il vient d'une dépense de jeton
+     * ({@code pendingTokenAction} déjà réglé sur {@code TRAVEL}) — sinon exige
+     * l'activation et l'emplacement courant.
+     */
+    private static void applyVoyager(GameState state, int player, ActivationCursor cursor, Voyager voyager) {
+        boolean viaToken = cursor.pendingTokenAction() == ActionType.TRAVEL;
+        if (!viaToken) {
+            if (!cursor.activatedThisTurn()) {
+                throw new IllegalStateException("Voyage sans spécialiste activé");
+            }
+            requireSlotOffers(state, player, cursor, ActionType.TRAVEL);
+        }
+        requireReachable(state, player, voyager);
+        state.oceanBoard().moveVessel(voyager.from(), voyager.to(), player);
+        EffectOutcome arrival = resolveArrival(state, player, voyager.to());
+        state.setActivationCursor(viaToken
+                ? cursorAfterOffChainResolution(cursor, arrival.impactsEarned())
+                : cursorAfterChainStep(cursor, arrival.impactsEarned()));
     }
 
     /**
@@ -169,12 +222,16 @@ public final class ActivationDriver {
      * la plus à gauche de la piste, puis résoudre cette case. Une <strong>récompense</strong>
      * encaisse ses gains ; une <strong>découverte</strong> tire deux tuiles et suspend le
      * tour sur le choix de celle à garder (le reste de la découverte s'enchaîne ensuite).
+     * Hors chaîne du spécialiste quand il vient d'une dépense de jeton.
      */
     private static void applySonar(GameState state, int player, ActivationCursor cursor, Sonar sonar) {
-        if (!cursor.activatedThisTurn()) {
-            throw new IllegalStateException("Sonar sans spécialiste activé");
+        boolean viaToken = cursor.pendingTokenAction() == ActionType.SONAR;
+        if (!viaToken) {
+            if (!cursor.activatedThisTurn()) {
+                throw new IllegalStateException("Sonar sans spécialiste activé");
+            }
+            requireSlotOffers(state, player, cursor, ActionType.SONAR);
         }
-        requireSlotOffers(state, player, cursor, ActionType.SONAR);
         SonarSpot spot = requireSonarSpot(state, player, sonar);
         if (exhaustedDiscovery(state, spot)) {
             throw new IllegalStateException("Pioche épuisée pour cette découverte (règle limite à venir)");
@@ -185,16 +242,103 @@ public final class ActivationDriver {
             case SonarSpot.Reward reward -> {
                 EffectOutcome outcome = GainResolver.resolve(state.player(player), reward.gains());
                 state.player(player).gainVessels(outcome.vesselsEarned());
-                state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                        cursor.activatedSpecialist(), cursor.actionStep() + 1, outcome.impactsEarned(), null));
+                state.setActivationCursor(viaToken
+                        ? cursorAfterOffChainResolution(cursor, outcome.impactsEarned())
+                        : cursorAfterChainStep(cursor, outcome.impactsEarned()));
             }
             case SonarSpot.Discover discover -> {
                 List<String> drawn = state.discoveryPile().draw(
                         DISCOVERY_DRAW, Set.copyOf(discover.levels()), state.random());
                 state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                        cursor.activatedSpecialist(), cursor.actionStep(), 0, PendingDiscovery.toChooseFrom(drawn)));
+                        cursor.activatedSpecialist(), cursor.actionStep(), 0,
+                        PendingDiscovery.toChooseFrom(drawn), null));
             }
         }
+    }
+
+    /**
+     * Applique une Plongée : prend le jeton du sommet du site visé et l'ajoute à la
+     * main du joueur, non résolu. Hors chaîne du spécialiste quand elle vient d'une
+     * dépense de jeton — sinon exige l'activation et l'emplacement courant.
+     */
+    private static void applyDive(GameState state, int player, ActivationCursor cursor, Dive dive) {
+        boolean viaToken = cursor.pendingTokenAction() == ActionType.DIVE;
+        if (!viaToken) {
+            if (!cursor.activatedThisTurn()) {
+                throw new IllegalStateException("Plongée sans spécialiste activé");
+            }
+            requireSlotOffers(state, player, cursor, ActionType.DIVE);
+        }
+        requireDiveSite(state, player, dive);
+        String tokenId = state.oceanBoard().takeDiveToken(dive.cell(), dive.siteId());
+        state.player(player).receiveDiveToken(tokenId);
+        state.setActivationCursor(viaToken
+                ? cursorAfterOffChainResolution(cursor, 0)
+                : cursorAfterChainStep(cursor, 0));
+    }
+
+    /**
+     * Applique une dépense de jeton : résout l'option choisie du jeton en main.
+     * Un lot de gains est encaissé entièrement par ce seul coup (cascade
+     * d'impacts comprise) ; une action accordée suspend le tour sur cette seule
+     * action ({@link Sonar}/{@link Voyager}/{@link Dive} la joueront ensuite).
+     */
+    private static void applyDepenserJeton(GameState state, int player, ActivationCursor cursor,
+                                           DepenserJeton move) {
+        if (cursor.resolvingTokenAction()) {
+            throw new IllegalStateException("Une action de jeton reste à jouer avant d'en dépenser un autre");
+        }
+        List<String> held = state.player(player).heldDiveTokens();
+        if (move.heldIndex() >= held.size()) {
+            throw new IllegalStateException("Aucun jeton en main à cet index : " + move.heldIndex());
+        }
+        DiveToken token = diveTokenById(state, held.get(move.heldIndex()));
+        if (move.optionIndex() >= token.options().size()) {
+            throw new IllegalStateException(
+                    "Option inexistante sur " + token.id() + " : " + move.optionIndex());
+        }
+        DiveOption option = token.options().get(move.optionIndex());
+        if (!isPlayable(state, player, option)) {
+            throw new IllegalStateException("Option non jouable pour l'instant : " + option);
+        }
+        state.player(player).resolveDiveToken(move.heldIndex());
+        switch (option) {
+            case DiveOption.Gains gains -> {
+                payCost(state.player(player), gains.cost());
+                EffectOutcome outcome = GainResolver.resolve(state.player(player), gains.gains());
+                state.player(player).gainVessels(outcome.vesselsEarned());
+                state.setActivationCursor(cursorAfterOffChainResolution(cursor, outcome.impactsEarned()));
+            }
+            case DiveOption.TriggersAction trigger -> state.setActivationCursor(new ActivationCursor(
+                    cursor.turnPosition(), cursor.passed(), cursor.activatedSpecialist(),
+                    cursor.actionStep(), cursor.pendingImpacts(), null, trigger.type()));
+        }
+    }
+
+    /** Paie un coût d'option (vocabulaire des gains) — seul le disque de réserve est pris en charge. */
+    private static void payCost(Player player, List<Gain> cost) {
+        for (Gain gain : cost) {
+            if (gain != Gain.DISC) {
+                throw new IllegalStateException("Coût d'option de jeton non pris en charge : " + gain.code());
+            }
+            player.spendReserveDisc();
+        }
+    }
+
+    /** Le curseur après une action résolue en entier au fil de la chaîne : avance l'emplacement courant. */
+    private static ActivationCursor cursorAfterChainStep(ActivationCursor cursor, int pendingImpacts) {
+        return new ActivationCursor(cursor.turnPosition(), cursor.passed(), cursor.activatedSpecialist(),
+                cursor.actionStep() + 1, pendingImpacts, null, null);
+    }
+
+    /**
+     * Le curseur après une action résolue <strong>hors chaîne</strong> — accordée par
+     * un jeton, ou un lot de gains d'une option de jeton — sans avancer l'emplacement
+     * courant de la chaîne du spécialiste.
+     */
+    private static ActivationCursor cursorAfterOffChainResolution(ActivationCursor cursor, int pendingImpacts) {
+        return new ActivationCursor(cursor.turnPosition(), cursor.passed(), cursor.activatedSpecialist(),
+                cursor.actionStep(), pendingImpacts, null, null);
     }
 
     /** Vrai s'il reste un impact à poser et de la place pour le faire (le tour est suspendu). */
@@ -220,7 +364,7 @@ public final class ActivationDriver {
         state.player(player).gainVessels(outcome.vesselsEarned());
         int stillPending = cursor.pendingImpacts() - 1 + outcome.impactsEarned();
         state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                cursor.activatedSpecialist(), cursor.actionStep(), stillPending, null));
+                cursor.activatedSpecialist(), cursor.actionStep(), stillPending, null, null));
     }
 
     /** Les coups légaux d'une découverte en cours : choisir une tuile, puis la poser. */
@@ -260,7 +404,7 @@ public final class ActivationDriver {
                         "Aucune pose valide pour " + keep.tileId() + " (règle « aire pleine → 1 impact » à venir)");
             }
             state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                    cursor.activatedSpecialist(), cursor.actionStep(), 0, pending.kept(keep.tileId())));
+                    cursor.activatedSpecialist(), cursor.actionStep(), 0, pending.kept(keep.tileId()), null));
             return;
         }
         if (!(action instanceof PoserTuile placement)) {
@@ -268,9 +412,10 @@ public final class ActivationDriver {
         }
         requireValidPlacement(state, pending.keptTile(), placement.cell());
         state.oceanBoard().placeTile(placement.cell(), pending.keptTile());
+        DiveSiteSetup.stack(state.oceanBoard(), state.diveTokenPile(), state.random(),
+                placement.cell(), tileById(state, pending.keptTile()));
         EffectOutcome outcome = resolveDiscoverBonus(state, player, pending.keptTile());
-        state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
-                cursor.activatedSpecialist(), cursor.actionStep() + 1, outcome.impactsEarned(), null));
+        state.setActivationCursor(cursorAfterChainStep(cursor, outcome.impactsEarned()));
     }
 
     /**
@@ -333,6 +478,12 @@ public final class ActivationDriver {
                 () -> new IllegalStateException("Tuile inconnue au catalogue : " + tileId));
     }
 
+    /** Le jeton de plongée d'identifiant donné dans le catalogue. */
+    private static DiveToken diveTokenById(GameState state, String tokenId) {
+        return state.diveTokenCatalog().byId(tokenId).orElseThrow(
+                () -> new IllegalStateException("Jeton de plongée inconnu au catalogue : " + tokenId));
+    }
+
     /** Les activations légales du joueur : une par spécialiste à case libre, s'il a un disque en transit. */
     private static List<Activer> activationsOf(GameState state, int playerIndex) {
         Player player = state.player(playerIndex);
@@ -349,14 +500,11 @@ public final class ActivationDriver {
     }
 
     /**
-     * Les Voyages légaux si l'emplacement d'action courant offre le voyage : pour
-     * chaque zone où le joueur a un submersible, chaque destination accessible à son
-     * niveau de technologie.
+     * Les Voyages légaux : pour chaque zone où le joueur a un submersible, chaque
+     * destination accessible à son niveau de technologie. Ne juge pas si l'action est
+     * offerte (chaîne du spécialiste ou jeton) — c'est l'affaire de l'appelant.
      */
-    private static List<Voyager> voyagesOf(GameState state, int playerIndex, ActivationCursor cursor) {
-        if (!currentSlotOffers(state, playerIndex, cursor, ActionType.TRAVEL)) {
-            return List.of();
-        }
+    private static List<Voyager> voyagesOf(GameState state, int playerIndex) {
         OceanBoard ocean = state.oceanBoard();
         int level = state.player(playerIndex).attributes().level(Attribute.INGENUITY);
         List<Voyager> voyages = new ArrayList<>();
@@ -369,15 +517,12 @@ public final class ActivationDriver {
     }
 
     /**
-     * Les Sonars légaux si l'emplacement d'action courant offre le sonar et qu'il
-     * reste un disque en transit à poser : pour chaque zone où le joueur a un
-     * submersible, chaque piste qui a encore une case libre — récompense (gains
-     * immédiats) ou découverte (piocher et poser une tuile).
+     * Les Sonars légaux s'il reste un disque en transit à poser : pour chaque zone où
+     * le joueur a un submersible, chaque piste qui a encore une case libre —
+     * récompense (gains immédiats) ou découverte (piocher et poser une tuile). Ne
+     * juge pas si l'action est offerte — c'est l'affaire de l'appelant.
      */
-    private static List<Sonar> sonarsOf(GameState state, int playerIndex, ActivationCursor cursor) {
-        if (!currentSlotOffers(state, playerIndex, cursor, ActionType.SONAR)) {
-            return List.of();
-        }
+    private static List<Sonar> sonarsOf(GameState state, int playerIndex) {
         if (state.player(playerIndex).transitDiscs() == 0) {
             return List.of();
         }
@@ -394,6 +539,83 @@ public final class ActivationDriver {
             }
         }
         return sonars;
+    }
+
+    /**
+     * Les Plongées légales, sans coût : pour chaque zone où le joueur a un
+     * submersible, chaque site de plongée qui a encore au moins un jeton empilé. Ne
+     * juge pas si l'action est offerte — c'est l'affaire de l'appelant.
+     */
+    private static List<Dive> divesOf(GameState state, int playerIndex) {
+        OceanBoard ocean = state.oceanBoard();
+        List<Dive> dives = new ArrayList<>();
+        for (Cell cell : ocean.vesselCells(playerIndex)) {
+            for (DiveSite site : tileAt(state, cell).diveSites()) {
+                if (ocean.diveTokenCount(cell, site.id()) > 0) {
+                    dives.add(new Dive(cell, site.id()));
+                }
+            }
+        }
+        return dives;
+    }
+
+    /**
+     * Les dépenses de jeton légales : pour chaque jeton en main, chacune de ses
+     * options actuellement réalisable.
+     */
+    private static List<DepenserJeton> spendTokenChoices(GameState state, int playerIndex) {
+        List<String> held = state.player(playerIndex).heldDiveTokens();
+        List<DepenserJeton> choices = new ArrayList<>();
+        for (int heldIndex = 0; heldIndex < held.size(); heldIndex++) {
+            List<DiveOption> options = diveTokenById(state, held.get(heldIndex)).options();
+            for (int optionIndex = 0; optionIndex < options.size(); optionIndex++) {
+                if (isPlayable(state, playerIndex, options.get(optionIndex))) {
+                    choices.add(new DepenserJeton(heldIndex, optionIndex));
+                }
+            }
+        }
+        return choices;
+    }
+
+    /**
+     * Vrai si l'option est réalisable maintenant : un lot de gains que le résolveur
+     * sait déjà traiter (donc payable), ou une action déjà jouable par le moteur
+     * (Sonar, Voyage, Plongée) qui a au moins un coup possible. Conservation,
+     * publication et promotion n'ont encore aucun coup : jamais proposées.
+     */
+    private static boolean isPlayable(GameState state, int playerIndex, DiveOption option) {
+        return switch (option) {
+            case DiveOption.Gains gains ->
+                    resolvableGains(gains.gains()) && affordable(state, playerIndex, gains.cost());
+            case DiveOption.TriggersAction trigger -> switch (trigger.type()) {
+                case SONAR -> !sonarsOf(state, playerIndex).isEmpty();
+                case TRAVEL -> !voyagesOf(state, playerIndex).isEmpty();
+                case DIVE -> !divesOf(state, playerIndex).isEmpty();
+                case CONSERVE, PUBLISH, PROMOTE -> false;
+            };
+        };
+    }
+
+    /**
+     * Vrai si aucun des gains ne dépend d'une décision que le moteur ne sait pas
+     * encore résoudre (anyAttribute, lowestAttribute : mécanique de choix à venir ;
+     * promote : idem).
+     */
+    private static boolean resolvableGains(List<Gain> gains) {
+        return gains.stream().noneMatch(gain -> gain == Gain.ANY_ATTRIBUTE
+                || gain == Gain.LOWEST_ATTRIBUTE || gain == Gain.PROMOTE);
+    }
+
+    /** Vrai si le joueur peut payer ce coût — seul le disque de réserve est pris en charge. */
+    private static boolean affordable(GameState state, int playerIndex, List<Gain> cost) {
+        int discsCost = 0;
+        for (Gain gain : cost) {
+            if (gain != Gain.DISC) {
+                throw new IllegalStateException("Coût d'option de jeton non pris en charge : " + gain.code());
+            }
+            discsCost++;
+        }
+        return state.player(playerIndex).reserveDiscs() >= discsCost;
     }
 
     /** Vrai si la case est une découverte dont les niveaux n'ont plus de tuile à piocher. */
@@ -464,6 +686,53 @@ public final class ActivationDriver {
         int filled = state.oceanBoard().sonarDiscCount(sonar.cell(), sonar.trackIndex());
         return leftmostFreeSpot(tracks.get(sonar.trackIndex()), filled).orElseThrow(
                 () -> new IllegalStateException("Piste Sonar déjà pleine : " + sonar.cell()));
+    }
+
+    /**
+     * Vérifie la légalité d'une Plongée : présence d'un submersible, existence du
+     * site, et au moins un jeton encore empilé.
+     *
+     * @throws IllegalStateException si l'une de ces conditions n'est pas remplie
+     */
+    private static void requireDiveSite(GameState state, int playerIndex, Dive dive) {
+        if (state.oceanBoard().vesselCount(dive.cell(), playerIndex) == 0) {
+            throw new IllegalStateException("Aucun submersible dans la zone de la Plongée : " + dive.cell());
+        }
+        boolean known = tileAt(state, dive.cell()).diveSites().stream()
+                .anyMatch(site -> site.id().equals(dive.siteId()));
+        if (!known) {
+            throw new IllegalStateException(
+                    "Site de plongée inexistant en " + dive.cell() + " : " + dive.siteId());
+        }
+        if (state.oceanBoard().diveTokenCount(dive.cell(), dive.siteId()) == 0) {
+            throw new IllegalStateException(
+                    "Site de plongée déjà vide : " + dive.cell() + "/" + dive.siteId());
+        }
+    }
+
+    /**
+     * Au plus un jeton de plongée peut rester en main à la fin du tour.
+     *
+     * @throws IllegalStateException si le joueur en détient plus d'un
+     */
+    private static void requireAtMostOneHeldToken(GameState state, int playerIndex) {
+        if (state.player(playerIndex).heldDiveTokens().size() > 1) {
+            throw new IllegalStateException(
+                    "Au plus un jeton de plongée peut être conservé en fin de tour");
+        }
+    }
+
+    /** Les coups légaux pendant qu'une action accordée par un jeton reste à jouer. */
+    private static List<Action> tokenActionMoves(GameState state, int playerIndex, ActivationCursor cursor) {
+        List<Action> actions = new ArrayList<>();
+        switch (cursor.pendingTokenAction()) {
+            case TRAVEL -> actions.addAll(voyagesOf(state, playerIndex));
+            case SONAR -> actions.addAll(sonarsOf(state, playerIndex));
+            case DIVE -> actions.addAll(divesOf(state, playerIndex));
+            default -> throw new IllegalStateException(
+                    "Action de jeton inattendue : " + cursor.pendingTokenAction());
+        }
+        return actions;
     }
 
     private static int currentPlayer(GameState state) {

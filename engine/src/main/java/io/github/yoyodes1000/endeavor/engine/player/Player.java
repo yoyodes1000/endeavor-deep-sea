@@ -26,15 +26,17 @@ public final class Player {
     private int research;
     private int vesselStock;
     private final List<HeldSpecialist> specialists;
+    private final List<String> heldDiveTokens;
 
     private Player(Attributes attributes, int reserveDiscs, int transitDiscs, int research,
-                   int vesselStock, List<HeldSpecialist> specialists) {
+                   int vesselStock, List<HeldSpecialist> specialists, List<String> heldDiveTokens) {
         this.attributes = attributes;
         this.reserveDiscs = reserveDiscs;
         this.transitDiscs = transitDiscs;
         this.research = research;
         this.vesselStock = vesselStock;
         this.specialists = specialists;
+        this.heldDiveTokens = heldDiveTokens;
     }
 
     /**
@@ -52,7 +54,7 @@ public final class Player {
         }
         List<HeldSpecialist> specialists = new ArrayList<>();
         specialists.add(HeldSpecialist.recruited(teamLeader));
-        return new Player(Attributes.atStart(), reserveDiscs, 0, 0, 0, specialists);
+        return new Player(Attributes.atStart(), reserveDiscs, 0, 0, 0, specialists, new ArrayList<>());
     }
 
     public Attributes attributes() {
@@ -211,9 +213,48 @@ public final class Player {
         throw new IllegalArgumentException("Tuile non détenue : " + specialistId);
     }
 
+    /**
+     * Dépense un disque de la réserve — le coût générique d'une option de jeton de
+     * plongée (ex. « défausser un disque → 5 recherche »), distinct du disque de
+     * transit posé sur un site. Mutation en place.
+     *
+     * @throws IllegalArgumentException si la réserve est vide
+     */
+    public void spendReserveDisc() {
+        if (reserveDiscs == 0) {
+            throw new IllegalArgumentException("Aucun disque en réserve à dépenser");
+        }
+        reserveDiscs--;
+    }
+
+    /**
+     * Les jetons de plongée actuellement en main, non encore dépensés — au plus un
+     * seul doit y rester en fin de tour (règle vérifiée par le driver, pas ici).
+     */
+    public List<String> heldDiveTokens() {
+        return Collections.unmodifiableList(heldDiveTokens);
+    }
+
+    /** Ajoute un jeton pris au sommet d'un site de plongée à la main du joueur. */
+    public void receiveDiveToken(String tokenId) {
+        if (tokenId == null || tokenId.isBlank()) {
+            throw new IllegalArgumentException("Un jeton de plongée reçu doit avoir un identifiant");
+        }
+        heldDiveTokens.add(tokenId);
+    }
+
+    /**
+     * Retire et renvoie le jeton en main à cet index (dépense d'une de ses options).
+     *
+     * @throws IndexOutOfBoundsException si l'index ne désigne aucun jeton en main
+     */
+    public String resolveDiveToken(int index) {
+        return heldDiveTokens.remove(index);
+    }
+
     /** Copie indépendante, appelée une fois par simulation pour l'isoler (déc. 3). */
     public Player copy() {
         return new Player(attributes.copy(), reserveDiscs, transitDiscs, research, vesselStock,
-                new ArrayList<>(specialists));
+                new ArrayList<>(specialists), new ArrayList<>(heldDiveTokens));
     }
 }

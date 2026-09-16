@@ -61,7 +61,7 @@ class PreparationDriverTest {
 
     private static GameState game(SpecialistRoster roster, MissionBoard board, int players) {
         return GameState.newGame(players, roster, RandomSource.fromSeed(1), 10, board,
-                Fixtures.oceanBoard(), Fixtures.oceanCatalog());
+                Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog());
     }
 
     // --- Tests ------------------------------------------------------------

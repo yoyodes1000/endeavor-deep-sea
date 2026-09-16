@@ -1,6 +1,8 @@
 package io.github.yoyodes1000.endeavor.engine.game;
 
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenPile;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiscoveryPile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
@@ -36,6 +38,8 @@ public final class GameState {
     private final OceanBoard oceanBoard;
     private final OceanTileCatalog oceanTileCatalog;
     private final DiscoveryPile discoveryPile;
+    private final DiveTokenCatalog diveTokenCatalog;
+    private final DiveTokenPile diveTokenPile;
     private final RandomSource random;
     private int firstPlayerIndex;
     private int round;
@@ -45,6 +49,7 @@ public final class GameState {
 
     private GameState(List<Player> players, List<Specialist> casier, MissionBoard missionBoard,
                       OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog, DiscoveryPile discoveryPile,
+                      DiveTokenCatalog diveTokenCatalog, DiveTokenPile diveTokenPile,
                       RandomSource random, int firstPlayerIndex, int round, GamePhase phase,
                       PreparationCursor cursor, ActivationCursor activationCursor) {
         this.players = players;
@@ -53,6 +58,8 @@ public final class GameState {
         this.oceanBoard = oceanBoard;
         this.oceanTileCatalog = oceanTileCatalog;
         this.discoveryPile = discoveryPile;
+        this.diveTokenCatalog = diveTokenCatalog;
+        this.diveTokenPile = diveTokenPile;
         this.random = random;
         this.firstPlayerIndex = firstPlayerIndex;
         this.round = round;
@@ -76,17 +83,19 @@ public final class GameState {
      * @param oceanBoard    l'océan de départ de la mission (grille et submersibles)
      * @param oceanTileCatalog le catalogue des tuiles Océan (matériel immuable, pour
      *                      retrouver les gains d'une tuile à l'arrivée d'un Voyage)
+     * @param diveTokenCatalog le catalogue des jetons de plongée (matériel immuable)
      */
     public static GameState newGame(int playerCount, SpecialistRoster roster,
                                     RandomSource random, int startingDiscs, MissionBoard missionBoard,
-                                    OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog) {
+                                    OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog,
+                                    DiveTokenCatalog diveTokenCatalog) {
         if (playerCount < 1) {
             throw new IllegalArgumentException("Il faut au moins un joueur : " + playerCount);
         }
         if (roster == null || random == null || missionBoard == null || oceanBoard == null
-                || oceanTileCatalog == null) {
-            throw new IllegalArgumentException(
-                    "Le casier, la source d'aléa, le plateau de mission, l'océan et son catalogue sont requis");
+                || oceanTileCatalog == null || diveTokenCatalog == null) {
+            throw new IllegalArgumentException("Le casier, la source d'aléa, le plateau de mission, l'océan, "
+                    + "son catalogue et le catalogue des jetons de plongée sont requis");
         }
         Specialist teamLeader = roster.teamLeader();
         List<Player> players = new ArrayList<>();
@@ -100,7 +109,9 @@ public final class GameState {
             }
         }
         DiscoveryPile discoveryPile = DiscoveryPile.forGame(oceanTileCatalog, oceanBoard);
-        return new GameState(players, casier, missionBoard, oceanBoard, oceanTileCatalog, discoveryPile, random, 0,
+        DiveTokenPile diveTokenPile = DiveTokenPile.forGame(diveTokenCatalog);
+        return new GameState(players, casier, missionBoard, oceanBoard, oceanTileCatalog, discoveryPile,
+                diveTokenCatalog, diveTokenPile, random, 0,
                 FIRST_ROUND, GamePhase.PREPARATION, PreparationCursor.notStarted(), ActivationCursor.notStarted());
     }
 
@@ -139,6 +150,16 @@ public final class GameState {
     /** La pioche des tuiles encore à découvrir (l'action Sonar y pioche). */
     public DiscoveryPile discoveryPile() {
         return discoveryPile;
+    }
+
+    /** Le catalogue des jetons de plongée (matériel immuable, partagé entre les copies). */
+    public DiveTokenCatalog diveTokenCatalog() {
+        return diveTokenCatalog;
+    }
+
+    /** La pioche partagée des jetons de plongée encore à empiler sur des sites. */
+    public DiveTokenPile diveTokenPile() {
+        return diveTokenPile;
     }
 
     public int firstPlayerIndex() {
@@ -251,7 +272,7 @@ public final class GameState {
             playersCopy.add(player.copy());
         }
         return new GameState(playersCopy, new ArrayList<>(casier), missionBoard.copy(), oceanBoard.copy(),
-                oceanTileCatalog, discoveryPile.copy(), random.copy(), firstPlayerIndex, round, phase, cursor,
-                activationCursor);
+                oceanTileCatalog, discoveryPile.copy(), diveTokenCatalog, diveTokenPile.copy(), random.copy(),
+                firstPlayerIndex, round, phase, cursor, activationCursor);
     }
 }

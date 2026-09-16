@@ -14,7 +14,7 @@ class PreparationTest {
 
     private static GameState game(int players, long seed) {
         return GameState.newGame(players, Fixtures.roster(), RandomSource.fromSeed(seed), 10,
-                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog());
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog());
     }
 
     @Test

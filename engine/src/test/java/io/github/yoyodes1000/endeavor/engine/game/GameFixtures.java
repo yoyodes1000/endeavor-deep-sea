@@ -1,6 +1,9 @@
 package io.github.yoyodes1000.endeavor.engine.game;
 
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveOption;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveToken;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
@@ -42,15 +45,25 @@ final class GameFixtures {
     /** Le catalogue des tuiles de l'océan minimal, avec des bonus d'arrivée simples. */
     static OceanTileCatalog oceanCatalog() {
         return new OceanTileCatalog(List.of(
-                new OceanTile("atoll", "Atoll", 1, false, List.of(), List.of(Gain.INSPIRATION), List.of(), List.of()),
-                new OceanTile("reef", "Reef", 1, false, List.of(), List.of(Gain.RESEARCH), List.of(), List.of()),
-                new OceanTile("trench", "Trench", 2, false, List.of(), List.of(Gain.DISC), List.of(), List.of())));
+                new OceanTile("atoll", "Atoll", 1, false, List.of(), List.of(Gain.INSPIRATION), List.of(), List.of(),
+                        List.of()),
+                new OceanTile("reef", "Reef", 1, false, List.of(), List.of(Gain.RESEARCH), List.of(), List.of(),
+                        List.of()),
+                new OceanTile("trench", "Trench", 2, false, List.of(), List.of(Gain.DISC), List.of(), List.of(),
+                        List.of())));
+    }
+
+    /** Le catalogue des jetons de plongée minimal : un seul type, gains de recherche purs. */
+    static DiveTokenCatalog diveTokenCatalog() {
+        return new DiveTokenCatalog(List.of(
+                new DiveToken("research", 6,
+                        List.of(new DiveOption.Gains(List.of(Gain.RESEARCH, Gain.RESEARCH), List.of())))));
     }
 
     /** Une partie neuve sur le plateau de mission minimal, pour alléger les tests. */
     static GameState newGame(int players, long seed) {
         return GameState.newGame(players, roster(), RandomSource.fromSeed(seed), 10,
-                missionBoard(), oceanBoard(), oceanCatalog());
+                missionBoard(), oceanBoard(), oceanCatalog(), diveTokenCatalog());
     }
 
     static SpecialistSide side(String name) {

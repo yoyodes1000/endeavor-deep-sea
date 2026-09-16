@@ -36,21 +36,30 @@ class GameStateTest {
     void refuseUnePartieSansPlateauDeMission() {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10, null,
-                        GameFixtures.oceanBoard(), GameFixtures.oceanCatalog()));
+                        GameFixtures.oceanBoard(), GameFixtures.oceanCatalog(), GameFixtures.diveTokenCatalog()));
     }
 
     @Test
     void refuseUnePartieSansOcean() {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
-                        GameFixtures.missionBoard(), null, GameFixtures.oceanCatalog()));
+                        GameFixtures.missionBoard(), null, GameFixtures.oceanCatalog(),
+                        GameFixtures.diveTokenCatalog()));
     }
 
     @Test
     void refuseUnePartieSansCatalogueDeTuiles() {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
-                        GameFixtures.missionBoard(), GameFixtures.oceanBoard(), null));
+                        GameFixtures.missionBoard(), GameFixtures.oceanBoard(), null,
+                        GameFixtures.diveTokenCatalog()));
+    }
+
+    @Test
+    void refuseUnePartieSansCatalogueDeJetonsDePlongee() {
+        assertThrows(IllegalArgumentException.class,
+                () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
+                        GameFixtures.missionBoard(), GameFixtures.oceanBoard(), GameFixtures.oceanCatalog(), null));
     }
 
     @Test

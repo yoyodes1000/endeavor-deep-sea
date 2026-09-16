@@ -1,5 +1,6 @@
 package io.github.yoyodes1000.endeavor.engine.play;
 
+import io.github.yoyodes1000.endeavor.engine.dive.DiveSiteSetup;
 import io.github.yoyodes1000.endeavor.engine.effect.EffectOutcome;
 import io.github.yoyodes1000.endeavor.engine.effect.GainResolver;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
@@ -53,6 +54,20 @@ public final class GameSetup {
                 throw new IllegalStateException(
                         "Le bonus d'arrivée de la base produit un impact, non résolu à la mise en place");
             }
+        }
+    }
+
+    /**
+     * Empile les jetons de plongée des sites déjà en jeu à la mise en place — un
+     * geste par site, dans la pioche partagée. À appeler une fois par partie, après
+     * {@code GameState.newGame}.
+     */
+    public static void stackInitialDiveSites(GameState state) {
+        for (Cell cell : state.oceanBoard().occupiedCells()) {
+            String tileId = state.oceanBoard().tileAt(cell).orElseThrow();
+            OceanTile tile = state.oceanTileCatalog().byId(tileId).orElseThrow(
+                    () -> new IllegalStateException("Tuile inconnue au catalogue : " + tileId));
+            DiveSiteSetup.stack(state.oceanBoard(), state.diveTokenPile(), state.random(), cell, tile);
         }
     }
 }

@@ -76,11 +76,35 @@ class OceanTileLoaderTest {
     void ignoreLesChampsDActivationNonModelises() {
         String json = "{\"oceanTiles\":[{\"id\":\"t\",\"name\":\"T\",\"depth\":1,\"unique\":false,"
                 + "\"discoverBonus\":[\"disc\"],\"arrivalBonus\":[\"coordination\"],"
-                + "\"diveSites\":[{\"id\":\"d1\",\"tokens\":4}],\"sonarTracks\":[],\"specialRules\":[]}]}";
+                + "\"sonarTracks\":[],\"specialRules\":[]}]}";
         OceanTileCatalog catalog = loader.load(new StringReader(json));
 
         assertEquals(1, catalog.tiles().size());
         assertEquals(List.of(Gain.DISC), catalog.byId("t").orElseThrow().discoverBonus());
+    }
+
+    @Test
+    void chargeLesSitesDePlongeeReels() throws Exception {
+        OceanTileCatalog catalog;
+        try (Reader reader = Files.newBufferedReader(CATALOG, StandardCharsets.UTF_8)) {
+            catalog = loader.load(reader);
+        }
+
+        OceanTile seaStar = catalog.byId("the-sea-star").orElseThrow();
+        assertEquals(1, seaStar.diveSites().size());
+        assertEquals("d1", seaStar.diveSites().get(0).id());
+        assertEquals(4, seaStar.diveSites().get(0).tokenCount());
+
+        OceanTile calmSeas = catalog.byId("calm-seas").orElseThrow();
+        assertTrue(calmSeas.diveSites().isEmpty(), "calm-seas n'a pas de site de plongée");
+    }
+
+    @Test
+    void refuseUnSiteDePlongeeSansNombreDeJetons() {
+        String json = "{\"oceanTiles\":[{\"id\":\"t\",\"name\":\"T\",\"depth\":1,\"unique\":false,"
+                + "\"discoverBonus\":[],\"arrivalBonus\":[],"
+                + "\"diveSites\":[{\"id\":\"d1\"}]}]}";
+        assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader(json)));
     }
 
     @Test

@@ -2,6 +2,7 @@ package io.github.yoyodes1000.endeavor.app.ocean;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
 import io.github.yoyodes1000.endeavor.engine.ocean.SonarSpot;
@@ -70,7 +71,8 @@ public final class OceanTileLoader {
                 gains(entry.discoverBonus()),
                 gains(entry.arrivalBonus()),
                 actions(entry.arrivalActions()),
-                sonarTracks(entry.sonarTracks()));
+                sonarTracks(entry.sonarTracks()),
+                diveSites(entry.diveSites()));
     }
 
     private static List<Gain> gains(List<String> raw) {
@@ -99,5 +101,16 @@ public final class OceanTileLoader {
             case "discover" -> new SonarSpot.Discover(spot.levels());
             default -> throw new IllegalArgumentException("Type de case Sonar inconnu : " + spot.type());
         };
+    }
+
+    private static List<DiveSite> diveSites(List<OceanTileDocument.DiveSite> raw) {
+        return raw == null ? List.of() : raw.stream().map(OceanTileLoader::toDiveSite).toList();
+    }
+
+    private static DiveSite toDiveSite(OceanTileDocument.DiveSite site) {
+        if (site.tokens() == null) {
+            throw new IllegalArgumentException("Nombre de jetons manquant pour le site de plongée " + site.id());
+        }
+        return new DiveSite(site.id(), site.tokens());
     }
 }

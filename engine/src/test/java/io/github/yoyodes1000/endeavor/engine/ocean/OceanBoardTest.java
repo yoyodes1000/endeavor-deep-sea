@@ -169,16 +169,67 @@ class OceanBoardTest {
         OceanBoard original = crossBoard();
         original.addVessels(new Cell(1, 1), 0, 1);
         original.placeSonarDisc(new Cell(1, 1), 0, 0);
+        original.stackDiveTokens(new Cell(1, 1), "d1", List.of("research", "sonar"));
 
         OceanBoard copie = original.copy();
         copie.addVessels(new Cell(1, 1), 0, 3);
         copie.placeTile(new Cell(2, 0), "x");
         copie.placeSonarDisc(new Cell(1, 1), 0, 0);
+        copie.takeDiveToken(new Cell(1, 1), "d1");
 
         assertEquals(1, original.vesselCount(new Cell(1, 1), 0), "les submersibles de l'original ne bougent pas");
         assertFalse(original.isOccupied(new Cell(2, 0)), "la tuile ajoutée à la copie n'existe pas dans l'original");
         assertEquals(1, original.sonarDiscCount(new Cell(1, 1), 0), "les disques de Sonar de l'original ne bougent pas");
+        assertEquals(2, original.diveTokenCount(new Cell(1, 1), "d1"), "le site de l'original reste plein");
         assertEquals(4, copie.vesselCount(new Cell(1, 1), 0));
         assertEquals(2, copie.sonarDiscCount(new Cell(1, 1), 0));
+        assertEquals(1, copie.diveTokenCount(new Cell(1, 1), "d1"), "un jeton pris sur la copie");
+    }
+
+    // --- Sites de plongée ---------------------------------------------------
+
+    @Test
+    void lesJetonsDePlongeeSempilentEtSePrennentDuSommet() {
+        OceanBoard board = crossBoard();
+        assertEquals(0, board.diveTokenCount(new Cell(1, 1), "d1"), "site non encore empilé");
+
+        board.stackDiveTokens(new Cell(1, 1), "d1", List.of("research", "sonar", "cancel-disc"));
+
+        assertEquals(3, board.diveTokenCount(new Cell(1, 1), "d1"));
+        assertEquals("research", board.takeDiveToken(new Cell(1, 1), "d1"), "le premier de la liste est le sommet");
+        assertEquals(2, board.diveTokenCount(new Cell(1, 1), "d1"));
+        assertEquals("sonar", board.takeDiveToken(new Cell(1, 1), "d1"));
+    }
+
+    @Test
+    void unSiteNePeutEtreEmpileQuUneFois() {
+        OceanBoard board = crossBoard();
+        board.stackDiveTokens(new Cell(1, 1), "d1", List.of("research"));
+        assertThrows(IllegalArgumentException.class,
+                () -> board.stackDiveTokens(new Cell(1, 1), "d1", List.of("sonar")));
+    }
+
+    @Test
+    void onNePeutPasEmpilerSurUneCaseVide() {
+        OceanBoard board = crossBoard();
+        assertThrows(IllegalArgumentException.class,
+                () -> board.stackDiveTokens(new Cell(2, 0), "d1", List.of("research")));
+    }
+
+    @Test
+    void onNePeutPasPrendreUnJetonDUnSiteVide() {
+        OceanBoard board = crossBoard();
+        assertThrows(IllegalArgumentException.class, () -> board.takeDiveToken(new Cell(1, 1), "d1"));
+
+        board.stackDiveTokens(new Cell(1, 1), "d1", List.of("research"));
+        board.takeDiveToken(new Cell(1, 1), "d1");
+        assertThrows(IllegalArgumentException.class, () -> board.takeDiveToken(new Cell(1, 1), "d1"));
+    }
+
+    @Test
+    void lesCasesOccupeesSontOrdonneesParProfondeurPuisColonne() {
+        OceanBoard board = crossBoard();
+        assertEquals(List.of(new Cell(1, 0), new Cell(1, 1), new Cell(1, 2), new Cell(2, 1), new Cell(3, 1)),
+                board.occupiedCells());
     }
 }

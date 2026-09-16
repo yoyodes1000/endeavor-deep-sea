@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.yoyodes1000.endeavor.engine.board.Attribute;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistFace;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class PlayerTest {
@@ -144,12 +145,56 @@ class PlayerTest {
         copie.moveReserveToTransit(4);
         copie.attributes().advance(Attribute.COORDINATION, 2);
         copie.gainVessels(2);
+        copie.receiveDiveToken("research");
 
         assertEquals(10, original.reserveDiscs(), "les disques de l'original ne bougent pas");
         assertEquals(0, original.attributes().step(Attribute.COORDINATION), "les pistes de l'original ne bougent pas");
         assertEquals(0, original.vesselStock(), "la réserve de submersibles de l'original ne bouge pas");
+        assertTrue(original.heldDiveTokens().isEmpty(), "la main de jetons de l'original ne bouge pas");
         assertEquals(6, copie.reserveDiscs());
         assertEquals(2, copie.attributes().step(Attribute.COORDINATION));
         assertEquals(2, copie.vesselStock());
+        assertEquals(List.of("research"), copie.heldDiveTokens());
+    }
+
+    // --- Jetons de plongée ---------------------------------------------------
+
+    @Test
+    void unJetonRecuRejointLaMain() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.receiveDiveToken("research");
+        player.receiveDiveToken("sonar");
+
+        assertEquals(List.of("research", "sonar"), player.heldDiveTokens());
+    }
+
+    @Test
+    void resoudreUnJetonLeRetireDeLaMain() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.receiveDiveToken("research");
+        player.receiveDiveToken("sonar");
+
+        assertEquals("research", player.resolveDiveToken(0));
+
+        assertEquals(List.of("sonar"), player.heldDiveTokens());
+    }
+
+    @Test
+    void laMainDeJetonsEstEnLectureSeule() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        assertThrows(UnsupportedOperationException.class, () -> player.heldDiveTokens().add("research"));
+    }
+
+    @Test
+    void depenserUnDisqueDeReserveLeDiminue() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.spendReserveDisc();
+        assertEquals(9, player.reserveDiscs());
+    }
+
+    @Test
+    void onNePeutPasDepenserUnDisqueDeReserveVide() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 0);
+        assertThrows(IllegalArgumentException.class, player::spendReserveDisc);
     }
 }
