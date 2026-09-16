@@ -49,11 +49,11 @@ public final class Fixtures {
     public static OceanTileCatalog oceanCatalog() {
         return new OceanTileCatalog(List.of(
                 new OceanTile("atoll", "Atoll", 1, false, List.of(), List.of(Gain.INSPIRATION), List.of(), List.of(),
-                        List.of()),
+                        List.of(), List.of()),
                 new OceanTile("reef", "Reef", 1, false, List.of(), List.of(Gain.RESEARCH), List.of(), List.of(),
-                        List.of()),
+                        List.of(), List.of()),
                 new OceanTile("trench", "Trench", 2, false, List.of(), List.of(Gain.DISC), List.of(), List.of(),
-                        List.of())));
+                        List.of(), List.of())));
     }
 
     /** Le catalogue des jetons de plongée minimal : un seul type, gains de recherche purs. */

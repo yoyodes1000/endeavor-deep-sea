@@ -4,9 +4,11 @@ import java.util.List;
 
 /**
  * Reflet brut de {@code ocean-tiles.json}, limité à l'identité, aux gains, aux
- * <strong>pistes Sonar</strong> et aux <strong>sites de plongée</strong> des
- * tuiles. Le reste des champs d'activation (conservation, revues, connexions,
- * règles spéciales) n'est pas déclaré : le chargeur les ignore (Phase 2 à venir).
+ * <strong>pistes Sonar</strong>, aux <strong>sites de plongée</strong> et aux
+ * <strong>sites de conservation</strong> des tuiles. Le reste des champs
+ * d'activation (revues, connexions, règles spéciales, actions accordées par un
+ * site de conservation) n'est pas déclaré : le chargeur les ignore (Phase 2 à
+ * venir).
  */
 record OceanTileDocument(List<Entry> oceanTiles) {
 
@@ -19,7 +21,8 @@ record OceanTileDocument(List<Entry> oceanTiles) {
             List<String> arrivalBonus,
             List<ArrivalAction> arrivalActions,
             List<Track> sonarTracks,
-            List<DiveSite> diveSites) {
+            List<DiveSite> diveSites,
+            List<ConservationSite> conservationSites) {
     }
 
     record ArrivalAction(String type) {
@@ -35,5 +38,13 @@ record OceanTileDocument(List<Entry> oceanTiles) {
 
     /** Un site de plongée : son identifiant et le nombre de jetons empilés à la pose. */
     record DiveSite(String id, Integer tokens) {
+    }
+
+    /**
+     * Un site de conservation : son identifiant, son coût en recherche et ses
+     * gains. Le champ {@code actions} (bonus accordé par de rares sites) n'est
+     * pas déclaré ; Jackson l'ignore.
+     */
+    record ConservationSite(String id, Integer cost, List<String> gains) {
     }
 }

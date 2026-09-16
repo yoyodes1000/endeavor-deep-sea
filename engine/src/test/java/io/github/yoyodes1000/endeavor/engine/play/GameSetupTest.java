@@ -61,7 +61,7 @@ class GameSetupTest {
         ocean.placeTile(new Cell(1, 0), "base");
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("base", "Base", 1, false, List.of(), List.of(Gain.IMPACT), List.of(), List.of(),
-                        List.of())));
+                        List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
 
@@ -76,8 +76,9 @@ class GameSetupTest {
         ocean.placeTile(new Cell(1, 1), "plain");
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("diving-spot", "Diving Spot", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(new DiveSite("d1", 3))),
-                new OceanTile("plain", "Plain", 1, false, List.of(), List.of(), List.of(), List.of(), List.of())));
+                        List.of(new DiveSite("d1", 3)), List.of()),
+                new OceanTile("plain", "Plain", 1, false, List.of(), List.of(), List.of(), List.of(), List.of(),
+                        List.of())));
         DiveTokenCatalog diveTokenCatalog = new DiveTokenCatalog(List.of(
                 new DiveToken("research", 5,
                         List.of(new DiveOption.Gains(List.of(Gain.RESEARCH), List.of())))));

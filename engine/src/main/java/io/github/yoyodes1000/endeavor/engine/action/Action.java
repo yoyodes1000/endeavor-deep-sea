@@ -9,5 +9,5 @@ package io.github.yoyodes1000.endeavor.engine.action;
  * compilateur, ce qui rend leur traitement exhaustif vérifiable.
  */
 public sealed interface Action permits Recruter, PoserImpact, Recuperer, Passer, Activer, TerminerTour, Voyager,
-        Sonar, GarderTuile, PoserTuile, Dive, DepenserJeton {
+        Sonar, GarderTuile, PoserTuile, Dive, DepenserJeton, Conserver {
 }

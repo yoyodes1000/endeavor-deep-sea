@@ -36,8 +36,11 @@ import java.util.Set;
  * la légalité de la pose — comme le déplacement s'en remet à {@link
  * #reachableFrom(Cell, int)}. Même patron pour les <strong>sites de plongée</strong> :
  * une pile de jetons empilée à la création de la zone ({@link #stackDiveTokens}),
- * dont l'action Plongée prend le sommet ({@link #takeDiveToken}). L'occupation
- * des autres sites viendra avec les actions qui l'écrivent.
+ * dont l'action Plongée prend le sommet ({@link #takeDiveToken}). Les
+ * <strong>sites de conservation</strong> suivent le même patron mais à un seul
+ * disque, jamais repris ({@link #placeConservationDisc}, {@link
+ * #conservationSiteOccupied}). L'occupation des autres sites viendra avec les
+ * actions qui l'écrivent.
  */
 public final class OceanBoard {
 
@@ -55,11 +58,16 @@ public final class OceanBoard {
     private record DiveSiteKey(Cell cell, String siteId) {
     }
 
+    /** Un site de conservation identifié sur la grille : sa case et son identifiant sur la tuile. */
+    private record ConservationSiteKey(Cell cell, String siteId) {
+    }
+
     private final int columns;
     private final Map<Cell, String> tileByCell;
     private final Map<Cell, Map<Integer, Integer>> vesselsByCell;
     private final Map<SonarTrackKey, List<Integer>> sonarDiscsByTrack;
     private final Map<DiveSiteKey, Deque<String>> diveTokensBySite;
+    private final Map<ConservationSiteKey, Integer> conservationOccupantBySite;
 
     /** Un océan vide de {@code columns} colonnes ; les tuiles s'y posent ensuite. */
     public OceanBoard(int columns) {
@@ -71,10 +79,12 @@ public final class OceanBoard {
         this.vesselsByCell = new HashMap<>();
         this.sonarDiscsByTrack = new HashMap<>();
         this.diveTokensBySite = new HashMap<>();
+        this.conservationOccupantBySite = new HashMap<>();
     }
 
     private OceanBoard(int columns, Map<Cell, String> tiles, Map<Cell, Map<Integer, Integer>> vessels,
-                       Map<SonarTrackKey, List<Integer>> sonarDiscs, Map<DiveSiteKey, Deque<String>> diveTokens) {
+                       Map<SonarTrackKey, List<Integer>> sonarDiscs, Map<DiveSiteKey, Deque<String>> diveTokens,
+                       Map<ConservationSiteKey, Integer> conservationOccupants) {
         this.columns = columns;
         this.tileByCell = new HashMap<>(tiles);
         this.vesselsByCell = new HashMap<>();
@@ -89,6 +99,7 @@ public final class OceanBoard {
         for (Map.Entry<DiveSiteKey, Deque<String>> entry : diveTokens.entrySet()) {
             this.diveTokensBySite.put(entry.getKey(), new ArrayDeque<>(entry.getValue()));
         }
+        this.conservationOccupantBySite = new HashMap<>(conservationOccupants);
     }
 
     /**
@@ -346,6 +357,40 @@ public final class OceanBoard {
         }
     }
 
+    /** Vrai si un disque occupe déjà ce site de conservation. */
+    public boolean conservationSiteOccupied(Cell cell, String siteId) {
+        requireConservationSiteId(siteId);
+        return conservationOccupantBySite.containsKey(new ConservationSiteKey(cell, siteId));
+    }
+
+    /**
+     * Pose le disque d'un joueur sur un site de conservation (l'action
+     * Conservation) — un site n'accueille qu'un seul disque, jamais repris.
+     *
+     * @throws IllegalArgumentException si le joueur est invalide, si la case ne
+     *     porte pas de tuile, ou si le site est déjà occupé
+     */
+    public void placeConservationDisc(Cell cell, String siteId, int playerIndex) {
+        requireConservationSiteId(siteId);
+        if (playerIndex < 0) {
+            throw new IllegalArgumentException("Indice de joueur négatif : " + playerIndex);
+        }
+        if (!isOccupied(cell)) {
+            throw new IllegalArgumentException("Aucune zone où poser un disque de conservation : " + cell);
+        }
+        ConservationSiteKey key = new ConservationSiteKey(cell, siteId);
+        if (conservationOccupantBySite.containsKey(key)) {
+            throw new IllegalArgumentException("Site de conservation déjà occupé : " + cell + "/" + siteId);
+        }
+        conservationOccupantBySite.put(key, playerIndex);
+    }
+
+    private void requireConservationSiteId(String siteId) {
+        if (siteId == null || siteId.isBlank()) {
+            throw new IllegalArgumentException("Un site de conservation doit avoir un identifiant");
+        }
+    }
+
     /** Les zones voisines occupées (adjacence orthogonale, vides exclus). */
     public List<Cell> neighbors(Cell cell) {
         List<Cell> result = new ArrayList<>();
@@ -405,7 +450,8 @@ public final class OceanBoard {
 
     /** Copie indépendante, pour isoler une simulation (décision 3). */
     public OceanBoard copy() {
-        return new OceanBoard(columns, tileByCell, vesselsByCell, sonarDiscsByTrack, diveTokensBySite);
+        return new OceanBoard(columns, tileByCell, vesselsByCell, sonarDiscsByTrack, diveTokensBySite,
+                conservationOccupantBySite);
     }
 
     private void requireOnGrid(Cell cell) {

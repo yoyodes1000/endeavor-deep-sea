@@ -232,4 +232,46 @@ class OceanBoardTest {
         assertEquals(List.of(new Cell(1, 0), new Cell(1, 1), new Cell(1, 2), new Cell(2, 1), new Cell(3, 1)),
                 board.occupiedCells());
     }
+
+    // --- Sites de conservation -----------------------------------------------
+
+    @Test
+    void unSiteDeConservationEstLibreTantQuAucunDisqueNYEstPose() {
+        OceanBoard board = crossBoard();
+        assertFalse(board.conservationSiteOccupied(new Cell(1, 1), "c1"));
+
+        board.placeConservationDisc(new Cell(1, 1), "c1", 0);
+
+        assertTrue(board.conservationSiteOccupied(new Cell(1, 1), "c1"));
+        assertFalse(board.conservationSiteOccupied(new Cell(1, 1), "c2"), "un autre site de la même zone reste libre");
+        assertFalse(board.conservationSiteOccupied(new Cell(1, 2), "c1"), "une autre zone reste libre");
+    }
+
+    @Test
+    void unSiteDeConservationNAccueilleQuUnSeulDisque() {
+        OceanBoard board = crossBoard();
+        board.placeConservationDisc(new Cell(1, 1), "c1", 0);
+        assertThrows(IllegalArgumentException.class,
+                () -> board.placeConservationDisc(new Cell(1, 1), "c1", 1));
+    }
+
+    @Test
+    void onNePeutPasPoserUnDisqueDeConservationSurUneCaseVide() {
+        OceanBoard board = crossBoard();
+        assertThrows(IllegalArgumentException.class,
+                () -> board.placeConservationDisc(new Cell(2, 0), "c1", 0));
+    }
+
+    @Test
+    void laCopieEstIndependantePourLesSitesDeConservation() {
+        OceanBoard original = crossBoard();
+        original.placeConservationDisc(new Cell(1, 1), "c1", 0);
+
+        OceanBoard copie = original.copy();
+        copie.placeConservationDisc(new Cell(1, 1), "c2", 0);
+
+        assertFalse(original.conservationSiteOccupied(new Cell(1, 1), "c2"),
+                "le site posé sur la copie n'existe pas dans l'original");
+        assertTrue(copie.conservationSiteOccupied(new Cell(1, 1), "c1"), "l'occupation de l'original est reprise");
+    }
 }

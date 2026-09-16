@@ -197,4 +197,19 @@ class PlayerTest {
         Player player = Player.start(PlayerFixtures.teamLeader(), 0);
         assertThrows(IllegalArgumentException.class, player::spendReserveDisc);
     }
+
+    @Test
+    void depenserDeLaRechercheLaDiminue() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.gainResearch(5);
+        player.spendResearch(3);
+        assertEquals(2, player.research());
+    }
+
+    @Test
+    void onNePeutPasDepenserPlusDeRechercheQueDisponible() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.gainResearch(2);
+        assertThrows(IllegalArgumentException.class, () -> player.spendResearch(3));
+    }
 }

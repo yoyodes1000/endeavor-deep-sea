@@ -2,6 +2,7 @@ package io.github.yoyodes1000.endeavor.app.ocean;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.yoyodes1000.endeavor.engine.ocean.ConservationSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
@@ -72,7 +73,8 @@ public final class OceanTileLoader {
                 gains(entry.arrivalBonus()),
                 actions(entry.arrivalActions()),
                 sonarTracks(entry.sonarTracks()),
-                diveSites(entry.diveSites()));
+                diveSites(entry.diveSites()),
+                conservationSites(entry.conservationSites()));
     }
 
     private static List<Gain> gains(List<String> raw) {
@@ -112,5 +114,16 @@ public final class OceanTileLoader {
             throw new IllegalArgumentException("Nombre de jetons manquant pour le site de plongée " + site.id());
         }
         return new DiveSite(site.id(), site.tokens());
+    }
+
+    private static List<ConservationSite> conservationSites(List<OceanTileDocument.ConservationSite> raw) {
+        return raw == null ? List.of() : raw.stream().map(OceanTileLoader::toConservationSite).toList();
+    }
+
+    private static ConservationSite toConservationSite(OceanTileDocument.ConservationSite site) {
+        if (site.cost() == null) {
+            throw new IllegalArgumentException("Coût manquant pour le site de conservation " + site.id());
+        }
+        return new ConservationSite(site.id(), site.cost(), gains(site.gains()));
     }
 }
