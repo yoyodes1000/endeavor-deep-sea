@@ -2,20 +2,20 @@ package io.github.yoyodes1000.endeavor.engine.effect;
 
 /**
  * Ce qu'une résolution de gains a produit et qui reste à mettre en jeu : les
- * pions impact et les submersibles gagnés.
+ * pions impact et les promotions gagnés, et les submersibles gagnés.
  *
- * <p>Leur mise en jeu — poser un pion sur le plateau de mission, faire arriver un
- * submersible sur une tuile — n'est pas faite ici : elle demande une décision et
- * peut relancer une cascade, donc elle revient à l'appelant, qui rappellera le
- * résolveur sur les récompenses obtenues.
+ * <p>La mise en jeu des impacts et promotions — poser un pion sur le plateau de
+ * mission, choisir quel Junior promouvoir — n'est pas faite ici : elle demande
+ * une décision et peut relancer une cascade, donc elle revient à l'appelant, qui
+ * rappellera le résolveur sur les récompenses obtenues.
  */
-public record EffectOutcome(int impactsEarned, int vesselsEarned) {
+public record EffectOutcome(int impactsEarned, int vesselsEarned, int promotionsEarned) {
 
     /** Aucun effet à mettre en jeu. */
-    public static final EffectOutcome NONE = new EffectOutcome(0, 0);
+    public static final EffectOutcome NONE = new EffectOutcome(0, 0, 0);
 
     public EffectOutcome {
-        if (impactsEarned < 0 || vesselsEarned < 0) {
+        if (impactsEarned < 0 || vesselsEarned < 0 || promotionsEarned < 0) {
             throw new IllegalArgumentException("Un décompte d'effets ne peut être négatif");
         }
     }
@@ -24,6 +24,7 @@ public record EffectOutcome(int impactsEarned, int vesselsEarned) {
     public EffectOutcome plus(EffectOutcome other) {
         return new EffectOutcome(
                 impactsEarned + other.impactsEarned,
-                vesselsEarned + other.vesselsEarned);
+                vesselsEarned + other.vesselsEarned,
+                promotionsEarned + other.promotionsEarned);
     }
 }

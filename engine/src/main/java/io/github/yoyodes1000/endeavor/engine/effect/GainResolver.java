@@ -36,6 +36,7 @@ public final class GainResolver {
     public static EffectOutcome resolve(Player player, List<Gain> gains) {
         int impacts = 0;
         int vessels = 0;
+        int promotions = 0;
         for (Gain gain : gains) {
             switch (gain) {
                 case INSPIRATION, COORDINATION, REPUTATION, INGENUITY -> {
@@ -53,11 +54,12 @@ public final class GainResolver {
                 case RESEARCH -> player.gainResearch(1);
                 case DISC -> player.gainDiscs(1);
                 case IMPACT -> impacts++;
-                case ANY_ATTRIBUTE, LOWEST_ATTRIBUTE, PROMOTE ->
+                case PROMOTE -> promotions++;
+                case ANY_ATTRIBUTE, LOWEST_ATTRIBUTE ->
                         throw new UnsupportedOperationException(
                                 "Résolution du gain « " + gain.code() + " » à venir");
             }
         }
-        return new EffectOutcome(impacts, vessels);
+        return new EffectOutcome(impacts, vessels, promotions);
     }
 }
