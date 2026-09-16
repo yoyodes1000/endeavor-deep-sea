@@ -36,7 +36,8 @@ class GameStateTest {
     void refuseUnePartieSansPlateauDeMission() {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10, null,
-                        GameFixtures.oceanBoard(), GameFixtures.oceanCatalog(), GameFixtures.diveTokenCatalog()));
+                        GameFixtures.oceanBoard(), GameFixtures.oceanCatalog(), GameFixtures.diveTokenCatalog(),
+                        GameFixtures.journalCatalog()));
     }
 
     @Test
@@ -44,7 +45,7 @@ class GameStateTest {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
                         GameFixtures.missionBoard(), null, GameFixtures.oceanCatalog(),
-                        GameFixtures.diveTokenCatalog()));
+                        GameFixtures.diveTokenCatalog(), GameFixtures.journalCatalog()));
     }
 
     @Test
@@ -52,14 +53,23 @@ class GameStateTest {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
                         GameFixtures.missionBoard(), GameFixtures.oceanBoard(), null,
-                        GameFixtures.diveTokenCatalog()));
+                        GameFixtures.diveTokenCatalog(), GameFixtures.journalCatalog()));
     }
 
     @Test
     void refuseUnePartieSansCatalogueDeJetonsDePlongee() {
         assertThrows(IllegalArgumentException.class,
                 () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
-                        GameFixtures.missionBoard(), GameFixtures.oceanBoard(), GameFixtures.oceanCatalog(), null));
+                        GameFixtures.missionBoard(), GameFixtures.oceanBoard(), GameFixtures.oceanCatalog(), null,
+                        GameFixtures.journalCatalog()));
+    }
+
+    @Test
+    void refuseUnePartieSansCatalogueDeRevues() {
+        assertThrows(IllegalArgumentException.class,
+                () -> GameState.newGame(2, GameFixtures.roster(), RandomSource.fromSeed(1), 10,
+                        GameFixtures.missionBoard(), GameFixtures.oceanBoard(), GameFixtures.oceanCatalog(),
+                        GameFixtures.diveTokenCatalog(), null));
     }
 
     @Test

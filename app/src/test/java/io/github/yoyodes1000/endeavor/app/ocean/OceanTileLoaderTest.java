@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
 import io.github.yoyodes1000.endeavor.engine.ocean.SonarSpot;
@@ -122,6 +123,31 @@ class OceanTileLoaderTest {
 
         OceanTile calmSeas = catalog.byId("calm-seas").orElseThrow();
         assertTrue(calmSeas.conservationSites().isEmpty(), "calm-seas n'a pas de site de conservation");
+    }
+
+    @Test
+    void chargeLesSitesDePublicationReels() throws Exception {
+        OceanTileCatalog catalog;
+        try (Reader reader = Files.newBufferedReader(CATALOG, StandardCharsets.UTF_8)) {
+            catalog = loader.load(reader);
+        }
+
+        OceanTile calmSeas = catalog.byId("calm-seas").orElseThrow();
+        assertEquals(1, calmSeas.journalSites().size());
+        assertEquals("j1", calmSeas.journalSites().get(0).id());
+        assertEquals(FieldSymbol.BROWN, calmSeas.journalSites().get(0).fieldSymbol());
+        assertTrue(calmSeas.journalSites().get(0).gains().isEmpty());
+
+        OceanTile atoll = catalog.byId("atoll").orElseThrow();
+        assertTrue(atoll.journalSites().isEmpty(), "atoll n'a pas de site de publication");
+    }
+
+    @Test
+    void refuseUnSiteDePublicationSansSymboleDeDomaine() {
+        String json = "{\"oceanTiles\":[{\"id\":\"t\",\"name\":\"T\",\"depth\":1,\"unique\":false,"
+                + "\"discoverBonus\":[],\"arrivalBonus\":[],"
+                + "\"journalSites\":[{\"id\":\"j1\"}]}]}";
+        assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader(json)));
     }
 
     @Test

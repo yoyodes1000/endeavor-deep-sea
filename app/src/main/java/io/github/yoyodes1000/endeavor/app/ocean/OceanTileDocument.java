@@ -4,11 +4,11 @@ import java.util.List;
 
 /**
  * Reflet brut de {@code ocean-tiles.json}, limité à l'identité, aux gains, aux
- * <strong>pistes Sonar</strong>, aux <strong>sites de plongée</strong> et aux
- * <strong>sites de conservation</strong> des tuiles. Le reste des champs
- * d'activation (revues, connexions, règles spéciales, actions accordées par un
- * site de conservation) n'est pas déclaré : le chargeur les ignore (Phase 2 à
- * venir).
+ * <strong>pistes Sonar</strong>, aux <strong>sites de plongée</strong>, aux
+ * <strong>sites de conservation</strong> et aux <strong>sites de
+ * publication</strong> des tuiles. Le reste des champs d'activation
+ * (connexions, règles spéciales, actions accordées par un site de
+ * conservation) n'est pas déclaré : le chargeur les ignore (Phase 2 à venir).
  */
 record OceanTileDocument(List<Entry> oceanTiles) {
 
@@ -22,7 +22,8 @@ record OceanTileDocument(List<Entry> oceanTiles) {
             List<ArrivalAction> arrivalActions,
             List<Track> sonarTracks,
             List<DiveSite> diveSites,
-            List<ConservationSite> conservationSites) {
+            List<ConservationSite> conservationSites,
+            List<JournalSite> journalSites) {
     }
 
     record ArrivalAction(String type) {
@@ -46,5 +47,13 @@ record OceanTileDocument(List<Entry> oceanTiles) {
      * pas déclaré ; Jackson l'ignore.
      */
     record ConservationSite(String id, Integer cost, List<String> gains) {
+    }
+
+    /**
+     * Un site de publication : son identifiant, son symbole de domaine et ses
+     * gains propres (rares). Les champs {@code markedSite} et {@code accessFrom}
+     * (connexions) ne sont pas déclarés ; Jackson les ignore.
+     */
+    record JournalSite(String id, String fieldSymbol, List<String> gains) {
     }
 }

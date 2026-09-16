@@ -3,6 +3,9 @@ package io.github.yoyodes1000.endeavor.engine.support;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveOption;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveToken;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
+import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
+import io.github.yoyodes1000.endeavor.engine.journal.Journal;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalCatalog;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
@@ -49,11 +52,11 @@ public final class Fixtures {
     public static OceanTileCatalog oceanCatalog() {
         return new OceanTileCatalog(List.of(
                 new OceanTile("atoll", "Atoll", 1, false, List.of(), List.of(Gain.INSPIRATION), List.of(), List.of(),
-                        List.of(), List.of()),
+                        List.of(), List.of(), List.of()),
                 new OceanTile("reef", "Reef", 1, false, List.of(), List.of(Gain.RESEARCH), List.of(), List.of(),
-                        List.of(), List.of()),
+                        List.of(), List.of(), List.of()),
                 new OceanTile("trench", "Trench", 2, false, List.of(), List.of(Gain.DISC), List.of(), List.of(),
-                        List.of(), List.of())));
+                        List.of(), List.of(), List.of())));
     }
 
     /** Le catalogue des jetons de plongée minimal : un seul type, gains de recherche purs. */
@@ -61,6 +64,26 @@ public final class Fixtures {
         return new DiveTokenCatalog(List.of(
                 new DiveToken("research", 6,
                         List.of(new DiveOption.Gains(List.of(Gain.RESEARCH, Gain.RESEARCH), List.of())))));
+    }
+
+    /**
+     * Le catalogue de revues minimal : exactement 4 revues de départ (donc un
+     * marché initial déterministe, toutes tirées) et une revue standard pour la
+     * pioche de réassort. Gains volontairement résolvables (pas de {@code promote}),
+     * contrairement au vrai matériel, pour que les tests puissent publier.
+     */
+    public static JournalCatalog journalCatalog() {
+        return new JournalCatalog(List.of(
+                new Journal("anchor-blue", true, "Anchor Blue", 1, 0,
+                        List.of(FieldSymbol.BLUE), List.of(Gain.RESEARCH), List.of()),
+                new Journal("anchor-yellow", true, "Anchor Yellow", 1, 0,
+                        List.of(FieldSymbol.YELLOW), List.of(Gain.RESEARCH), List.of()),
+                new Journal("anchor-brown", true, "Anchor Brown", 1, 0,
+                        List.of(FieldSymbol.BROWN), List.of(Gain.RESEARCH), List.of()),
+                new Journal("anchor-green", true, "Anchor Green", 1, 0,
+                        List.of(FieldSymbol.GREEN), List.of(Gain.RESEARCH), List.of()),
+                new Journal("standard-blue", false, "Standard Blue", 2, 1,
+                        List.of(FieldSymbol.BLUE), List.of(Gain.DISC), List.of(Gain.RESEARCH))));
     }
 
     public static SpecialistSide side(String name) {

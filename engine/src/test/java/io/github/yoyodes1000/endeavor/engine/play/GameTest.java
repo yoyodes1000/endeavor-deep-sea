@@ -22,7 +22,8 @@ class GameTest {
 
     private static GameState game(int players) {
         return GameState.newGame(players, Fixtures.roster(), RandomSource.fromSeed(1), 10,
-                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog());
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog(),
+                Fixtures.journalCatalog());
     }
 
     @Test

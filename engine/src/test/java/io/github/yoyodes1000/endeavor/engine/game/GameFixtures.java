@@ -4,6 +4,9 @@ import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveOption;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveToken;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
+import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
+import io.github.yoyodes1000.endeavor.engine.journal.Journal;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalCatalog;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
@@ -46,11 +49,11 @@ final class GameFixtures {
     static OceanTileCatalog oceanCatalog() {
         return new OceanTileCatalog(List.of(
                 new OceanTile("atoll", "Atoll", 1, false, List.of(), List.of(Gain.INSPIRATION), List.of(), List.of(),
-                        List.of(), List.of()),
+                        List.of(), List.of(), List.of()),
                 new OceanTile("reef", "Reef", 1, false, List.of(), List.of(Gain.RESEARCH), List.of(), List.of(),
-                        List.of(), List.of()),
+                        List.of(), List.of(), List.of()),
                 new OceanTile("trench", "Trench", 2, false, List.of(), List.of(Gain.DISC), List.of(), List.of(),
-                        List.of(), List.of())));
+                        List.of(), List.of(), List.of())));
     }
 
     /** Le catalogue des jetons de plongée minimal : un seul type, gains de recherche purs. */
@@ -60,10 +63,25 @@ final class GameFixtures {
                         List.of(new DiveOption.Gains(List.of(Gain.RESEARCH, Gain.RESEARCH), List.of())))));
     }
 
+    /** Le catalogue de revues minimal : 4 revues de départ (marché déterministe) et 1 standard. */
+    static JournalCatalog journalCatalog() {
+        return new JournalCatalog(List.of(
+                new Journal("anchor-blue", true, "Anchor Blue", 1, 0,
+                        List.of(FieldSymbol.BLUE), List.of(Gain.RESEARCH), List.of()),
+                new Journal("anchor-yellow", true, "Anchor Yellow", 1, 0,
+                        List.of(FieldSymbol.YELLOW), List.of(Gain.RESEARCH), List.of()),
+                new Journal("anchor-brown", true, "Anchor Brown", 1, 0,
+                        List.of(FieldSymbol.BROWN), List.of(Gain.RESEARCH), List.of()),
+                new Journal("anchor-green", true, "Anchor Green", 1, 0,
+                        List.of(FieldSymbol.GREEN), List.of(Gain.RESEARCH), List.of()),
+                new Journal("standard-blue", false, "Standard Blue", 2, 1,
+                        List.of(FieldSymbol.BLUE), List.of(Gain.DISC), List.of(Gain.RESEARCH))));
+    }
+
     /** Une partie neuve sur le plateau de mission minimal, pour alléger les tests. */
     static GameState newGame(int players, long seed) {
         return GameState.newGame(players, roster(), RandomSource.fromSeed(seed), 10,
-                missionBoard(), oceanBoard(), oceanCatalog(), diveTokenCatalog());
+                missionBoard(), oceanBoard(), oceanCatalog(), diveTokenCatalog(), journalCatalog());
     }
 
     static SpecialistSide side(String name) {

@@ -18,7 +18,7 @@ class DiveSiteSetupTest {
         OceanBoard board = new OceanBoard(1);
         board.placeTile(new Cell(1, 0), "spot");
         OceanTile tile = new OceanTile("spot", "Spot", 1, false, List.of(), List.of(), List.of(), List.of(),
-                List.of(new DiveSite("d1", 2)), List.of());
+                List.of(new DiveSite("d1", 2)), List.of(), List.of());
         DiveTokenPile pile = DiveTokenPile.forGame(new DiveTokenCatalog(List.of(
                 new DiveToken("research", 5, List.of(new DiveOption.Gains(List.of(Gain.RESEARCH), List.of()))))));
 
@@ -33,7 +33,7 @@ class DiveSiteSetupTest {
         OceanBoard board = new OceanBoard(1);
         board.placeTile(new Cell(1, 0), "plain");
         OceanTile tile = new OceanTile("plain", "Plain", 1, false, List.of(), List.of(), List.of(), List.of(),
-                List.of(), List.of());
+                List.of(), List.of(), List.of());
         DiveTokenPile pile = DiveTokenPile.forGame(new DiveTokenCatalog(List.of(
                 new DiveToken("research", 5, List.of(new DiveOption.Gains(List.of(Gain.RESEARCH), List.of()))))));
 

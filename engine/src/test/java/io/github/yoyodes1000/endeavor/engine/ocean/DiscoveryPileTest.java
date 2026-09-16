@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 class DiscoveryPileTest {
 
     private static OceanTile tile(String id, int depth, boolean unique) {
-        return new OceanTile(id, id, depth, unique, List.of(), List.of(), List.of(), List.of(), List.of(), List.of());
+        return new OceanTile(id, id, depth, unique, List.of(), List.of(), List.of(), List.of(), List.of(), List.of(),
+                List.of());
     }
 
     /** Catalogue : deux tuiles niveau 1, une niveau 2, une unique, une déjà posée. */

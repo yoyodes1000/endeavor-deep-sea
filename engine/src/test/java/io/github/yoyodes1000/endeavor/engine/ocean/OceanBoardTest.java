@@ -274,4 +274,46 @@ class OceanBoardTest {
                 "le site posé sur la copie n'existe pas dans l'original");
         assertTrue(copie.conservationSiteOccupied(new Cell(1, 1), "c1"), "l'occupation de l'original est reprise");
     }
+
+    // --- Sites de publication -------------------------------------------------
+
+    @Test
+    void unSiteDePublicationEstLibreTantQuAucunDisqueNYEstPose() {
+        OceanBoard board = crossBoard();
+        assertFalse(board.journalSiteOccupied(new Cell(1, 1), "j1"));
+
+        board.placeJournalDisc(new Cell(1, 1), "j1", 0);
+
+        assertTrue(board.journalSiteOccupied(new Cell(1, 1), "j1"));
+        assertFalse(board.journalSiteOccupied(new Cell(1, 1), "j2"), "un autre site de la même zone reste libre");
+        assertFalse(board.journalSiteOccupied(new Cell(1, 2), "j1"), "une autre zone reste libre");
+    }
+
+    @Test
+    void unSiteDePublicationNAccueilleQuUnSeulDisque() {
+        OceanBoard board = crossBoard();
+        board.placeJournalDisc(new Cell(1, 1), "j1", 0);
+        assertThrows(IllegalArgumentException.class,
+                () -> board.placeJournalDisc(new Cell(1, 1), "j1", 1));
+    }
+
+    @Test
+    void onNePeutPasPoserUnDisqueDePublicationSurUneCaseVide() {
+        OceanBoard board = crossBoard();
+        assertThrows(IllegalArgumentException.class,
+                () -> board.placeJournalDisc(new Cell(2, 0), "j1", 0));
+    }
+
+    @Test
+    void laCopieEstIndependantePourLesSitesDePublication() {
+        OceanBoard original = crossBoard();
+        original.placeJournalDisc(new Cell(1, 1), "j1", 0);
+
+        OceanBoard copie = original.copy();
+        copie.placeJournalDisc(new Cell(1, 1), "j2", 0);
+
+        assertFalse(original.journalSiteOccupied(new Cell(1, 1), "j2"),
+                "le site posé sur la copie n'existe pas dans l'original");
+        assertTrue(copie.journalSiteOccupied(new Cell(1, 1), "j1"), "l'occupation de l'original est reprise");
+    }
 }

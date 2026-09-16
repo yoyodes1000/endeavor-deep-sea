@@ -3,6 +3,8 @@ package io.github.yoyodes1000.endeavor.engine.game;
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenPile;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalCatalog;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalMarket;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiscoveryPile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
@@ -40,6 +42,8 @@ public final class GameState {
     private final DiscoveryPile discoveryPile;
     private final DiveTokenCatalog diveTokenCatalog;
     private final DiveTokenPile diveTokenPile;
+    private final JournalCatalog journalCatalog;
+    private final JournalMarket journalMarket;
     private final RandomSource random;
     private int firstPlayerIndex;
     private int round;
@@ -50,6 +54,7 @@ public final class GameState {
     private GameState(List<Player> players, List<Specialist> casier, MissionBoard missionBoard,
                       OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog, DiscoveryPile discoveryPile,
                       DiveTokenCatalog diveTokenCatalog, DiveTokenPile diveTokenPile,
+                      JournalCatalog journalCatalog, JournalMarket journalMarket,
                       RandomSource random, int firstPlayerIndex, int round, GamePhase phase,
                       PreparationCursor cursor, ActivationCursor activationCursor) {
         this.players = players;
@@ -60,6 +65,8 @@ public final class GameState {
         this.discoveryPile = discoveryPile;
         this.diveTokenCatalog = diveTokenCatalog;
         this.diveTokenPile = diveTokenPile;
+        this.journalCatalog = journalCatalog;
+        this.journalMarket = journalMarket;
         this.random = random;
         this.firstPlayerIndex = firstPlayerIndex;
         this.round = round;
@@ -84,18 +91,20 @@ public final class GameState {
      * @param oceanTileCatalog le catalogue des tuiles Océan (matériel immuable, pour
      *                      retrouver les gains d'une tuile à l'arrivée d'un Voyage)
      * @param diveTokenCatalog le catalogue des jetons de plongée (matériel immuable)
+     * @param journalCatalog   le catalogue des revues scientifiques (matériel immuable) ; sa
+     *                      mise en place tire le marché des revues à l'étude
      */
     public static GameState newGame(int playerCount, SpecialistRoster roster,
                                     RandomSource random, int startingDiscs, MissionBoard missionBoard,
                                     OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog,
-                                    DiveTokenCatalog diveTokenCatalog) {
+                                    DiveTokenCatalog diveTokenCatalog, JournalCatalog journalCatalog) {
         if (playerCount < 1) {
             throw new IllegalArgumentException("Il faut au moins un joueur : " + playerCount);
         }
         if (roster == null || random == null || missionBoard == null || oceanBoard == null
-                || oceanTileCatalog == null || diveTokenCatalog == null) {
+                || oceanTileCatalog == null || diveTokenCatalog == null || journalCatalog == null) {
             throw new IllegalArgumentException("Le casier, la source d'aléa, le plateau de mission, l'océan, "
-                    + "son catalogue et le catalogue des jetons de plongée sont requis");
+                    + "son catalogue, le catalogue des jetons de plongée et celui des revues sont requis");
         }
         Specialist teamLeader = roster.teamLeader();
         List<Player> players = new ArrayList<>();
@@ -110,8 +119,9 @@ public final class GameState {
         }
         DiscoveryPile discoveryPile = DiscoveryPile.forGame(oceanTileCatalog, oceanBoard);
         DiveTokenPile diveTokenPile = DiveTokenPile.forGame(diveTokenCatalog);
+        JournalMarket journalMarket = JournalMarket.forGame(journalCatalog, random);
         return new GameState(players, casier, missionBoard, oceanBoard, oceanTileCatalog, discoveryPile,
-                diveTokenCatalog, diveTokenPile, random, 0,
+                diveTokenCatalog, diveTokenPile, journalCatalog, journalMarket, random, 0,
                 FIRST_ROUND, GamePhase.PREPARATION, PreparationCursor.notStarted(), ActivationCursor.notStarted());
     }
 
@@ -160,6 +170,16 @@ public final class GameState {
     /** La pioche partagée des jetons de plongée encore à empiler sur des sites. */
     public DiveTokenPile diveTokenPile() {
         return diveTokenPile;
+    }
+
+    /** Le catalogue des revues scientifiques (matériel immuable, partagé entre les copies). */
+    public JournalCatalog journalCatalog() {
+        return journalCatalog;
+    }
+
+    /** Le marché des revues à l'étude (l'action Publication y pioche et y publie). */
+    public JournalMarket journalMarket() {
+        return journalMarket;
     }
 
     public int firstPlayerIndex() {
@@ -272,7 +292,7 @@ public final class GameState {
             playersCopy.add(player.copy());
         }
         return new GameState(playersCopy, new ArrayList<>(casier), missionBoard.copy(), oceanBoard.copy(),
-                oceanTileCatalog, discoveryPile.copy(), diveTokenCatalog, diveTokenPile.copy(), random.copy(),
-                firstPlayerIndex, round, phase, cursor, activationCursor);
+                oceanTileCatalog, discoveryPile.copy(), diveTokenCatalog, diveTokenPile.copy(), journalCatalog,
+                journalMarket.copy(), random.copy(), firstPlayerIndex, round, phase, cursor, activationCursor);
     }
 }
