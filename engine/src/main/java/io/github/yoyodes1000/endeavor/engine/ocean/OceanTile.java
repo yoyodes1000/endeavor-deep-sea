@@ -6,21 +6,21 @@ import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 import java.util.List;
 
 /**
- * Une tuile Océan, réduite ici à son identité et à ses gains — ce dont le moteur
- * d'effets a besoin pour la Phase 1 (notamment l'{@code arrivalBonus}, déclenché
- * quand un submersible arrive sur la tuile).
+ * Une tuile Océan : son identité, ses gains, et sa première structure
+ * d'activation — les <strong>pistes Sonar</strong>, sur lesquelles l'action
+ * Sonar pose un disque.
  *
- * <p>La structure d'activation (sites de plongée, pistes sonar, sites de
- * conservation, revues, connexions, règles spéciales) n'est <strong>pas</strong>
- * encore modélisée : elle relève de la Phase 2 et sera conçue sur des cas réels
- * (cf. architecture, points ouverts). Le chargeur tolère ces champs sans les
- * lire.
+ * <p>Le reste de la structure d'activation (sites de plongée, de conservation,
+ * revues, connexions, règles spéciales) n'est <strong>pas</strong> encore
+ * modélisé : il relève de la Phase 2 et sera conçu sur des cas réels (cf.
+ * architecture, points ouverts). Le chargeur tolère ces champs sans les lire.
  *
  * @param depth          la profondeur, de 1 à 5
  * @param unique         tuile de scénario, hors pioche de découverte
  * @param discoverBonus  gains à la découverte (pose de la tuile)
  * @param arrivalBonus   gains quand un submersible arrive sur la tuile
  * @param arrivalActions actions accordées à l'arrivée
+ * @param sonarTracks    les pistes Sonar de la tuile (souvent aucune)
  */
 public record OceanTile(
         String id,
@@ -29,7 +29,8 @@ public record OceanTile(
         boolean unique,
         List<Gain> discoverBonus,
         List<Gain> arrivalBonus,
-        List<ActionType> arrivalActions) {
+        List<ActionType> arrivalActions,
+        List<SonarTrack> sonarTracks) {
 
     private static final int MIN_DEPTH = 1;
     private static final int MAX_DEPTH = 5;
@@ -48,5 +49,6 @@ public record OceanTile(
         discoverBonus = List.copyOf(discoverBonus);
         arrivalBonus = List.copyOf(arrivalBonus);
         arrivalActions = List.copyOf(arrivalActions);
+        sonarTracks = List.copyOf(sonarTracks);
     }
 }

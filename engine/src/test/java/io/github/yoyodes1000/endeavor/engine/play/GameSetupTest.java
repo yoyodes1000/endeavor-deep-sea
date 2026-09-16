@@ -56,7 +56,7 @@ class GameSetupTest {
         OceanBoard ocean = new OceanBoard(1);
         ocean.placeTile(new Cell(1, 0), "base");
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
-                new OceanTile("base", "Base", 1, false, List.of(), List.of(Gain.IMPACT), List.of())));
+                new OceanTile("base", "Base", 1, false, List.of(), List.of(Gain.IMPACT), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, catalog);
 

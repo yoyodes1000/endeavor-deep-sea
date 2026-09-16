@@ -175,6 +175,21 @@ public final class Player {
     }
 
     /**
+     * Dépense un disque de la zone de transit pour le poser sur un site du plateau
+     * (le coût « +1 disque » d'un Sonar, plus tard d'une Conservation ou d'une
+     * Publication). Le disque quitte le joueur — posé sur la grille, il n'est pas
+     * repris en 1c et ne compte pas au décompte. Mutation en place.
+     *
+     * @throws IllegalArgumentException si la zone de transit est vide
+     */
+    public void spendTransitDisc() {
+        if (transitDiscs == 0) {
+            throw new IllegalArgumentException("Aucun disque en transit à dépenser");
+        }
+        transitDiscs--;
+    }
+
+    /**
      * Reprend un disque posé sur la tuile d'identifiant donné vers la zone de
      * transit — un pas de l'étape 1c (Récupération). Mutation en place.
      *
