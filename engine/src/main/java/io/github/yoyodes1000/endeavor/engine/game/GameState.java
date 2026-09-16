@@ -2,6 +2,7 @@ package io.github.yoyodes1000.endeavor.engine.game;
 
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
+import io.github.yoyodes1000.endeavor.engine.ocean.DiscoveryPile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
 import io.github.yoyodes1000.endeavor.engine.player.Player;
@@ -34,6 +35,7 @@ public final class GameState {
     private final MissionBoard missionBoard;
     private final OceanBoard oceanBoard;
     private final OceanTileCatalog oceanTileCatalog;
+    private final DiscoveryPile discoveryPile;
     private final RandomSource random;
     private int firstPlayerIndex;
     private int round;
@@ -42,14 +44,15 @@ public final class GameState {
     private ActivationCursor activationCursor;
 
     private GameState(List<Player> players, List<Specialist> casier, MissionBoard missionBoard,
-                      OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog, RandomSource random,
-                      int firstPlayerIndex, int round, GamePhase phase, PreparationCursor cursor,
-                      ActivationCursor activationCursor) {
+                      OceanBoard oceanBoard, OceanTileCatalog oceanTileCatalog, DiscoveryPile discoveryPile,
+                      RandomSource random, int firstPlayerIndex, int round, GamePhase phase,
+                      PreparationCursor cursor, ActivationCursor activationCursor) {
         this.players = players;
         this.casier = casier;
         this.missionBoard = missionBoard;
         this.oceanBoard = oceanBoard;
         this.oceanTileCatalog = oceanTileCatalog;
+        this.discoveryPile = discoveryPile;
         this.random = random;
         this.firstPlayerIndex = firstPlayerIndex;
         this.round = round;
@@ -96,7 +99,8 @@ public final class GameState {
                 casier.add(specialist);
             }
         }
-        return new GameState(players, casier, missionBoard, oceanBoard, oceanTileCatalog, random, 0,
+        DiscoveryPile discoveryPile = DiscoveryPile.forGame(oceanTileCatalog, oceanBoard);
+        return new GameState(players, casier, missionBoard, oceanBoard, oceanTileCatalog, discoveryPile, random, 0,
                 FIRST_ROUND, GamePhase.PREPARATION, PreparationCursor.notStarted(), ActivationCursor.notStarted());
     }
 
@@ -130,6 +134,11 @@ public final class GameState {
     /** Le catalogue des tuiles Océan (matériel immuable, partagé entre les copies). */
     public OceanTileCatalog oceanTileCatalog() {
         return oceanTileCatalog;
+    }
+
+    /** La pioche des tuiles encore à découvrir (l'action Sonar y pioche). */
+    public DiscoveryPile discoveryPile() {
+        return discoveryPile;
     }
 
     public int firstPlayerIndex() {
@@ -242,6 +251,7 @@ public final class GameState {
             playersCopy.add(player.copy());
         }
         return new GameState(playersCopy, new ArrayList<>(casier), missionBoard.copy(), oceanBoard.copy(),
-                oceanTileCatalog, random.copy(), firstPlayerIndex, round, phase, cursor, activationCursor);
+                oceanTileCatalog, discoveryPile.copy(), random.copy(), firstPlayerIndex, round, phase, cursor,
+                activationCursor);
     }
 }
