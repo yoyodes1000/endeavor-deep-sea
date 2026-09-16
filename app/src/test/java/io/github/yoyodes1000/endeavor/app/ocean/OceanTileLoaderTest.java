@@ -108,6 +108,31 @@ class OceanTileLoaderTest {
     }
 
     @Test
+    void chargeLesSitesDeConservationReels() throws Exception {
+        OceanTileCatalog catalog;
+        try (Reader reader = Files.newBufferedReader(CATALOG, StandardCharsets.UTF_8)) {
+            catalog = loader.load(reader);
+        }
+
+        OceanTile oilRig = catalog.byId("decommissioned-oil-rig").orElseThrow();
+        assertEquals(4, oilRig.conservationSites().size());
+        assertEquals("c1", oilRig.conservationSites().get(0).id());
+        assertEquals(1, oilRig.conservationSites().get(0).cost());
+        assertEquals(List.of(Gain.INGENUITY), oilRig.conservationSites().get(0).gains());
+
+        OceanTile calmSeas = catalog.byId("calm-seas").orElseThrow();
+        assertTrue(calmSeas.conservationSites().isEmpty(), "calm-seas n'a pas de site de conservation");
+    }
+
+    @Test
+    void refuseUnSiteDeConservationSansCout() {
+        String json = "{\"oceanTiles\":[{\"id\":\"t\",\"name\":\"T\",\"depth\":1,\"unique\":false,"
+                + "\"discoverBonus\":[],\"arrivalBonus\":[],"
+                + "\"conservationSites\":[{\"id\":\"c1\",\"gains\":[]}]}]}";
+        assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader(json)));
+    }
+
+    @Test
     void refuseUnGainInconnu() {
         assertThrows(IllegalArgumentException.class,
                 () -> loader.load(new StringReader(document(tile("t", 1, "[\"gold\"]", "[]")))));

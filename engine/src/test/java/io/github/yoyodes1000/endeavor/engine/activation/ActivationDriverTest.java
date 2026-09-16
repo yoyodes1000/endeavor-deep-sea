@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.action.Action;
 import io.github.yoyodes1000.endeavor.engine.action.Activer;
+import io.github.yoyodes1000.endeavor.engine.action.Conserver;
 import io.github.yoyodes1000.endeavor.engine.action.DepenserJeton;
 import io.github.yoyodes1000.endeavor.engine.action.Dive;
 import io.github.yoyodes1000.endeavor.engine.action.GarderTuile;
@@ -24,6 +25,7 @@ import io.github.yoyodes1000.endeavor.engine.dive.DiveToken;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
+import io.github.yoyodes1000.endeavor.engine.ocean.ConservationSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
@@ -276,9 +278,10 @@ class ActivationDriverTest {
         ocean.placeTile(new Cell(1, 1), "dest");
         ocean.addVessels(new Cell(1, 0), 0, 1);
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
-                new OceanTile("start", "Start", 1, false, List.of(), List.of(), List.of(), List.of(), List.of()),
+                new OceanTile("start", "Start", 1, false, List.of(), List.of(), List.of(), List.of(), List.of(),
+                        List.of()),
                 new OceanTile("dest", "Dest", 1, false, List.of(), List.of(arrival), List.of(), List.of(),
-                        List.of())));
+                        List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(travelSpecialist()));
@@ -315,9 +318,9 @@ class ActivationDriverTest {
                 new OceanTile("reward-tile", "Reward", 1, false, List.of(), List.of(), List.of(),
                         List.of(new SonarTrack(List.of(
                                 new SonarSpot.Reward(rewardGains), new SonarSpot.Discover(List.of(1))))),
-                        List.of()),
+                        List.of(), List.of()),
                 new OceanTile("discover-tile", "Discover", 1, false, List.of(), List.of(), List.of(),
-                        List.of(new SonarTrack(List.of(new SonarSpot.Discover(List.of(1))))), List.of()),
+                        List.of(new SonarTrack(List.of(new SonarSpot.Discover(List.of(1))))), List.of(), List.of()),
                 // tuiles non posées : garnissent la pioche pour que les cases découverte soient jouables
                 discovered("pile-x", 1, List.of(Gain.RESEARCH)),
                 discovered("pile-y", 1, List.of(Gain.RESEARCH))));
@@ -395,7 +398,8 @@ class ActivationDriverTest {
     // --- Sonar : découverte -----------------------------------------------
 
     private static OceanTile discovered(String id, int depth, List<Gain> discoverBonus) {
-        return new OceanTile(id, id, depth, false, discoverBonus, List.of(), List.of(), List.of(), List.of());
+        return new OceanTile(id, id, depth, false, discoverBonus, List.of(), List.of(), List.of(), List.of(),
+                List.of());
     }
 
     /**
@@ -409,7 +413,7 @@ class ActivationDriverTest {
         ocean.addVessels(new Cell(1, 0), 0, 1);
         List<OceanTile> tiles = new ArrayList<>();
         tiles.add(new OceanTile("disco-start", "Disco Start", 1, false, List.of(), List.of(), List.of(),
-                List.of(new SonarTrack(List.of(new SonarSpot.Discover(discoverLevels)))), List.of()));
+                List.of(new SonarTrack(List.of(new SonarSpot.Discover(discoverLevels)))), List.of(), List.of()));
         tiles.addAll(pileTiles);
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, new OceanTileCatalog(tiles), Fixtures.diveTokenCatalog());
@@ -524,7 +528,7 @@ class ActivationDriverTest {
         ocean.stackDiveTokens(new Cell(1, 0), "d1", stackedTokens);
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(new DiveSite("d1", Math.max(1, stackedTokens.size()))))));
+                        List.of(new DiveSite("d1", Math.max(1, stackedTokens.size()))), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, catalog, diveTokens);
         state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(chain)));
@@ -609,9 +613,9 @@ class ActivationDriverTest {
         ocean.stackDiveTokens(new Cell(1, 0), "d1", List.of("sonar-token"));
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(new DiveSite("d1", 1))),
+                        List.of(new DiveSite("d1", 1)), List.of()),
                 new OceanTile("dest-tile", "Dest Tile", 1, false, List.of(), List.of(Gain.RESEARCH), List.of(),
-                        List.of(), List.of())));
+                        List.of(), List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(List.of(DIVE_SLOT))));
@@ -642,9 +646,9 @@ class ActivationDriverTest {
         ocean.addVessels(new Cell(1, 0), 0, 1);
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of()),
+                        List.of(), List.of()),
                 new OceanTile("dest-tile", "Dest Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of())));
+                        List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog());
         state.player(0).receiveDiveToken("sonar-token"); // déjà en main, conservé d'un tour précédent
@@ -672,9 +676,9 @@ class ActivationDriverTest {
         ocean.stackDiveTokens(new Cell(1, 0), "d1", List.of("sonar-token"));
         OceanTileCatalog catalog = new OceanTileCatalog(List.of(
                 new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of(new DiveSite("d1", 1))),
+                        List.of(new DiveSite("d1", 1)), List.of()),
                 new OceanTile("dest-tile", "Dest Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
-                        List.of())));
+                        List.of(), List.of())));
         GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
                 Fixtures.missionBoard(), ocean, catalog, testDiveTokenCatalog());
         state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(List.of(DIVE_SLOT))));
@@ -777,5 +781,160 @@ class ActivationDriverTest {
         ActivationDriver.apply(state, new Dive(new Cell(1, 0), "d1"));
 
         assertEquals(List.of("research"), state.player(0).heldDiveTokens(), "le second jeton pris rejoint la main");
+    }
+
+    // --- Conservation ---------------------------------------------------------
+
+    private static final ActionSlot CONSERVE_SLOT = new ActionSlot(List.of(ActionType.CONSERVE));
+
+    /** Un spécialiste dont la chaîne offre {@code slots} emplacements Conservation. */
+    private static Specialist conservationSpecialist(List<ActionSlot> chain) {
+        SpecialistSide junior = new SpecialistSide("Curator", List.of(), chain, Optional.empty(), Optional.empty());
+        SpecialistSide senior = new SpecialistSide("Curator S", List.of(), List.of(),
+                Optional.empty(), Optional.empty());
+        return new Specialist("curator", OptionalInt.of(1), false, junior, senior);
+    }
+
+    /**
+     * Joueur 0 en activation avec un spécialiste Conservation, un submersible en
+     * (1,0) dont la tuile porte le site {@code c1} (coût {@code cost}, gains
+     * {@code gains}), {@code research} points de recherche déjà acquis, et
+     * {@code transitDiscs} disques en transit.
+     */
+    private static GameState readyToConserve(int cost, List<Gain> gains, int research, int transitDiscs,
+                                             List<ActionSlot> chain) {
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "conserve-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        OceanTileCatalog catalog = new OceanTileCatalog(List.of(
+                new OceanTile("conserve-tile", "Conserve Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
+                        List.of(), List.of(new ConservationSite("c1", cost, gains)))));
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
+        state.player(0).recruit(HeldSpecialist.recruited(conservationSpecialist(chain)));
+        state.player(0).moveReserveToTransit(transitDiscs);
+        state.player(0).gainResearch(research);
+        ActivationDriver.begin(state);
+        return state;
+    }
+
+    @Test
+    void unSpecialisteDeConservationProposeLeSiteLibreEtPayable() {
+        GameState state = readyToConserve(2, List.of(Gain.REPUTATION), 3, 2, List.of(CONSERVE_SLOT));
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        assertTrue(ActivationDriver.legalActions(state).contains(new Conserver(new Cell(1, 0), "c1")));
+    }
+
+    @Test
+    void sansDisqueDeTransitAucuneConservationNEstProposee() {
+        GameState state = readyToConserve(0, List.of(Gain.REPUTATION), 0, 1, List.of(CONSERVE_SLOT));
+        ActivationDriver.apply(state, new Activer("curator")); // consomme l'unique disque de transit
+
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void uneRechercheInsuffisanteNOffrePasLaConservation() {
+        GameState state = readyToConserve(3, List.of(Gain.REPUTATION), 2, 2, List.of(CONSERVE_SLOT));
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        assertFalse(ActivationDriver.legalActions(state).contains(new Conserver(new Cell(1, 0), "c1")));
+    }
+
+    @Test
+    void laConservationPaieLeCoutPoseUnDisqueEtEncaisseLesGains() {
+        GameState state = readyToConserve(2, List.of(Gain.REPUTATION), 3, 2, List.of(CONSERVE_SLOT));
+        ActivationDriver.apply(state, new Activer("curator"));
+        int reputationBefore = state.player(0).attributes().step(Attribute.REPUTATION);
+
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        assertEquals(1, state.player(0).research(), "coût de 2 payé sur 3");
+        assertEquals(0, state.player(0).transitDiscs(),
+                "le disque d'activation puis celui de la Conservation sont dépensés");
+        assertTrue(state.oceanBoard().conservationSiteOccupied(new Cell(1, 0), "c1"), "le site porte un disque");
+        assertEquals(reputationBefore + 1, state.player(0).attributes().step(Attribute.REPUTATION),
+                "la récompense (réputation) est encaissée");
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
+                "chaîne d'un seul emplacement épuisée");
+    }
+
+    @Test
+    void unSiteDejaOccupeNEstPlusOffertMaisLesAutresRestent() {
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "conserve-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        OceanTileCatalog catalog = new OceanTileCatalog(List.of(
+                new OceanTile("conserve-tile", "Conserve Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
+                        List.of(), List.of(
+                                new ConservationSite("c1", 0, List.of()),
+                                new ConservationSite("c2", 0, List.of())))));
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, catalog, Fixtures.diveTokenCatalog());
+        state.player(0).recruit(HeldSpecialist.recruited(
+                conservationSpecialist(List.of(CONSERVE_SLOT, CONSERVE_SLOT))));
+        state.player(0).moveReserveToTransit(3);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        List<Action> legal = ActivationDriver.legalActions(state);
+        assertFalse(legal.contains(new Conserver(new Cell(1, 0), "c1")), "site déjà occupé");
+        assertTrue(legal.contains(new Conserver(new Cell(1, 0), "c2")), "l'autre site reste libre");
+    }
+
+    @Test
+    void laConservationPeutDeclencherLaCascadeDePoseDImpact() {
+        GameState state = readyToConserve(0, List.of(Gain.IMPACT), 0, 2, List.of(CONSERVE_SLOT));
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        // impact gagné : le tour est suspendu sur la pose
+        assertEquals(List.of(new PoserImpact(0, 0)), ActivationDriver.legalActions(state));
+        ActivationDriver.apply(state, new PoserImpact(0, 0));
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void laConservationAvantActivationEstRefusee() {
+        GameState state = readyToConserve(0, List.of(Gain.REPUTATION), 0, 2, List.of(CONSERVE_SLOT));
+        assertThrows(IllegalStateException.class,
+                () -> ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1")));
+    }
+
+    @Test
+    void unJetonPeutDeclencherUneConservation() {
+        DiveTokenCatalog catalog = new DiveTokenCatalog(List.of(
+                new DiveToken("conserve-token", 2, List.of(
+                        new DiveOption.Gains(List.of(Gain.RESEARCH), List.of()),
+                        new DiveOption.TriggersAction(ActionType.CONSERVE, OptionalInt.empty())))));
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "dive-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        ocean.stackDiveTokens(new Cell(1, 0), "d1", List.of("conserve-token"));
+        OceanTileCatalog oceanCatalog = new OceanTileCatalog(List.of(
+                new OceanTile("dive-tile", "Dive Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
+                        List.of(new DiveSite("d1", 1)),
+                        List.of(new ConservationSite("c1", 1, List.of(Gain.REPUTATION))))));
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, oceanCatalog, catalog);
+        state.player(0).recruit(HeldSpecialist.recruited(diveSpecialist(List.of(DIVE_SLOT))));
+        state.player(0).moveReserveToTransit(2);
+        state.player(0).gainResearch(1);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("diver"));
+        ActivationDriver.apply(state, new Dive(new Cell(1, 0), "d1"));
+
+        ActivationDriver.apply(state, new DepenserJeton(0, 1)); // déclenche une Conservation
+
+        assertEquals(List.of(new Conserver(new Cell(1, 0), "c1")), ActivationDriver.legalActions(state),
+                "le tour se suspend sur la seule Conservation accordée");
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        assertTrue(state.oceanBoard().conservationSiteOccupied(new Cell(1, 0), "c1"));
+        assertTrue(state.player(0).heldDiveTokens().isEmpty());
     }
 }

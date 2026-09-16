@@ -2,6 +2,7 @@ package io.github.yoyodes1000.endeavor.engine.activation;
 
 import io.github.yoyodes1000.endeavor.engine.action.Action;
 import io.github.yoyodes1000.endeavor.engine.action.Activer;
+import io.github.yoyodes1000.endeavor.engine.action.Conserver;
 import io.github.yoyodes1000.endeavor.engine.action.DepenserJeton;
 import io.github.yoyodes1000.endeavor.engine.action.Dive;
 import io.github.yoyodes1000.endeavor.engine.action.GarderTuile;
@@ -23,6 +24,7 @@ import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.game.PendingDiscovery;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
+import io.github.yoyodes1000.endeavor.engine.ocean.ConservationSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
@@ -66,13 +68,17 @@ import java.util.Set;
  * joueur, non résolu ; {@link DepenserJeton} en choisit l'option plus tard —
  * <strong>hors chaîne</strong>, à tout point de décision normal du tour, en plus
  * ou à la place de l'activation. Si l'option choisie accorde une action (Sonar,
- * Voyage, Plongée), le tour se suspend sur cette seule action
+ * Voyage, Plongée, Conservation), le tour se suspend sur cette seule action
  * ({@link ActivationCursor#pendingTokenAction()}) jusqu'à ce qu'elle soit jouée —
- * les mêmes coups {@link Sonar}/{@link Voyager}/{@link Dive} que la chaîne, mais
- * sans en exiger l'activation ni l'emplacement courant. Au plus un jeton peut
- * rester en main à la fin du tour ({@link TerminerTour}/{@link Passer}) ; les
- * options qui dépendent d'une mécanique encore absente (anyAttribute,
- * lowestAttribute, conservation, publication, promotion) ne sont pas proposées.
+ * les mêmes coups {@link Sonar}/{@link Voyager}/{@link Dive}/{@link Conserver} que
+ * la chaîne, mais sans en exiger l'activation ni l'emplacement courant. Au plus un
+ * jeton peut rester en main à la fin du tour ({@link TerminerTour}/{@link Passer}) ;
+ * les options qui dépendent d'une mécanique encore absente (anyAttribute,
+ * lowestAttribute, publication, promotion) ne sont pas proposées.
+ *
+ * <p>La {@link Conserver} suit à son tour : payer le coût en recherche du site
+ * visé, dépenser un disque de transit pour l'y poser, puis encaisser ses gains.
+ * Un site n'accueille qu'un seul disque, jamais repris.
  *
  * <p>Résoudre un bonus d'arrivée peut relancer une <strong>cascade</strong> :
  * les submersibles gagnés rejoignent le stock du joueur, et chaque pion impact
@@ -128,6 +134,9 @@ public final class ActivationDriver {
             if (currentSlotOffers(state, player, cursor, ActionType.DIVE)) {
                 actions.addAll(divesOf(state, player));
             }
+            if (currentSlotOffers(state, player, cursor, ActionType.CONSERVE)) {
+                actions.addAll(conservationsOf(state, player));
+            }
             actions.addAll(spendTokenChoices(state, player));
             if (canEndTurn) {
                 actions.add(new TerminerTour());
@@ -175,6 +184,7 @@ public final class ActivationDriver {
             case Voyager voyager -> applyVoyager(state, player, cursor, voyager);
             case Sonar sonar -> applySonar(state, player, cursor, sonar);
             case Dive dive -> applyDive(state, player, cursor, dive);
+            case Conserver conserver -> applyConserver(state, player, cursor, conserver);
             case DepenserJeton depenser -> applyDepenserJeton(state, player, cursor, depenser);
             case TerminerTour ignored -> {
                 if (!cursor.activatedThisTurn()) {
@@ -275,6 +285,31 @@ public final class ActivationDriver {
         state.setActivationCursor(viaToken
                 ? cursorAfterOffChainResolution(cursor, 0)
                 : cursorAfterChainStep(cursor, 0));
+    }
+
+    /**
+     * Applique une Conservation : paie le coût en recherche du site visé, y pose
+     * un disque de transit, puis encaisse ses gains. Hors chaîne du spécialiste
+     * quand elle vient d'une dépense de jeton — sinon exige l'activation et
+     * l'emplacement courant.
+     */
+    private static void applyConserver(GameState state, int player, ActivationCursor cursor, Conserver move) {
+        boolean viaToken = cursor.pendingTokenAction() == ActionType.CONSERVE;
+        if (!viaToken) {
+            if (!cursor.activatedThisTurn()) {
+                throw new IllegalStateException("Conservation sans spécialiste activé");
+            }
+            requireSlotOffers(state, player, cursor, ActionType.CONSERVE);
+        }
+        ConservationSite site = requireConservationSite(state, player, move);
+        state.player(player).spendResearch(site.cost());
+        state.player(player).spendTransitDisc();
+        state.oceanBoard().placeConservationDisc(move.cell(), move.siteId(), player);
+        EffectOutcome outcome = GainResolver.resolve(state.player(player), site.gains());
+        state.player(player).gainVessels(outcome.vesselsEarned());
+        state.setActivationCursor(viaToken
+                ? cursorAfterOffChainResolution(cursor, outcome.impactsEarned())
+                : cursorAfterChainStep(cursor, outcome.impactsEarned()));
     }
 
     /**
@@ -560,6 +595,29 @@ public final class ActivationDriver {
     }
 
     /**
+     * Les Conservations légales s'il reste un disque en transit à poser : pour
+     * chaque zone où le joueur a un submersible, chaque site de conservation encore
+     * libre dont le coût en recherche est payable. Ne juge pas si l'action est
+     * offerte — c'est l'affaire de l'appelant.
+     */
+    private static List<Conserver> conservationsOf(GameState state, int playerIndex) {
+        if (state.player(playerIndex).transitDiscs() == 0) {
+            return List.of();
+        }
+        OceanBoard ocean = state.oceanBoard();
+        int research = state.player(playerIndex).research();
+        List<Conserver> conservations = new ArrayList<>();
+        for (Cell cell : ocean.vesselCells(playerIndex)) {
+            for (ConservationSite site : tileAt(state, cell).conservationSites()) {
+                if (!ocean.conservationSiteOccupied(cell, site.id()) && research >= site.cost()) {
+                    conservations.add(new Conserver(cell, site.id()));
+                }
+            }
+        }
+        return conservations;
+    }
+
+    /**
      * Les dépenses de jeton légales : pour chaque jeton en main, chacune de ses
      * options actuellement réalisable.
      */
@@ -580,8 +638,8 @@ public final class ActivationDriver {
     /**
      * Vrai si l'option est réalisable maintenant : un lot de gains que le résolveur
      * sait déjà traiter (donc payable), ou une action déjà jouable par le moteur
-     * (Sonar, Voyage, Plongée) qui a au moins un coup possible. Conservation,
-     * publication et promotion n'ont encore aucun coup : jamais proposées.
+     * (Sonar, Voyage, Plongée, Conservation) qui a au moins un coup possible.
+     * Publication et promotion n'ont encore aucun coup : jamais proposées.
      */
     private static boolean isPlayable(GameState state, int playerIndex, DiveOption option) {
         return switch (option) {
@@ -591,7 +649,8 @@ public final class ActivationDriver {
                 case SONAR -> !sonarsOf(state, playerIndex).isEmpty();
                 case TRAVEL -> !voyagesOf(state, playerIndex).isEmpty();
                 case DIVE -> !divesOf(state, playerIndex).isEmpty();
-                case CONSERVE, PUBLISH, PROMOTE -> false;
+                case CONSERVE -> !conservationsOf(state, playerIndex).isEmpty();
+                case PUBLISH, PROMOTE -> false;
             };
         };
     }
@@ -711,6 +770,32 @@ public final class ActivationDriver {
     }
 
     /**
+     * Vérifie la légalité d'une Conservation et renvoie le site visé : présence
+     * d'un submersible, existence du site, site encore libre, et recherche
+     * suffisante pour payer son coût.
+     *
+     * @throws IllegalStateException si l'une de ces conditions n'est pas remplie
+     */
+    private static ConservationSite requireConservationSite(GameState state, int playerIndex, Conserver move) {
+        if (state.oceanBoard().vesselCount(move.cell(), playerIndex) == 0) {
+            throw new IllegalStateException("Aucun submersible dans la zone de la Conservation : " + move.cell());
+        }
+        ConservationSite site = tileAt(state, move.cell()).conservationSites().stream()
+                .filter(candidate -> candidate.id().equals(move.siteId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Site de conservation inexistant en " + move.cell() + " : " + move.siteId()));
+        if (state.oceanBoard().conservationSiteOccupied(move.cell(), move.siteId())) {
+            throw new IllegalStateException(
+                    "Site de conservation déjà occupé : " + move.cell() + "/" + move.siteId());
+        }
+        if (state.player(playerIndex).research() < site.cost()) {
+            throw new IllegalStateException("Recherche insuffisante pour la conservation : " + site.cost());
+        }
+        return site;
+    }
+
+    /**
      * Au plus un jeton de plongée peut rester en main à la fin du tour.
      *
      * @throws IllegalStateException si le joueur en détient plus d'un
@@ -729,6 +814,7 @@ public final class ActivationDriver {
             case TRAVEL -> actions.addAll(voyagesOf(state, playerIndex));
             case SONAR -> actions.addAll(sonarsOf(state, playerIndex));
             case DIVE -> actions.addAll(divesOf(state, playerIndex));
+            case CONSERVE -> actions.addAll(conservationsOf(state, playerIndex));
             default -> throw new IllegalStateException(
                     "Action de jeton inattendue : " + cursor.pendingTokenAction());
         }

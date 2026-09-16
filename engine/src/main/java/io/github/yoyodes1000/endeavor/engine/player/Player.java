@@ -129,6 +129,23 @@ public final class Player {
         research = Math.min(RESEARCH_CAP, research + count);
     }
 
+    /**
+     * Dépense {@code count} points de recherche — le coût d'une Conservation.
+     * Mutation en place.
+     *
+     * @throws IllegalArgumentException si la recherche disponible est insuffisante
+     */
+    public void spendResearch(int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("Dépense de recherche négative : " + count);
+        }
+        if (count > research) {
+            throw new IllegalArgumentException(
+                    "Recherche insuffisante : " + count + " demandés, " + research + " disponibles");
+        }
+        research -= count;
+    }
+
     /** Ajoute {@code count} disques d'action à la réserve. */
     public void gainDiscs(int count) {
         if (count < 0) {
