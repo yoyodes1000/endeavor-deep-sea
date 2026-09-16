@@ -15,6 +15,7 @@ import io.github.yoyodes1000.endeavor.engine.action.GarderTuile;
 import io.github.yoyodes1000.endeavor.engine.action.Passer;
 import io.github.yoyodes1000.endeavor.engine.action.PoserImpact;
 import io.github.yoyodes1000.endeavor.engine.action.PoserTuile;
+import io.github.yoyodes1000.endeavor.engine.action.Promouvoir;
 import io.github.yoyodes1000.endeavor.engine.action.Publier;
 import io.github.yoyodes1000.endeavor.engine.action.Recruter;
 import io.github.yoyodes1000.endeavor.engine.action.Sonar;
@@ -42,6 +43,7 @@ import io.github.yoyodes1000.endeavor.engine.specialist.ActionSlot;
 import io.github.yoyodes1000.endeavor.engine.specialist.ActionType;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
+import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistFace;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistSide;
 import io.github.yoyodes1000.endeavor.engine.support.Fixtures;
 import java.util.ArrayList;
@@ -1031,12 +1033,22 @@ class ActivationDriverTest {
 
     @Test
     void uneRevueAuGainNonResolvableNEstPasProposee() {
-        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 0, List.of(Gain.PROMOTE), 0, 2,
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 0, List.of(Gain.ANY_ATTRIBUTE), 0, 2,
                 List.of(PUBLISH_SLOT));
         ActivationDriver.apply(state, new Activer("publisher"));
 
         assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
-                "promote n'est pas encore résolu : la revue n'est pas proposée");
+                "anyAttribute n'est pas encore résolu : la revue n'est pas proposée");
+    }
+
+    @Test
+    void uneRevueAuGainDePromotionEstDesormaisProposee() {
+        GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 0, List.of(Gain.PROMOTE), 0, 2,
+                List.of(PUBLISH_SLOT));
+        ActivationDriver.apply(state, new Activer("publisher"));
+
+        assertTrue(ActivationDriver.legalActions(state)
+                .contains(new Publier("anchor-1", new Cell(1, 0), "j1")), "promote est résolu : la revue est jouable");
     }
 
     @Test
@@ -1171,6 +1183,148 @@ class ActivationDriverTest {
         ActivationDriver.apply(state, new Publier("anchor-1", new Cell(1, 0), "j1"));
 
         assertTrue(state.oceanBoard().journalSiteOccupied(new Cell(1, 0), "j1"));
+        assertTrue(state.player(0).heldDiveTokens().isEmpty());
+    }
+
+    // --- Promotion --------------------------------------------------------
+
+    private static final ActionSlot PROMOTE_SLOT = new ActionSlot(List.of(ActionType.PROMOTE));
+
+    /** Un spécialiste dont la chaîne offre {@code slots} emplacements Promotion. */
+    private static Specialist promoterSpecialist(List<ActionSlot> chain) {
+        SpecialistSide junior = new SpecialistSide("Promoter", List.of(), chain, Optional.empty(), Optional.empty());
+        SpecialistSide senior = new SpecialistSide("Promoter S", List.of(), List.of(),
+                Optional.empty(), Optional.empty());
+        return new Specialist("promoter", OptionalInt.of(1), false, junior, senior);
+    }
+
+    /** Une tuile Junior sans chaîne, dont la face Senior porte {@code seniorGains} à la promotion. */
+    private static Specialist promotable(String id, List<Gain> seniorGains) {
+        SpecialistSide junior = new SpecialistSide(id + "-j", List.of(), List.of(), Optional.empty(), Optional.empty());
+        SpecialistSide senior = new SpecialistSide(id + "-s", seniorGains, List.of(), Optional.empty(), Optional.empty());
+        return new Specialist(id, OptionalInt.of(1), false, junior, senior);
+    }
+
+    private static HeldSpecialist heldSpecialist(GameState state, int playerIndex, String specialistId) {
+        return state.player(playerIndex).specialists().stream()
+                .filter(held -> held.specialist().id().equals(specialistId))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    /** Catalogue de jetons minimal pour la Promotion : un gain direct, et une action accordée. */
+    private static DiveTokenCatalog promoteTokenCatalog() {
+        return new DiveTokenCatalog(List.of(
+                new DiveToken("promote-gain-token", 2,
+                        List.of(new DiveOption.Gains(List.of(Gain.PROMOTE), List.of()))),
+                new DiveToken("promote-token", 2, List.of(
+                        new DiveOption.Gains(List.of(Gain.RESEARCH), List.of()),
+                        new DiveOption.TriggersAction(ActionType.PROMOTE, OptionalInt.empty())))));
+    }
+
+    @Test
+    void sansJuniorDetenuLeGainDePromotionEstPerdu() {
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), promoteTokenCatalog(),
+                Fixtures.journalCatalog());
+        state.player(0).receiveDiveToken("promote-gain-token");
+        ActivationDriver.begin(state);
+
+        ActivationDriver.apply(state, new DepenserJeton(0, 0));
+
+        assertTrue(state.player(0).heldDiveTokens().isEmpty(), "le jeton dépensé quitte la main");
+        assertEquals(List.of(new Passer()), ActivationDriver.legalActions(state),
+                "sans Junior détenu (hors chef d'équipe) le gain est perdu, pas de Promouvoir suspendu");
+    }
+
+    @Test
+    void avecUnSeulJuniorUnCoupExpliciteResteExige() {
+        GameState state = readyToConserve(0, List.of(Gain.PROMOTE), 0, 2, List.of(CONSERVE_SLOT));
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        assertEquals(List.of(new Promouvoir("curator")), ActivationDriver.legalActions(state),
+                "un seul Junior détenu (curator lui-même) : toujours un coup explicite, jamais appliqué à sa place");
+        ActivationDriver.apply(state, new Promouvoir("curator"));
+
+        HeldSpecialist promoted = heldSpecialist(state, 0, "curator");
+        assertEquals(SpecialistFace.SENIOR, promoted.face());
+        assertEquals(0, promoted.placedDiscs(), "case Senior fraîche, disque Junior perdu");
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void avecPlusieursJuniorsLeJoueurChoisit() {
+        GameState state = readyToConserve(0, List.of(Gain.PROMOTE), 0, 2, List.of(CONSERVE_SLOT));
+        state.player(0).recruit(HeldSpecialist.recruited(Fixtures.ranked("pilot", 1)));
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        List<Action> legal = ActivationDriver.legalActions(state);
+        assertEquals(2, legal.size());
+        assertTrue(legal.contains(new Promouvoir("curator")));
+        assertTrue(legal.contains(new Promouvoir("pilot")));
+
+        ActivationDriver.apply(state, new Promouvoir("pilot"));
+
+        assertEquals(SpecialistFace.SENIOR, heldSpecialist(state, 0, "pilot").face());
+        assertEquals(SpecialistFace.JUNIOR, heldSpecialist(state, 0, "curator").face(),
+                "l'autre Junior n'est pas affecté");
+    }
+
+    @Test
+    void laPromotionPeutDeclencherLaCascadeDePoseDImpact() {
+        GameState state = readyToConserve(0, List.of(Gain.PROMOTE), 0, 2, List.of(CONSERVE_SLOT));
+        state.player(0).recruit(HeldSpecialist.recruited(promotable("scout", List.of(Gain.IMPACT))));
+        ActivationDriver.apply(state, new Activer("curator"));
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        ActivationDriver.apply(state, new Promouvoir("scout"));
+
+        // le gain immédiat de la face Senior (impact) suspend le tour sur sa pose
+        assertEquals(List.of(new PoserImpact(0, 0)), ActivationDriver.legalActions(state));
+        ActivationDriver.apply(state, new PoserImpact(0, 0));
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void unEmplacementDActionPromotionOffreLaPromotionYComprisDeSoiMeme() {
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), Fixtures.diveTokenCatalog(),
+                Fixtures.journalCatalog());
+        state.player(0).recruit(HeldSpecialist.recruited(promoterSpecialist(List.of(PROMOTE_SLOT))));
+        state.player(0).moveReserveToTransit(1);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("promoter"));
+
+        assertTrue(ActivationDriver.legalActions(state).contains(new Promouvoir("promoter")),
+                "seul Junior détenu : lui-même, via son propre emplacement Promotion");
+
+        ActivationDriver.apply(state, new Promouvoir("promoter"));
+
+        assertEquals(SpecialistFace.SENIOR, heldSpecialist(state, 0, "promoter").face());
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
+                "chaîne d'un seul emplacement épuisée");
+    }
+
+    @Test
+    void unJetonPeutDeclencherUnePromotionSansActivation() {
+        GameState state = GameState.newGame(1, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), Fixtures.oceanBoard(), Fixtures.oceanCatalog(), promoteTokenCatalog(),
+                Fixtures.journalCatalog());
+        state.player(0).recruit(HeldSpecialist.recruited(Fixtures.ranked("pilot", 1)));
+        state.player(0).receiveDiveToken("promote-token");
+        ActivationDriver.begin(state);
+
+        ActivationDriver.apply(state, new DepenserJeton(0, 1)); // déclenche une Promotion
+
+        assertEquals(List.of(new Promouvoir("pilot")), ActivationDriver.legalActions(state),
+                "le tour se suspend sur la seule Promotion accordée");
+        ActivationDriver.apply(state, new Promouvoir("pilot"));
+
+        assertEquals(SpecialistFace.SENIOR, heldSpecialist(state, 0, "pilot").face());
         assertTrue(state.player(0).heldDiveTokens().isEmpty());
     }
 }

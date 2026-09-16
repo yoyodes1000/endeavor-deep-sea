@@ -21,6 +21,10 @@ import java.util.Set;
  *                            du spécialiste activé (0 juste après l'activation)
  * @param pendingImpacts      pions impact gagnés (par un bonus d'arrivée, une
  *                            cascade) restant à poser avant de poursuivre le tour
+ * @param pendingPromotions   gains de promotion gagnés restant à résoudre (choisir
+ *                            quel Junior promouvoir) avant de poursuivre le tour —
+ *                            ne vaut jamais plus de 0 sans qu'un Junior promouvable
+ *                            soit détenu (sinon le gain est perdu aussitôt)
  * @param pendingDiscovery    la découverte en cours (tuiles piochées à départager
  *                            puis à poser), ou {@code null} hors découverte
  * @param pendingTokenAction  l'action accordée par la dépense d'un jeton de
@@ -30,8 +34,8 @@ import java.util.Set;
  *                            hors chaîne du spécialiste
  */
 public record ActivationCursor(int turnPosition, Set<Integer> passed, String activatedSpecialist,
-                               int actionStep, int pendingImpacts, PendingDiscovery pendingDiscovery,
-                               ActionType pendingTokenAction) {
+                               int actionStep, int pendingImpacts, int pendingPromotions,
+                               PendingDiscovery pendingDiscovery, ActionType pendingTokenAction) {
 
     public ActivationCursor {
         if (turnPosition < 0) {
@@ -46,12 +50,15 @@ public record ActivationCursor(int turnPosition, Set<Integer> passed, String act
         if (pendingImpacts < 0) {
             throw new IllegalArgumentException("Le nombre d'impacts en attente ne peut être négatif");
         }
+        if (pendingPromotions < 0) {
+            throw new IllegalArgumentException("Le nombre de promotions en attente ne peut être négatif");
+        }
         passed = Set.copyOf(passed);
     }
 
     /** Le curseur d'entrée en Phase 2 : premier joueur du tour, personne n'a passé. */
     public static ActivationCursor notStarted() {
-        return new ActivationCursor(0, Set.of(), null, 0, 0, null, null);
+        return new ActivationCursor(0, Set.of(), null, 0, 0, 0, null, null);
     }
 
     /** Vrai si le joueur courant a déjà activé un spécialiste ce tour. */

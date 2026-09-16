@@ -82,8 +82,16 @@ class GainResolverTest {
     }
 
     @Test
-    void lesGainsMetaNeSontPasEncoreResolus() {
+    void lePromoteEstCompteDirectement() {
+        EffectOutcome outcome = GainResolver.resolve(player(), List.of(Gain.PROMOTE, Gain.PROMOTE));
+        assertEquals(2, outcome.promotionsEarned());
+    }
+
+    @Test
+    void lesGainsDeChoixDAttributNeSontPasEncoreResolus() {
         assertThrows(UnsupportedOperationException.class,
-                () -> GainResolver.resolve(player(), List.of(Gain.PROMOTE)));
+                () -> GainResolver.resolve(player(), List.of(Gain.ANY_ATTRIBUTE)));
+        assertThrows(UnsupportedOperationException.class,
+                () -> GainResolver.resolve(player(), List.of(Gain.LOWEST_ATTRIBUTE)));
     }
 }

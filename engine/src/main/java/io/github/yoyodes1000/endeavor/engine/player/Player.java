@@ -2,6 +2,7 @@ package io.github.yoyodes1000.endeavor.engine.player;
 
 import io.github.yoyodes1000.endeavor.engine.board.Attributes;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
+import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistFace;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -229,6 +230,30 @@ public final class Player {
                 specialists.set(i, new HeldSpecialist(held.specialist(), held.face(), held.placedDiscs() - 1));
                 transitDiscs++;
                 return;
+            }
+        }
+        throw new IllegalArgumentException("Tuile non détenue : " + specialistId);
+    }
+
+    /**
+     * Retourne la tuile Junior d'identifiant donné côté Senior — la Promotion.
+     * Le disque posé sur la case Junior est perdu (pas rendu au joueur) ; la
+     * nouvelle case d'activation Senior repart libre. Mutation en place.
+     *
+     * @return la tuile côté Senior, pour encaisser ses gains immédiats
+     * @throws IllegalArgumentException si le joueur ne détient pas cette tuile côté
+     *     Junior
+     */
+    public HeldSpecialist promote(String specialistId) {
+        for (int i = 0; i < specialists.size(); i++) {
+            HeldSpecialist held = specialists.get(i);
+            if (held.specialist().id().equals(specialistId)) {
+                if (held.face() != SpecialistFace.JUNIOR) {
+                    throw new IllegalArgumentException("Déjà côté Senior : " + specialistId);
+                }
+                HeldSpecialist promoted = new HeldSpecialist(held.specialist(), SpecialistFace.SENIOR, 0);
+                specialists.set(i, promoted);
+                return promoted;
             }
         }
         throw new IllegalArgumentException("Tuile non détenue : " + specialistId);

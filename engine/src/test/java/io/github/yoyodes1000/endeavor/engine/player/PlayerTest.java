@@ -111,6 +111,44 @@ class PlayerTest {
     }
 
     @Test
+    void laPromotionRetourneLaTuileCoteSeniorAvecUneCaseLibre() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.recruit(new HeldSpecialist(PlayerFixtures.ranked("pilot"), SpecialistFace.JUNIOR, 1));
+
+        HeldSpecialist promoted = player.promote("pilot");
+
+        assertEquals(SpecialistFace.SENIOR, promoted.face());
+        assertEquals(0, promoted.placedDiscs(), "case Senior fraîche, disque Junior perdu");
+        assertEquals(SpecialistFace.SENIOR, player.specialists().get(1).face());
+    }
+
+    @Test
+    void laPromotionNeRendPasLeDisqueAuJoueur() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.recruit(new HeldSpecialist(PlayerFixtures.ranked("pilot"), SpecialistFace.JUNIOR, 1));
+
+        player.promote("pilot");
+
+        assertEquals(10, player.reserveDiscs(), "le disque perdu ne repart pas en réserve");
+        assertEquals(0, player.transitDiscs(), "le disque perdu ne repart pas en transit");
+    }
+
+    @Test
+    void laPromotionRefuseUneTuileDejaCoteSenior() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.recruit(new HeldSpecialist(PlayerFixtures.ranked("pilot"), SpecialistFace.JUNIOR, 0));
+        player.promote("pilot");
+
+        assertThrows(IllegalArgumentException.class, () -> player.promote("pilot"));
+    }
+
+    @Test
+    void laPromotionRefuseUneTuileNonDetenue() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        assertThrows(IllegalArgumentException.class, () -> player.promote("inconnu"));
+    }
+
+    @Test
     void auDepartLaReserveDeSubmersiblesEstVide() {
         Player player = Player.start(PlayerFixtures.teamLeader(), 10);
         assertEquals(0, player.vesselStock());
