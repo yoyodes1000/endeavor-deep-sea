@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.action.Action;
 import io.github.yoyodes1000.endeavor.engine.action.Activer;
+import io.github.yoyodes1000.endeavor.engine.action.ChoisirAttribut;
 import io.github.yoyodes1000.endeavor.engine.action.Conserver;
 import io.github.yoyodes1000.endeavor.engine.action.DepenserJeton;
 import io.github.yoyodes1000.endeavor.engine.action.Dive;
@@ -724,7 +725,7 @@ class ActivationDriverTest {
     }
 
     @Test
-    void desOptionsNonSupporteesNeSontJamaisProposees() {
+    void seuleUneActionSansCoupPossibleNEstJamaisProposee() {
         DiveTokenCatalog catalog = new DiveTokenCatalog(List.of(
                 new DiveToken("mixed", 4, List.of(
                         new DiveOption.Gains(List.of(Gain.RESEARCH), List.of()),
@@ -734,9 +735,10 @@ class ActivationDriverTest {
         ActivationDriver.apply(state, new Activer("diver"));
         ActivationDriver.apply(state, new Dive(new Cell(1, 0), "d1"));
 
-        assertEquals(List.of(new DepenserJeton(0, 0), new TerminerTour(), new Passer()),
+        assertEquals(
+                List.of(new DepenserJeton(0, 0), new DepenserJeton(0, 1), new TerminerTour(), new Passer()),
                 ActivationDriver.legalActions(state),
-                "seule l'option de recherche pure est jouable pour l'instant");
+                "recherche et anyAttribute sont jouables ; la Conservation accordée n'a aucun site atteignable");
     }
 
     @Test
@@ -1032,13 +1034,13 @@ class ActivationDriverTest {
     }
 
     @Test
-    void uneRevueAuGainNonResolvableNEstPasProposee() {
+    void uneRevueAuGainDeChoixDAttributEstDesormaisProposee() {
         GameState state = readyToPublish(FieldSymbol.BLUE, FieldSymbol.BLUE, 0, List.of(Gain.ANY_ATTRIBUTE), 0, 2,
                 List.of(PUBLISH_SLOT));
         ActivationDriver.apply(state, new Activer("publisher"));
 
-        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state),
-                "anyAttribute n'est pas encore résolu : la revue n'est pas proposée");
+        assertTrue(ActivationDriver.legalActions(state)
+                .contains(new Publier("anchor-1", new Cell(1, 0), "j1")), "anyAttribute est résolu : jouable");
     }
 
     @Test
@@ -1326,5 +1328,104 @@ class ActivationDriverTest {
 
         assertEquals(SpecialistFace.SENIOR, heldSpecialist(state, 0, "pilot").face());
         assertTrue(state.player(0).heldDiveTokens().isEmpty());
+    }
+
+    // --- Choix d'attribut --------------------------------------------------
+
+    @Test
+    void anyAttributeSuspendLeTourSurLes4Pistes() {
+        GameState state = readyToConserve(0, List.of(Gain.ANY_ATTRIBUTE), 0, 2, List.of(CONSERVE_SLOT));
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        List<Action> legal = ActivationDriver.legalActions(state);
+        assertEquals(4, legal.size());
+        for (Attribute attribute : Attribute.values()) {
+            assertTrue(legal.contains(new ChoisirAttribut(attribute)));
+        }
+
+        int before = state.player(0).attributes().step(Attribute.REPUTATION);
+        ActivationDriver.apply(state, new ChoisirAttribut(Attribute.REPUTATION));
+
+        assertEquals(before + 1, state.player(0).attributes().step(Attribute.REPUTATION));
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void lowestAttributeSansEgaliteNeSuspendPasLeTour() {
+        GameState state = readyToConserve(0, List.of(Gain.LOWEST_ATTRIBUTE), 0, 2, List.of(CONSERVE_SLOT));
+        state.player(0).attributes().advance(Attribute.INSPIRATION, 3);
+        state.player(0).attributes().advance(Attribute.COORDINATION, 3);
+        state.player(0).attributes().advance(Attribute.REPUTATION, 3);
+        // l'ingéniosité reste à 0 : seule la plus basse
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        assertEquals(1, state.player(0).attributes().step(Attribute.INGENUITY), "résolu directement, sans décision");
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void lowestAttributeAvecEgaliteProposeSeulementLesPistesLiees() {
+        GameState state = readyToConserve(0, List.of(Gain.LOWEST_ATTRIBUTE), 0, 2, List.of(CONSERVE_SLOT));
+        state.player(0).attributes().advance(Attribute.INSPIRATION, 3);
+        state.player(0).attributes().advance(Attribute.COORDINATION, 3);
+        // réputation et ingéniosité restent à 0 : égalité entre les deux
+        ActivationDriver.apply(state, new Activer("curator"));
+
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        List<Action> legal = ActivationDriver.legalActions(state);
+        assertEquals(2, legal.size());
+        assertTrue(legal.contains(new ChoisirAttribut(Attribute.REPUTATION)));
+        assertTrue(legal.contains(new ChoisirAttribut(Attribute.INGENUITY)));
+
+        ActivationDriver.apply(state, new ChoisirAttribut(Attribute.REPUTATION));
+
+        assertEquals(1, state.player(0).attributes().step(Attribute.REPUTATION));
+        assertEquals(0, state.player(0).attributes().step(Attribute.INGENUITY),
+                "l'autre piste à égalité n'est pas affectée");
+    }
+
+    @Test
+    void unChoixDAttributPeutDeclencherLaCascadeDePoseDImpact() {
+        GameState state = readyToConserve(0, List.of(Gain.ANY_ATTRIBUTE), 0, 2, List.of(CONSERVE_SLOT));
+        state.player(0).attributes().advance(Attribute.REPUTATION, 9); // à un cran de la case 10
+        ActivationDriver.apply(state, new Activer("curator"));
+        ActivationDriver.apply(state, new Conserver(new Cell(1, 0), "c1"));
+
+        ActivationDriver.apply(state, new ChoisirAttribut(Attribute.REPUTATION));
+
+        assertEquals(List.of(new PoserImpact(0, 0)), ActivationDriver.legalActions(state));
+        ActivationDriver.apply(state, new PoserImpact(0, 0));
+        assertEquals(List.of(new TerminerTour(), new Passer()), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void unChoixDAttributAmbiguGagneParUnAdversaireViaPublicationEstRefuse() {
+        OceanBoard ocean = new OceanBoard(2);
+        ocean.placeTile(new Cell(1, 0), "publish-tile");
+        ocean.addVessels(new Cell(1, 0), 0, 1);
+        OceanTileCatalog oceanCatalog = new OceanTileCatalog(List.of(
+                new OceanTile("publish-tile", "Publish Tile", 1, false, List.of(), List.of(), List.of(), List.of(),
+                        List.of(), List.of(), List.of(new JournalSite("j1", FieldSymbol.BLUE, List.of())))));
+        JournalCatalog journalCatalog = new JournalCatalog(List.of(
+                new Journal("anchor-1", true, "Anchor One", 0, 0, List.of(FieldSymbol.BLUE), List.of(),
+                        List.of(Gain.LOWEST_ATTRIBUTE)),
+                new Journal("anchor-2", true, "Anchor Two", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-3", true, "Anchor Three", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of()),
+                new Journal("anchor-4", true, "Anchor Four", 0, 0, List.of(FieldSymbol.GREEN), List.of(), List.of())));
+        GameState state = GameState.newGame(2, Fixtures.roster(), RandomSource.fromSeed(1), 10,
+                Fixtures.missionBoard(), ocean, oceanCatalog, Fixtures.diveTokenCatalog(), journalCatalog);
+        state.player(0).recruit(HeldSpecialist.recruited(publisherSpecialist(List.of(PUBLISH_SLOT))));
+        state.player(0).moveReserveToTransit(2);
+        ActivationDriver.begin(state);
+        ActivationDriver.apply(state, new Activer("publisher"));
+
+        // le joueur 1 (adversaire), neuf, a ses 4 pistes à égalité : lowestAttribute y est ambigu
+        assertThrows(IllegalStateException.class,
+                () -> ActivationDriver.apply(state, new Publier("anchor-1", new Cell(1, 0), "j1")));
     }
 }

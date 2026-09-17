@@ -21,21 +21,31 @@ import java.util.Set;
  *                            du spécialiste activé (0 juste après l'activation)
  * @param pendingImpacts      pions impact gagnés (par un bonus d'arrivée, une
  *                            cascade) restant à poser avant de poursuivre le tour
- * @param pendingPromotions   gains de promotion gagnés restant à résoudre (choisir
- *                            quel Junior promouvoir) avant de poursuivre le tour —
- *                            ne vaut jamais plus de 0 sans qu'un Junior promouvable
- *                            soit détenu (sinon le gain est perdu aussitôt)
- * @param pendingDiscovery    la découverte en cours (tuiles piochées à départager
- *                            puis à poser), ou {@code null} hors découverte
- * @param pendingTokenAction  l'action accordée par la dépense d'un jeton de
- *                            plongée en cours de résolution (ex. le Sonar promis
- *                            par un jeton), ou {@code null} hors dépense de ce
- *                            type — suspend le tour sur ce seul type d'action,
- *                            hors chaîne du spécialiste
+ * @param pendingPromotions      gains de promotion gagnés restant à résoudre
+ *                               (choisir quel Junior promouvoir) avant de
+ *                               poursuivre le tour — ne vaut jamais plus de 0
+ *                               sans qu'un Junior promouvable soit détenu
+ *                               (sinon le gain est perdu aussitôt)
+ * @param pendingAnyAttribute    choix d'attribut libre en attente (les 4
+ *                               pistes sont toujours valides — jamais résolu
+ *                               sans coup)
+ * @param pendingLowestAttribute choix d'attribut en attente entre pistes à
+ *                               égalité au plus bas niveau — ne vaut jamais
+ *                               plus de 0 sans égalité (sinon la piste la
+ *                               plus basse est avancée directement)
+ * @param pendingDiscovery       la découverte en cours (tuiles piochées à
+ *                               départager puis à poser), ou {@code null} hors
+ *                               découverte
+ * @param pendingTokenAction     l'action accordée par la dépense d'un jeton de
+ *                               plongée en cours de résolution (ex. le Sonar
+ *                               promis par un jeton), ou {@code null} hors
+ *                               dépense de ce type — suspend le tour sur ce
+ *                               seul type d'action, hors chaîne du spécialiste
  */
 public record ActivationCursor(int turnPosition, Set<Integer> passed, String activatedSpecialist,
-                               int actionStep, int pendingImpacts, int pendingPromotions,
-                               PendingDiscovery pendingDiscovery, ActionType pendingTokenAction) {
+                               int actionStep, int pendingImpacts, int pendingPromotions, int pendingAnyAttribute,
+                               int pendingLowestAttribute, PendingDiscovery pendingDiscovery,
+                               ActionType pendingTokenAction) {
 
     public ActivationCursor {
         if (turnPosition < 0) {
@@ -53,12 +63,15 @@ public record ActivationCursor(int turnPosition, Set<Integer> passed, String act
         if (pendingPromotions < 0) {
             throw new IllegalArgumentException("Le nombre de promotions en attente ne peut être négatif");
         }
+        if (pendingAnyAttribute < 0 || pendingLowestAttribute < 0) {
+            throw new IllegalArgumentException("Le nombre de choix d'attribut en attente ne peut être négatif");
+        }
         passed = Set.copyOf(passed);
     }
 
     /** Le curseur d'entrée en Phase 2 : premier joueur du tour, personne n'a passé. */
     public static ActivationCursor notStarted() {
-        return new ActivationCursor(0, Set.of(), null, 0, 0, 0, null, null);
+        return new ActivationCursor(0, Set.of(), null, 0, 0, 0, 0, 0, null, null);
     }
 
     /** Vrai si le joueur courant a déjà activé un spécialiste ce tour. */
