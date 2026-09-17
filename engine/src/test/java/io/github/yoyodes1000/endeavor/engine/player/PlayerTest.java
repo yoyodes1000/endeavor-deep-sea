@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.yoyodes1000.endeavor.engine.board.Attribute;
+import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
+import io.github.yoyodes1000.endeavor.engine.journal.Journal;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalCatalog;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistFace;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -249,5 +252,40 @@ class PlayerTest {
         Player player = Player.start(PlayerFixtures.teamLeader(), 10);
         player.gainResearch(2);
         assertThrows(IllegalArgumentException.class, () -> player.spendResearch(3));
+    }
+
+    // --- Décompte final -------------------------------------------------------
+
+    private static Journal journal(String id, int victoryPoints) {
+        return new Journal(id, false, id, 0, victoryPoints, List.of(FieldSymbol.BLUE), List.of(), List.of());
+    }
+
+    @Test
+    void journalPointsSommeLesPointsDesRevuesDetenues() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.acquireJournal("a");
+        player.acquireJournal("b");
+        JournalCatalog catalog = new JournalCatalog(List.of(journal("a", 3), journal("b", 5), journal("c", 9)));
+
+        assertEquals(8, player.journalPoints(catalog));
+    }
+
+    @Test
+    void journalPointsRefuseUneRevueInconnueDuCatalogue() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.acquireJournal("inconnue");
+        JournalCatalog catalog = new JournalCatalog(List.of(journal("a", 3)));
+
+        assertThrows(IllegalStateException.class, () -> player.journalPoints(catalog));
+    }
+
+    @Test
+    void finalScoreAdditionneAttributsEtRevues() {
+        Player player = Player.start(PlayerFixtures.teamLeader(), 10);
+        player.attributes().advance(Attribute.COORDINATION, 4);
+        player.acquireJournal("a");
+        JournalCatalog catalog = new JournalCatalog(List.of(journal("a", 3)));
+
+        assertEquals(7, player.finalScore(catalog), "4 points d'attribut (niveau 3) + 3 points de revue");
     }
 }
