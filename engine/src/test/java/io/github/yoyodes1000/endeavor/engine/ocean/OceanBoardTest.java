@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -146,6 +147,18 @@ class OceanBoardTest {
     }
 
     @Test
+    void lesProprietairesDeSonarSeRelisentDansLOrdreDePose() {
+        OceanBoard board = crossBoard();
+        assertEquals(List.of(), board.sonarDiscOwners(new Cell(1, 1), 0), "piste vierge : aucun propriétaire");
+
+        board.placeSonarDisc(new Cell(1, 1), 0, 1);
+        board.placeSonarDisc(new Cell(1, 1), 0, 0);
+
+        assertEquals(List.of(1, 0), board.sonarDiscOwners(new Cell(1, 1), 0));
+        assertEquals(List.of(), board.sonarDiscOwners(new Cell(1, 1), 1), "une autre piste reste vierge");
+    }
+
+    @Test
     void lesDisquesDeSonarSeComptentParPisteEtSeRemplissentDeGaucheADroite() {
         OceanBoard board = crossBoard();
         assertEquals(0, board.sonarDiscCount(new Cell(1, 1), 0), "piste vierge : la case libre est la première");
@@ -248,6 +261,16 @@ class OceanBoardTest {
     }
 
     @Test
+    void lOccupantDUnSiteDeConservationSeRelit() {
+        OceanBoard board = crossBoard();
+        assertEquals(Optional.empty(), board.conservationOccupant(new Cell(1, 1), "c1"));
+
+        board.placeConservationDisc(new Cell(1, 1), "c1", 2);
+
+        assertEquals(Optional.of(2), board.conservationOccupant(new Cell(1, 1), "c1"));
+    }
+
+    @Test
     void unSiteDeConservationNAccueilleQuUnSeulDisque() {
         OceanBoard board = crossBoard();
         board.placeConservationDisc(new Cell(1, 1), "c1", 0);
@@ -287,6 +310,16 @@ class OceanBoardTest {
         assertTrue(board.journalSiteOccupied(new Cell(1, 1), "j1"));
         assertFalse(board.journalSiteOccupied(new Cell(1, 1), "j2"), "un autre site de la même zone reste libre");
         assertFalse(board.journalSiteOccupied(new Cell(1, 2), "j1"), "une autre zone reste libre");
+    }
+
+    @Test
+    void lOccupantDUnSiteDePublicationSeRelit() {
+        OceanBoard board = crossBoard();
+        assertEquals(Optional.empty(), board.journalOccupant(new Cell(1, 1), "j1"));
+
+        board.placeJournalDisc(new Cell(1, 1), "j1", 2);
+
+        assertEquals(Optional.of(2), board.journalOccupant(new Cell(1, 1), "j1"));
     }
 
     @Test

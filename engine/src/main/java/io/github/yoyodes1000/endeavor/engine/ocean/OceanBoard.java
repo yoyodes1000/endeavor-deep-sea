@@ -310,6 +310,13 @@ public final class OceanBoard {
                 .add(playerIndex);
     }
 
+    /** Les joueurs ayant un disque sur cette piste Sonar, dans l'ordre de pose (décompte final). */
+    public List<Integer> sonarDiscOwners(Cell cell, int trackIndex) {
+        requireTrackIndex(trackIndex);
+        List<Integer> owners = sonarDiscsByTrack.get(new SonarTrackKey(cell, trackIndex));
+        return owners == null ? List.of() : List.copyOf(owners);
+    }
+
     private void requireTrackIndex(int trackIndex) {
         if (trackIndex < 0) {
             throw new IllegalArgumentException("Rang de piste Sonar négatif : " + trackIndex);
@@ -368,8 +375,13 @@ public final class OceanBoard {
 
     /** Vrai si un disque occupe déjà ce site de conservation. */
     public boolean conservationSiteOccupied(Cell cell, String siteId) {
+        return conservationOccupant(cell, siteId).isPresent();
+    }
+
+    /** Le joueur qui occupe ce site de conservation, s'il y en a un (décompte final). */
+    public Optional<Integer> conservationOccupant(Cell cell, String siteId) {
         requireConservationSiteId(siteId);
-        return conservationOccupantBySite.containsKey(new ConservationSiteKey(cell, siteId));
+        return Optional.ofNullable(conservationOccupantBySite.get(new ConservationSiteKey(cell, siteId)));
     }
 
     /**
@@ -402,8 +414,13 @@ public final class OceanBoard {
 
     /** Vrai si un disque occupe déjà ce site de publication. */
     public boolean journalSiteOccupied(Cell cell, String siteId) {
+        return journalOccupant(cell, siteId).isPresent();
+    }
+
+    /** Le joueur qui occupe ce site de publication, s'il y en a un (décompte final). */
+    public Optional<Integer> journalOccupant(Cell cell, String siteId) {
         requireJournalSiteId(siteId);
-        return journalOccupantBySite.containsKey(new JournalSiteKey(cell, siteId));
+        return Optional.ofNullable(journalOccupantBySite.get(new JournalSiteKey(cell, siteId)));
     }
 
     /**
