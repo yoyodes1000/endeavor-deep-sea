@@ -1,6 +1,8 @@
 package io.github.yoyodes1000.endeavor.engine.player;
 
 import io.github.yoyodes1000.endeavor.engine.board.Attributes;
+import io.github.yoyodes1000.endeavor.engine.journal.Journal;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalCatalog;
 import io.github.yoyodes1000.endeavor.engine.specialist.Specialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistFace;
 
@@ -312,6 +314,26 @@ public final class Player {
             throw new IllegalArgumentException("Une revue acquise doit avoir un identifiant");
         }
         journals.add(journalId);
+    }
+
+    /** Somme des points imprimés des revues détenues (décompte final). */
+    public int journalPoints(JournalCatalog catalog) {
+        int total = 0;
+        for (String journalId : journals) {
+            Journal journal = catalog.byId(journalId)
+                    .orElseThrow(() -> new IllegalStateException("Revue inconnue du catalogue : " + journalId));
+            total += journal.victoryPoints();
+        }
+        return total;
+    }
+
+    /**
+     * Le score de fin de partie du joueur : attributs et revues détenues. Les
+     * décomptes des tuiles Senior (rang 5) et des objectifs de mission viendront
+     * s'y ajouter (cartes sœurs).
+     */
+    public int finalScore(JournalCatalog catalog) {
+        return attributes.totalPoints() + journalPoints(catalog);
     }
 
     /** Copie indépendante, appelée une fois par simulation pour l'isoler (déc. 3). */
