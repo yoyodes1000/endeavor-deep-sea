@@ -740,7 +740,7 @@ public final class ActivationDriver {
             throw new IllegalStateException("La tuile de découverte reste à poser");
         }
         requireValidPlacement(state, pending.keptTile(), placement.cell());
-        state.oceanBoard().placeTile(placement.cell(), pending.keptTile());
+        state.oceanBoard().discoverTile(placement.cell(), pending.keptTile(), player);
         DiveSiteSetup.stack(state.oceanBoard(), state.diveTokenPile(), state.random(),
                 placement.cell(), tileById(state, pending.keptTile()));
         EffectOutcome outcome = resolveDiscoverBonus(state, player, pending.keptTile());
