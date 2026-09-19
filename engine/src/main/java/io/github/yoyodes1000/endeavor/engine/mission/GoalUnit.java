@@ -6,8 +6,8 @@ package io.github.yoyodes1000.endeavor.engine.mission;
  * disques d'un type de site précis ; {@code disc} n'importe quel disque ;
  * {@code vessel} les submersibles ; {@code zone} des zones (toujours seule,
  * qualifiée par {@code zoneContains} sur {@link MissionGoal.Standard}) ;
- * {@code fieldSymbol} et {@code impactMarker} restent hors de portée (cf.
- * {@link MissionGoal.Unsupported}).
+ * {@code fieldSymbol} les symboles de domaine du plateau Impact (toujours seule) ;
+ * {@code impactMarker} reste hors de portée (cf. {@link MissionGoal.Unsupported}).
  */
 public enum GoalUnit {
 

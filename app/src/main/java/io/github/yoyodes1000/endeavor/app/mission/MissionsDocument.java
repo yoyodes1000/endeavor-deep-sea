@@ -41,7 +41,9 @@ record MissionsDocument(List<Entry> missions) {
             List<String> gains,
             Boolean start,
             Boolean offGrid,
-            Object capacity) {
+            Object capacity,
+            String fieldSymbol,
+            Integer fieldSymbolCount) {
     }
 
     /**

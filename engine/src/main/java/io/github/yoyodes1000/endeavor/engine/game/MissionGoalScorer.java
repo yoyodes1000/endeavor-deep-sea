@@ -24,6 +24,10 @@ import java.util.List;
  * subsiste. Un joueur à effectif nul ne touche aucun bonus, même à égalité
  * avec d'autres joueurs à zéro.
  *
+ * <p>L'unité {@code fieldSymbol} compte les symboles de la couleur que le joueur
+ * possède le plus (jokers ajoutés à celle-ci) ; les filtres de profondeur et de
+ * colonne ne s'y appliquent pas.
+ *
  * <p>{@link MissionGoal.Unsupported} n'est pas accepté ici : l'appelant doit
  * trier les objectifs modélisés des autres (carte sœur de l'orchestration).
  */
@@ -38,6 +42,9 @@ public final class MissionGoalScorer {
         OceanTileCatalog tiles = state.oceanTileCatalog();
         if (goal.units().contains(GoalUnit.ZONE)) {
             return countZones(goal, board, tiles, playerIndex);
+        }
+        if (goal.units().contains(GoalUnit.FIELD_SYMBOL)) {
+            return FieldSymbolTally.of(state.missionBoard(), playerIndex).mostHeld();
         }
         return countUnits(goal, board, tiles, playerIndex);
     }

@@ -19,14 +19,14 @@ import java.util.Set;
  * {@link io.github.yoyodes1000.endeavor.engine.specialist.EndGameScoring},
  * le prédicat est ici, en code).
  *
- * <p>Deux effectifs restent hors de portée pour l'instant :
- * {@link EndGameCount#COMPLETE_FIELD_SYMBOL_SETS} se compte sur les
- * symboles de domaine des hexagones du plateau Impact occupés — champ pas
- * encore porté par {@code ImpactHex} (carte sœur) — et
- * {@link EndGameCount#CONNECTIONS_SHARED_WITH_OPPONENTS} sur les connexions
- * entre sites d'une même tuile, une mécanique que {@code OceanTile} ne
- * modélise pas encore. Les deux échouent bruyamment plutôt que de rendre un
+ * <p>Un effectif reste hors de portée pour l'instant :
+ * {@link EndGameCount#CONNECTIONS_SHARED_WITH_OPPONENTS} se compte sur les
+ * connexions entre sites d'une même tuile, une mécanique que {@code OceanTile}
+ * ne modélise pas encore. Il échoue bruyamment plutôt que de rendre un
  * effectif de zéro qui fausserait silencieusement un score.
+ *
+ * <p>{@link EndGameCount#COMPLETE_FIELD_SYMBOL_SETS} se compte sur les symboles de
+ * domaine des hexagones du plateau Impact où le joueur a un pion.
  */
 public final class EndGameCounter {
 
@@ -53,7 +53,8 @@ public final class EndGameCounter {
                     depthsWithPublication(state.oceanBoard(), state.oceanTileCatalog(), playerIndex);
             case ZONES_WITH_DISC_OR_VESSEL ->
                     zonesWithDiscOrVessel(state.oceanBoard(), state.oceanTileCatalog(), playerIndex);
-            case COMPLETE_FIELD_SYMBOL_SETS -> throw notYetImplemented(count);
+            case COMPLETE_FIELD_SYMBOL_SETS ->
+                    FieldSymbolTally.of(state.missionBoard(), playerIndex).completeSets();
             case CONNECTIONS_SHARED_WITH_OPPONENTS -> throw notYetImplemented(count);
         };
     }

@@ -143,13 +143,6 @@ class EndGameCounterTest {
     }
 
     @Test
-    void lesSymbolesDeDomaineNeSontPasEncoreCablees() {
-        GameState state = newGame(richBoard());
-        assertThrows(UnsupportedOperationException.class,
-                () -> EndGameCounter.effectif(EndGameCount.COMPLETE_FIELD_SYMBOL_SETS, state, 0, "x"));
-    }
-
-    @Test
     void lesConnexionsNeSontPasEncoreCablees() {
         GameState state = newGame(richBoard());
         assertThrows(UnsupportedOperationException.class,

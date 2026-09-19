@@ -1,10 +1,12 @@
 package io.github.yoyodes1000.endeavor.app.mission;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
+import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
@@ -21,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class MissionLoaderTest {
@@ -67,6 +70,51 @@ class MissionLoaderTest {
         String json = "{\"missions\":[{\"id\":\"m\",\"number\":1,\"name\":\"M\",\"impactBoard\":"
                 + "{\"orientation\":\"pointy-top\",\"hexes\":[{\"row\":0,\"col\":0,\"points\":0,\"gains\":[\"gold\"]}]}}]}";
         assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader(json)));
+    }
+
+    private static String boardWith(String hexFields) {
+        return "{\"missions\":[{\"id\":\"m\",\"number\":1,\"name\":\"M\",\"impactBoard\":"
+                + "{\"orientation\":\"pointy-top\",\"hexes\":[{\"row\":0,\"col\":0,\"points\":0," + hexFields + "}]}}]}";
+    }
+
+    private ImpactHex loadedHex(String hexFields) {
+        return loader.load(new StringReader(boardWith(hexFields))).byNumber(1).orElseThrow()
+                .impactBoard().hexAt(0, 0).orElseThrow();
+    }
+
+    private List<ImpactHex> realHexes() throws Exception {
+        return realCatalog().missions().stream().flatMap(mission -> mission.impactBoard().hexes().stream()).toList();
+    }
+
+    @Test
+    void chargeLesSymbolesDeDomaineDeCouleur() throws Exception {
+        List<ImpactHex> colored = realHexes().stream().filter(hex -> hex.fieldSymbol().isPresent()).toList();
+        assertFalse(colored.isEmpty());
+        assertTrue(colored.stream().allMatch(hex -> !hex.wild() && hex.fieldSymbolCount() == 1));
+        assertTrue(colored.stream().anyMatch(hex -> hex.fieldSymbol().get() == FieldSymbol.YELLOW));
+    }
+
+    @Test
+    void chargeLesJokersEtLesSymbolesDoubles() throws Exception {
+        List<ImpactHex> wilds = realHexes().stream().filter(ImpactHex::wild).toList();
+        assertFalse(wilds.isEmpty());
+        assertTrue(wilds.stream().allMatch(hex -> hex.fieldSymbol().isEmpty()));
+        assertTrue(wilds.stream().anyMatch(hex -> hex.fieldSymbolCount() == 2), "un joker double (relevé)");
+    }
+
+    @Test
+    void unHexagoneSansSymboleNEnPortePas() throws Exception {
+        ImpactHex plain = realCatalog().byNumber(1).orElseThrow().impactBoard().hexAt(0, 0).orElseThrow();
+        assertEquals(Optional.empty(), plain.fieldSymbol());
+        assertFalse(plain.wild());
+        assertEquals(0, plain.fieldSymbolCount());
+    }
+
+    @Test
+    void refuseUneCouleurDeSymboleInconnue() {
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> loadedHex("\"fieldSymbol\":\"purple\""));
+        assertTrue(error.getMessage().contains("purple"));
     }
 
     @Test

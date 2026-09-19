@@ -130,9 +130,9 @@ class MissionGoalScorerTest {
     }
 
     @Test
-    void lUniteFieldSymbolNEstPasEncoreCablee() {
+    void lUniteImpactMarkerNEstPasEncoreCablee() {
         GameState state = newGame(2);
-        MissionGoal.Standard goal = goal(List.of(GoalUnit.FIELD_SYMBOL), List.of(), List.of(), List.of(), null);
+        MissionGoal.Standard goal = goal(List.of(GoalUnit.IMPACT_MARKER), List.of(), List.of(), List.of(), null);
         assertThrows(UnsupportedOperationException.class, () -> MissionGoalScorer.effectif(goal, state, 0));
     }
 }

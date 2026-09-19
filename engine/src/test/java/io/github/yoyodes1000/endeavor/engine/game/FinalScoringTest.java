@@ -91,7 +91,7 @@ class FinalScoringTest {
     @Test
     void unEffectifSeniorNonCableComptePourZeroEtEstSignale() {
         GameState state = newGame(2, List.of());
-        state.player(0).recruit(seniorScoring("collector", EndGameCount.COMPLETE_FIELD_SYMBOL_SETS));
+        state.player(0).recruit(seniorScoring("collector", EndGameCount.CONNECTIONS_SHARED_WITH_OPPONENTS));
 
         FinalResult result = FinalScoring.compute(state);
 
@@ -103,7 +103,7 @@ class FinalScoringTest {
     @Test
     void uneUniteDObjectifNonCableEstSignalee() {
         MissionGoal.Standard fieldSymbols = new MissionGoal.Standard(
-                2, List.of(GoalUnit.FIELD_SYMBOL), List.of(), List.of(), List.of(), 1, Optional.empty(), "symboles");
+                2, List.of(GoalUnit.IMPACT_MARKER), List.of(), List.of(), List.of(), 1, Optional.empty(), "marqueurs");
         // un disque Sonar sur la carte suffit à déclencher le comptage des unités
         GameState state = newGame(2, List.of(fieldSymbols));
         state.oceanBoard().placeSonarDisc(new Cell(1, 0), 0, 0);
