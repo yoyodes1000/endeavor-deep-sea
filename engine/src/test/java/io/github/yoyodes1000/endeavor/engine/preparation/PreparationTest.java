@@ -51,12 +51,24 @@ class PreparationTest {
         // au départ, inspiration au niveau 1 -> 1 disque déplacé
         Preparation.applyEffort(player);
         assertEquals(1, player.transitDiscs());
-        assertEquals(9, player.reserveDiscs());
+        assertEquals(10, player.reserveDiscs(), "la banque est illimitée : la réserve n'est pas touchée");
 
         // inspiration portée au niveau 3 (case 4) -> 3 disques
         player.attributes().advance(Attribute.INSPIRATION, 4);
         Preparation.applyEffort(player);
         assertEquals(4, player.transitDiscs());
-        assertEquals(6, player.reserveDiscs());
+        assertEquals(10, player.reserveDiscs());
+    }
+
+    @Test
+    void lEffortNeDependPasDeLaReserve() {
+        Player player = game(1, 1).player(0);
+        player.moveReserveToTransit(10); // réserve vidée
+        player.attributes().advance(Attribute.INSPIRATION, 4);
+
+        Preparation.applyEffort(player);
+
+        assertEquals(13, player.transitDiscs());
+        assertEquals(0, player.reserveDiscs());
     }
 }

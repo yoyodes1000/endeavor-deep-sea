@@ -66,7 +66,7 @@ Chaque joueur enchaîne 1a → 1b → 1c **dans l'ordre du tour**. L'ordre 1a �
 
 ### 1b — Effort (automatique)
 
-- Chaque joueur prend **N disques** de la réserve vers la **zone de transit**,
+- Chaque joueur prend **N disques** à la banque (illimitée) vers la **zone de transit**,
   avec **N = niveau d'inspiration**.
 - Aucun choix : entièrement automatique.
 
