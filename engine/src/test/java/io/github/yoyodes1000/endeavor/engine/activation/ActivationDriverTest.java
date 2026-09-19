@@ -512,6 +512,19 @@ class ActivationDriverTest {
     }
 
     @Test
+    void laZoneDecouverteRetientLeJoueurQuiLAPosee() {
+        GameState state = readyToDiscover(List.of(1), List.of(discovered("found-a", 1, List.of(Gain.RESEARCH))));
+        ActivationDriver.apply(state, new Activer("sonarist"));
+        ActivationDriver.apply(state, new Sonar(new Cell(1, 0), 0));
+        ActivationDriver.apply(state, new GarderTuile("found-a"));
+        ActivationDriver.apply(state, new PoserTuile(new Cell(1, 1)));
+
+        assertEquals(java.util.OptionalInt.of(0), state.oceanBoard().discovererOf(new Cell(1, 1)));
+        assertEquals(java.util.OptionalInt.empty(), state.oceanBoard().discovererOf(new Cell(1, 0)),
+                "la zone de départ n'a pas de découvreur");
+    }
+
+    @Test
     void leBonusDeDecouvertePeutDeclencherLaCascadeDePoseDImpact() {
         GameState state = readyToDiscover(List.of(1), List.of(discovered("found-impact", 1, List.of(Gain.IMPACT))));
         ActivationDriver.apply(state, new Activer("sonarist"));

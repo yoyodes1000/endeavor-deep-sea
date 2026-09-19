@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 /**
@@ -69,6 +70,7 @@ public final class OceanBoard {
 
     private final int columns;
     private final Map<Cell, String> tileByCell;
+    private final Map<Cell, Integer> discovererByCell;
     private final Map<Cell, Map<Integer, Integer>> vesselsByCell;
     private final Map<SonarTrackKey, List<Integer>> sonarDiscsByTrack;
     private final Map<DiveSiteKey, Deque<String>> diveTokensBySite;
@@ -82,6 +84,7 @@ public final class OceanBoard {
         }
         this.columns = columns;
         this.tileByCell = new HashMap<>();
+        this.discovererByCell = new HashMap<>();
         this.vesselsByCell = new HashMap<>();
         this.sonarDiscsByTrack = new HashMap<>();
         this.diveTokensBySite = new HashMap<>();
@@ -89,12 +92,14 @@ public final class OceanBoard {
         this.journalOccupantBySite = new HashMap<>();
     }
 
-    private OceanBoard(int columns, Map<Cell, String> tiles, Map<Cell, Map<Integer, Integer>> vessels,
+    private OceanBoard(int columns, Map<Cell, String> tiles, Map<Cell, Integer> discoverers,
+                       Map<Cell, Map<Integer, Integer>> vessels,
                        Map<SonarTrackKey, List<Integer>> sonarDiscs, Map<DiveSiteKey, Deque<String>> diveTokens,
                        Map<ConservationSiteKey, Integer> conservationOccupants,
                        Map<JournalSiteKey, Integer> journalOccupants) {
         this.columns = columns;
         this.tileByCell = new HashMap<>(tiles);
+        this.discovererByCell = new HashMap<>(discoverers);
         this.vesselsByCell = new HashMap<>();
         for (Map.Entry<Cell, Map<Integer, Integer>> entry : vessels.entrySet()) {
             this.vesselsByCell.put(entry.getKey(), new HashMap<>(entry.getValue()));
@@ -183,6 +188,27 @@ public final class OceanBoard {
             throw new IllegalArgumentException("Case déjà occupée : " + cell);
         }
         tileByCell.put(cell, tileId);
+    }
+
+    /**
+     * Pose une tuile par découverte : comme {@link #placeTile}, et retient le joueur
+     * qui a découvert la zone (les tuiles de la mise en place n'ont pas de découvreur).
+     *
+     * @throws IllegalArgumentException dans les cas de {@link #placeTile}, ou si
+     *     l'indice de joueur est négatif
+     */
+    public void discoverTile(Cell cell, String tileId, int playerIndex) {
+        if (playerIndex < 0) {
+            throw new IllegalArgumentException("Indice de joueur négatif : " + playerIndex);
+        }
+        placeTile(cell, tileId);
+        discovererByCell.put(cell, playerIndex);
+    }
+
+    /** Le joueur qui a découvert la zone de cette case, s'il y en a un (vide pour une zone de départ). */
+    public OptionalInt discovererOf(Cell cell) {
+        Integer discoverer = discovererByCell.get(cell);
+        return discoverer == null ? OptionalInt.empty() : OptionalInt.of(discoverer);
     }
 
     /** Vrai si une tuile occupe cette case (une zone y est en jeu). */
@@ -510,7 +536,7 @@ public final class OceanBoard {
 
     /** Copie indépendante, pour isoler une simulation (décision 3). */
     public OceanBoard copy() {
-        return new OceanBoard(columns, tileByCell, vesselsByCell, sonarDiscsByTrack, diveTokensBySite,
+        return new OceanBoard(columns, tileByCell, discovererByCell, vesselsByCell, sonarDiscsByTrack, diveTokensBySite,
                 conservationOccupantBySite, journalOccupantBySite);
     }
 

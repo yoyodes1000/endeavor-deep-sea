@@ -349,4 +349,41 @@ class OceanBoardTest {
                 "le site posé sur la copie n'existe pas dans l'original");
         assertTrue(copie.journalSiteOccupied(new Cell(1, 1), "j1"), "l'occupation de l'original est reprise");
     }
+
+    @Test
+    void uneTuileDecouverteRetientSonDecouvreur() {
+        OceanBoard board = new OceanBoard(3);
+        board.discoverTile(new Cell(1, 1), "found", 2);
+
+        assertEquals(java.util.OptionalInt.of(2), board.discovererOf(new Cell(1, 1)));
+        assertEquals(java.util.Optional.of("found"), board.tileAt(new Cell(1, 1)));
+    }
+
+    @Test
+    void uneTuileDeMiseEnPlaceNAPasDeDecouvreur() {
+        OceanBoard board = new OceanBoard(3);
+        board.placeTile(new Cell(1, 1), "start");
+
+        assertEquals(java.util.OptionalInt.empty(), board.discovererOf(new Cell(1, 1)));
+    }
+
+    @Test
+    void leDecouvreurSurvitALaCopieSansEtreCompartage() {
+        OceanBoard board = new OceanBoard(3);
+        board.discoverTile(new Cell(1, 0), "a", 1);
+        OceanBoard copy = board.copy();
+        copy.discoverTile(new Cell(1, 1), "b", 0);
+
+        assertEquals(java.util.OptionalInt.of(1), copy.discovererOf(new Cell(1, 0)));
+        assertEquals(java.util.OptionalInt.empty(), board.discovererOf(new Cell(1, 1)));
+    }
+
+    @Test
+    void refuseUnDecouvreurNegatifEtUneCaseOccupee() {
+        OceanBoard board = new OceanBoard(3);
+        assertThrows(IllegalArgumentException.class, () -> board.discoverTile(new Cell(1, 0), "a", -1));
+        board.discoverTile(new Cell(1, 0), "a", 0);
+        assertThrows(IllegalArgumentException.class, () -> board.discoverTile(new Cell(1, 0), "b", 1));
+        assertEquals(java.util.OptionalInt.of(0), board.discovererOf(new Cell(1, 0)), "le premier découvreur reste");
+    }
 }
