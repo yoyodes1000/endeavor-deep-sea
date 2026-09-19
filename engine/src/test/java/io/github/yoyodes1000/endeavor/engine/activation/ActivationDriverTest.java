@@ -488,6 +488,30 @@ class ActivationDriverTest {
     }
 
     @Test
+    void unNiveauSatureFaitPiocherAuNiveauUtilisableLePlusSuperficiel() {
+        GameState state = readyToDiscover(List.of(1), List.of(
+                discovered("found-a", 1, List.of(Gain.RESEARCH)), discovered("deep-a", 2, List.of(Gain.RESEARCH))));
+        state.oceanBoard().placeTile(new Cell(1, 1), "filler");
+        state.oceanBoard().placeTile(new Cell(1, 2), "filler"); // la profondeur 1 n'a plus de case libre
+        ActivationDriver.apply(state, new Activer("sonarist"));
+        ActivationDriver.apply(state, new Sonar(new Cell(1, 0), 0));
+
+        assertEquals(List.of(new GarderTuile("deep-a")), ActivationDriver.legalActions(state));
+    }
+
+    @Test
+    void uneAireDeJeuPleineDonneUnImpactAuLieuDUneDecouverte() {
+        GameState state = readyToDiscover(List.of(1), List.of(discovered("found-a", 1, List.of(Gain.RESEARCH))));
+        state.oceanBoard().placeTile(new Cell(1, 1), "filler");
+        state.oceanBoard().placeTile(new Cell(1, 2), "filler");
+        ActivationDriver.apply(state, new Activer("sonarist"));
+        ActivationDriver.apply(state, new Sonar(new Cell(1, 0), 0));
+
+        assertEquals(List.of(new PoserImpact(0, 0)), ActivationDriver.legalActions(state));
+        assertEquals(1, state.discoveryPile().size(), "aucune tuile n'a été piochée");
+    }
+
+    @Test
     void leBonusDeDecouvertePeutDeclencherLaCascadeDePoseDImpact() {
         GameState state = readyToDiscover(List.of(1), List.of(discovered("found-impact", 1, List.of(Gain.IMPACT))));
         ActivationDriver.apply(state, new Activer("sonarist"));
