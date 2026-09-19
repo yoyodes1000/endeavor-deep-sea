@@ -111,6 +111,19 @@ public final class Player {
     }
 
     /**
+     * Prend {@code count} disques à la banque — illimitée — et les place en zone de
+     * transit : le mouvement de l'étape Effort (1b). La réserve n'est pas touchée.
+     *
+     * @throws IllegalArgumentException si {@code count} est négatif
+     */
+    public void takeDiscsFromBank(int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("Nombre de disques négatif : " + count);
+        }
+        transitDiscs += count;
+    }
+
+    /**
      * Déplace {@code count} disques de la réserve vers la zone de transit — le
      * mouvement de l'étape Effort (1b). Mutation en place.
      *

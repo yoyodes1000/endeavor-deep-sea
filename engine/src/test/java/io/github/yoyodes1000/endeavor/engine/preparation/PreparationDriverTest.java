@@ -96,7 +96,7 @@ class PreparationDriverTest {
         Player joueur = state.player(0);
         assertEquals(2, joueur.specialists().size(), "chef d'équipe + tuile recrutée");
         assertEquals(1, joueur.transitDiscs(), "effort : 1 disque (inspiration niveau 1)");
-        assertEquals(9, joueur.reserveDiscs());
+        assertEquals(10, joueur.reserveDiscs(), "la banque est illimitée");
     }
 
     @Test

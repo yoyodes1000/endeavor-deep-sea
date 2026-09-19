@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * La pioche des tuiles Océan encore à découvrir : les tuiles non encore en jeu,
@@ -64,6 +65,15 @@ public final class DiscoveryPile {
             }
         }
         return matching;
+    }
+
+    /** Les profondeurs où il reste au moins une tuile à découvrir, de la moins profonde à la plus profonde. */
+    public Set<Integer> availableDepths() {
+        Set<Integer> depths = new TreeSet<>();
+        for (String tileId : available) {
+            depths.add(depthById.get(tileId));
+        }
+        return depths;
     }
 
     /**
