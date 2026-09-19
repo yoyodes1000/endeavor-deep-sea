@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Le driver de la Phase 2 (Activation) : la signature centrale (décision 1) pour
@@ -305,7 +306,7 @@ public final class ActivationDriver {
         }
         SonarSpot spot = requireSonarSpot(state, player, sonar);
         if (exhaustedDiscovery(state, spot)) {
-            throw new IllegalStateException("Pioche épuisée pour cette découverte (règle limite à venir)");
+            throw new IllegalStateException("Pioche épuisée : plus aucune tuile à découvrir (règle limite à venir)");
         }
         state.player(player).spendTransitDisc();
         state.oceanBoard().placeSonarDisc(sonar.cell(), sonar.trackIndex(), player);
@@ -317,8 +318,16 @@ public final class ActivationDriver {
                         : cursorAfterChainStep(cursor, outcome));
             }
             case SonarSpot.Discover discover -> {
-                List<String> drawn = state.discoveryPile().draw(
-                        DISCOVERY_DRAW, Set.copyOf(discover.levels()), state.random());
+                Set<Integer> levels = drawableLevels(state, discover);
+                if (levels.isEmpty()) {
+                    // aire de jeu pleine : pas de tuile à piocher, 1 impact à la place
+                    EffectOutcome outcome = resolveAndCollect(state, player, List.of(Gain.IMPACT));
+                    state.setActivationCursor(viaToken
+                            ? cursorAfterOffChainResolution(cursor, outcome)
+                            : cursorAfterChainStep(cursor, outcome));
+                    return;
+                }
+                List<String> drawn = state.discoveryPile().draw(DISCOVERY_DRAW, levels, state.random());
                 state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
                         cursor.activatedSpecialist(), cursor.actionStep(), 0, 0, 0, 0,
                         PendingDiscovery.toChooseFrom(drawn), null));
@@ -723,10 +732,6 @@ public final class ActivationDriver {
                     state.discoveryPile().returnTile(candidate);
                 }
             }
-            if (validPlacements(state, keep.tileId()).isEmpty()) {
-                throw new IllegalStateException(
-                        "Aucune pose valide pour " + keep.tileId() + " (règle « aire pleine → 1 impact » à venir)");
-            }
             state.setActivationCursor(new ActivationCursor(cursor.turnPosition(), cursor.passed(),
                     cursor.activatedSpecialist(), cursor.actionStep(), 0, 0, 0, 0, pending.kept(keep.tileId()), null));
             return;
@@ -748,7 +753,10 @@ public final class ActivationDriver {
      * au-dessus est occupée).
      */
     private static List<Cell> validPlacements(GameState state, String tileId) {
-        int depth = tileById(state, tileId).depth();
+        return validPlacementsAtDepth(state, tileById(state, tileId).depth());
+    }
+
+    private static List<Cell> validPlacementsAtDepth(GameState state, int depth) {
         OceanBoard ocean = state.oceanBoard();
         List<Cell> cells = new ArrayList<>();
         for (int col = 0; col < ocean.columns(); col++) {
@@ -1035,10 +1043,30 @@ public final class ActivationDriver {
         return state.player(playerIndex).reserveDiscs() >= discsCost;
     }
 
-    /** Vrai si la case est une découverte dont les niveaux n'ont plus de tuile à piocher. */
+    /** Vrai si la case est une découverte et que la pioche n'a plus aucune tuile, à aucun niveau. */
     private static boolean exhaustedDiscovery(GameState state, SonarSpot spot) {
-        return spot instanceof SonarSpot.Discover discover
-                && state.discoveryPile().availableAtLevels(Set.copyOf(discover.levels())).isEmpty();
+        return spot instanceof SonarSpot.Discover && state.discoveryPile().size() == 0;
+    }
+
+    /**
+     * Les niveaux où piocher pour cette découverte : ceux demandés qui ont à la fois une
+     * tuile à piocher et une case où la poser. Si le niveau demandé est saturé, on se
+     * rabat sur le moins profond des niveaux encore utilisables. Vide quand plus aucune
+     * tuile ne peut être posée nulle part : l'aire de jeu est pleine.
+     */
+    private static Set<Integer> drawableLevels(GameState state, SonarSpot.Discover discover) {
+        TreeSet<Integer> placeable = new TreeSet<>();
+        for (int depth : state.discoveryPile().availableDepths()) {
+            if (!validPlacementsAtDepth(state, depth).isEmpty()) {
+                placeable.add(depth);
+            }
+        }
+        Set<Integer> requested = new TreeSet<>(placeable);
+        requested.retainAll(discover.levels());
+        if (requested.isEmpty() && !placeable.isEmpty()) {
+            return Set.of(placeable.first());
+        }
+        return requested;
     }
 
     /** La case libre la plus à gauche d'une piste, ou vide si la piste est pleine. */

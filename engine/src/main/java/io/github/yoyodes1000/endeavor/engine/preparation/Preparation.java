@@ -35,11 +35,11 @@ public final class Preparation {
     }
 
     /**
-     * Étape Effort (1b) : le joueur prend, de la réserve vers la zone de transit,
-     * autant de disques que son niveau d'inspiration. Aucune décision.
+     * Étape Effort (1b) : le joueur prend, à la banque illimitée, autant de
+     * disques en zone de transit que son niveau d'inspiration. Aucune décision.
      */
     public static void applyEffort(Player player) {
         int discs = player.attributes().level(Attribute.INSPIRATION);
-        player.moveReserveToTransit(discs);
+        player.takeDiscsFromBank(discs);
     }
 }

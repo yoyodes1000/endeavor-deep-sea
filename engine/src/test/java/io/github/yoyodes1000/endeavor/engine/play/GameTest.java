@@ -97,4 +97,16 @@ class GameTest {
         }
         assertThrows(IllegalStateException.class, () -> Game.apply(state, new Passer()));
     }
+
+    @Test
+    void leDecompteFinalNExisteQuApresLaFin() {
+        GameState state = game(2);
+        Game.begin(state);
+        assertThrows(IllegalStateException.class, () -> Game.finalResult(state));
+
+        while (state.phase() != GamePhase.FINISHED) {
+            Game.apply(state, Game.legalActions(state).get(0));
+        }
+        assertEquals(2, Game.finalResult(state).scores().size());
+    }
 }
