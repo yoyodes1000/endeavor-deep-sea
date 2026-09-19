@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionCatalog;
+import io.github.yoyodes1000.endeavor.engine.mission.MissionGoal;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
 import io.github.yoyodes1000.endeavor.engine.ocean.StartingTile;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
@@ -94,6 +96,34 @@ class MissionLoaderTest {
                 .findFirst().orElseThrow();
         assertEquals(1, drawn.level());
         assertEquals(3, drawn.col(), "colonne D → indice 3");
+    }
+
+    @Test
+    void mission1ATroisObjectifsStandardAuxUnitesAttendues() throws Exception {
+        List<MissionGoal> goals = realCatalog().byNumber(1).orElseThrow().goals();
+
+        assertEquals(3, goals.size());
+        List<MissionGoal.Standard> standards = goals.stream()
+                .map(MissionGoal.Standard.class::cast)
+                .toList();
+        assertEquals(List.of(GoalUnit.SONAR), standards.get(0).units());
+        assertEquals(List.of(GoalUnit.PUBLISH), standards.get(1).units());
+        assertEquals(List.of(GoalUnit.CONSERVE), standards.get(2).units());
+        assertEquals(5, standards.get(0).majorityBonus().orElseThrow().first());
+    }
+
+    @Test
+    void unObjectifABonusParCouleurDevientNonSupporte() throws Exception {
+        // Mission 3, objectif 3 : bonus { blue, brown, green, yellow } au lieu de { first, second }.
+        List<MissionGoal> goals = realCatalog().byNumber(3).orElseThrow().goals();
+        assertTrue(goals.get(2) instanceof MissionGoal.Unsupported);
+    }
+
+    @Test
+    void unObjectifAOptionsDevientNonSupporte() throws Exception {
+        // Mission 8, objectif 1 : chooseOption + options, pas de texte au niveau racine.
+        List<MissionGoal> goals = realCatalog().byNumber(8).orElseThrow().goals();
+        assertTrue(goals.get(0) instanceof MissionGoal.Unsupported);
     }
 
     @Test

@@ -1,9 +1,7 @@
 package io.github.yoyodes1000.endeavor.engine.game;
 
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
-import io.github.yoyodes1000.endeavor.engine.ocean.ConservationSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.DiveSite;
-import io.github.yoyodes1000.endeavor.engine.ocean.JournalSite;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
@@ -13,7 +11,6 @@ import io.github.yoyodes1000.endeavor.engine.specialist.EndGameCount;
 import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistFace;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -79,7 +76,7 @@ public final class EndGameCounter {
     private static int emptyDiveSites(OceanBoard board, OceanTileCatalog tiles) {
         int empty = 0;
         for (Cell cell : board.occupiedCells()) {
-            for (DiveSite site : tileAt(board, tiles, cell).diveSites()) {
+            for (DiveSite site : OceanOwnership.tileAt(board, tiles, cell).diveSites()) {
                 if (board.diveTokenCount(cell, site.id()) == 0) {
                     empty++;
                 }
@@ -91,13 +88,8 @@ public final class EndGameCounter {
     private static int conservationDiscsInBestZone(OceanBoard board, OceanTileCatalog tiles, int playerIndex) {
         int best = 0;
         for (Cell cell : board.occupiedCells()) {
-            int here = 0;
-            for (ConservationSite site : tileAt(board, tiles, cell).conservationSites()) {
-                if (isOwnedBy(board.conservationOccupant(cell, site.id()), playerIndex)) {
-                    here++;
-                }
-            }
-            best = Math.max(best, here);
+            OceanTile tile = OceanOwnership.tileAt(board, tiles, cell);
+            best = Math.max(best, OceanOwnership.conservationDiscsOwnedBy(board, tile, cell, playerIndex));
         }
         return best;
     }
@@ -105,9 +97,8 @@ public final class EndGameCounter {
     private static int zonesWithConservation(OceanBoard board, OceanTileCatalog tiles, int playerIndex) {
         int zones = 0;
         for (Cell cell : board.occupiedCells()) {
-            boolean own = tileAt(board, tiles, cell).conservationSites().stream()
-                    .anyMatch(site -> isOwnedBy(board.conservationOccupant(cell, site.id()), playerIndex));
-            if (own) {
+            OceanTile tile = OceanOwnership.tileAt(board, tiles, cell);
+            if (OceanOwnership.conservationDiscsOwnedBy(board, tile, cell, playerIndex) > 0) {
                 zones++;
             }
         }
@@ -117,9 +108,8 @@ public final class EndGameCounter {
     private static int depthsWithPublication(OceanBoard board, OceanTileCatalog tiles, int playerIndex) {
         Set<Integer> depths = new HashSet<>();
         for (Cell cell : board.occupiedCells()) {
-            boolean own = tileAt(board, tiles, cell).journalSites().stream()
-                    .anyMatch(site -> isOwnedBy(board.journalOccupant(cell, site.id()), playerIndex));
-            if (own) {
+            OceanTile tile = OceanOwnership.tileAt(board, tiles, cell);
+            if (OceanOwnership.journalDiscsOwnedBy(board, tile, cell, playerIndex) > 0) {
                 depths.add(cell.depth());
             }
         }
@@ -129,34 +119,15 @@ public final class EndGameCounter {
     private static int zonesWithDiscOrVessel(OceanBoard board, OceanTileCatalog tiles, int playerIndex) {
         int zones = 0;
         for (Cell cell : board.occupiedCells()) {
-            if (board.vesselCount(cell, playerIndex) > 0 || hasAnyDisc(board, tileAt(board, tiles, cell), cell, playerIndex)) {
+            OceanTile tile = OceanOwnership.tileAt(board, tiles, cell);
+            boolean hasVessel = board.vesselCount(cell, playerIndex) > 0;
+            boolean hasDisc = OceanOwnership.sonarDiscsOwnedBy(board, tile, cell, playerIndex) > 0
+                    || OceanOwnership.conservationDiscsOwnedBy(board, tile, cell, playerIndex) > 0
+                    || OceanOwnership.journalDiscsOwnedBy(board, tile, cell, playerIndex) > 0;
+            if (hasVessel || hasDisc) {
                 zones++;
             }
         }
         return zones;
-    }
-
-    private static boolean hasAnyDisc(OceanBoard board, OceanTile tile, Cell cell, int playerIndex) {
-        for (int trackIndex = 0; trackIndex < tile.sonarTracks().size(); trackIndex++) {
-            if (board.sonarDiscOwners(cell, trackIndex).contains(playerIndex)) {
-                return true;
-            }
-        }
-        boolean hasConservation = tile.conservationSites().stream()
-                .anyMatch(site -> isOwnedBy(board.conservationOccupant(cell, site.id()), playerIndex));
-        boolean hasPublication = tile.journalSites().stream()
-                .anyMatch(site -> isOwnedBy(board.journalOccupant(cell, site.id()), playerIndex));
-        return hasConservation || hasPublication;
-    }
-
-    private static boolean isOwnedBy(Optional<Integer> occupant, int playerIndex) {
-        return occupant.isPresent() && occupant.get() == playerIndex;
-    }
-
-    private static OceanTile tileAt(OceanBoard board, OceanTileCatalog tiles, Cell cell) {
-        String tileId = board.tileAt(cell)
-                .orElseThrow(() -> new IllegalStateException("Case occupée sans tuile : " + cell));
-        return tiles.byId(tileId)
-                .orElseThrow(() -> new IllegalStateException("Tuile inconnue du catalogue : " + tileId));
     }
 }

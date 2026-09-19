@@ -2,11 +2,14 @@ package io.github.yoyodes1000.endeavor.app.mission;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
+import io.github.yoyodes1000.endeavor.engine.mission.MajorityBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionCatalog;
+import io.github.yoyodes1000.endeavor.engine.mission.MissionGoal;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
 import io.github.yoyodes1000.endeavor.engine.ocean.StartingTile;
@@ -25,9 +28,9 @@ import java.util.Optional;
  * <p>Même partage que les autres chargeurs : Jackson lit la forme, le moteur
  * valide le vocabulaire et la sémantique. Agnostique de l'I/O ({@link Reader}).
  * La colonne d'une tuile de départ, lettre dans les données, est convertie en
- * indice numérique ici, à la frontière. Les champs de la fiche non encore
- * modélisés (objectifs, règles spéciales, base d'opérations, marqueurs
- * d'hexagone) sont tolérés.
+ * indice numérique ici, à la frontière — de même pour les colonnes d'un
+ * objectif. Les règles spéciales et les marqueurs d'hexagone (symboles de
+ * domaine, flèches…) restent tolérés, non modélisés.
  */
 public final class MissionLoader {
 
@@ -59,8 +62,53 @@ public final class MissionLoader {
             throw new IllegalArgumentException("Mission sans numéro : " + entry.id());
         }
         MissionsDocument.SetupDto setup = entry.setup();
+        List<MissionGoal> goals = entry.goals() == null ? List.of()
+                : entry.goals().stream().map(MissionLoader::toGoal).toList();
         return new Mission(entry.id(), entry.number(), entry.name(), toBoard(entry.id(), entry.impactBoard()),
-                toOceanSetup(entry.id(), setup), toBaseOfOperations(setup), startingVessels(setup));
+                toOceanSetup(entry.id(), setup), toBaseOfOperations(setup), startingVessels(setup), goals);
+    }
+
+    private static MissionGoal toGoal(MissionsDocument.GoalDto goal) {
+        if (goal.number() == null) {
+            throw new IllegalArgumentException("Objectif sans numéro");
+        }
+        String text = goal.text() == null ? "" : goal.text();
+        if (!isStandardShape(goal)) {
+            return new MissionGoal.Unsupported(goal.number(), text);
+        }
+        if (text.isBlank()) {
+            throw new IllegalArgumentException("Objectif " + goal.number() + " sans texte");
+        }
+        List<GoalUnit> units = goal.units().stream().map(GoalUnit::fromCode).toList();
+        List<Integer> depths = goal.depths() == null ? List.of() : goal.depths();
+        List<Integer> columns = goal.columns() == null ? List.of()
+                : goal.columns().stream().map(MissionLoader::columnIndex).toList();
+        List<GoalUnit> zoneContains = goal.zoneContains() == null ? List.of()
+                : goal.zoneContains().stream().map(GoalUnit::fromCode).toList();
+        int pointsPer = goal.pointsPer() == null ? 1 : goal.pointsPer();
+        Optional<MajorityBonus> majorityBonus = goal.majorityBonus() == null ? Optional.empty()
+                : Optional.of(new MajorityBonus(goal.majorityBonus().first(), goal.majorityBonus().second()));
+        return new MissionGoal.Standard(
+                goal.number(), units, depths, columns, zoneContains, pointsPer, majorityBonus, text);
+    }
+
+    /**
+     * Vrai si l'objectif se ramène au filtre standard (décision : l'arithmétique
+     * en données, le prédicat en code). Tout le reste — bonus par couleur,
+     * {@code leaderBonuses}, {@code chooseOption}, prédicat {@code count},
+     * {@code columnsFromSeaStar}, découverte de zone (non tracée par le moteur)
+     * — devient un objectif {@link MissionGoal.Unsupported}, carte sœur.
+     */
+    private static boolean isStandardShape(MissionsDocument.GoalDto goal) {
+        if (goal.count() != null || goal.leaderBonuses() != null || goal.columnsFromSeaStar() != null
+                || Boolean.TRUE.equals(goal.chooseOption()) || Boolean.TRUE.equals(goal.zoneDiscoveredByYou())) {
+            return false;
+        }
+        if (goal.units() == null || goal.units().isEmpty()) {
+            return false;
+        }
+        MissionsDocument.MajorityBonusDto bonus = goal.majorityBonus();
+        return bonus == null || (bonus.first() != null && bonus.second() != null);
     }
 
     private static Optional<Cell> toBaseOfOperations(MissionsDocument.SetupDto setup) {
