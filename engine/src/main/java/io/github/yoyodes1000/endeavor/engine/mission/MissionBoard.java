@@ -16,19 +16,37 @@ import java.util.OptionalInt;
 public final class MissionBoard {
 
     private final ImpactBoard board;
+    private final List<MissionGoal> goals;
     private final Map<Long, Integer> ownerByPosition;
 
+    /** Un plateau sans objectif de fin de mission (aucun point d'objectif au décompte final). */
     public MissionBoard(ImpactBoard board) {
-        if (board == null) {
-            throw new IllegalArgumentException("Le plateau de mission a besoin d'un plateau Impact");
+        this(board, List.of());
+    }
+
+    public MissionBoard(ImpactBoard board, List<MissionGoal> goals) {
+        if (board == null || goals == null) {
+            throw new IllegalArgumentException("Le plateau de mission a besoin d'un plateau Impact et d'objectifs");
         }
         this.board = board;
+        this.goals = List.copyOf(goals);
         this.ownerByPosition = new HashMap<>();
     }
 
-    private MissionBoard(ImpactBoard board, Map<Long, Integer> owners) {
+    private MissionBoard(ImpactBoard board, List<MissionGoal> goals, Map<Long, Integer> owners) {
         this.board = board;
+        this.goals = goals;
         this.ownerByPosition = new HashMap<>(owners);
+    }
+
+    /** Le plateau d'une mission : son plateau Impact et ses objectifs de fin de mission. */
+    public static MissionBoard forMission(Mission mission) {
+        return new MissionBoard(mission.impactBoard(), mission.goals());
+    }
+
+    /** Les objectifs de fin de mission, comptés au décompte final. */
+    public List<MissionGoal> goals() {
+        return goals;
     }
 
     public ImpactBoard board() {
@@ -81,7 +99,7 @@ public final class MissionBoard {
 
     /** Copie indépendante, pour isoler une simulation (déc. 3). */
     public MissionBoard copy() {
-        return new MissionBoard(board, ownerByPosition);
+        return new MissionBoard(board, goals, ownerByPosition);
     }
 
     private static long position(ImpactHex hex) {

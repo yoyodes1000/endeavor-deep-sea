@@ -71,7 +71,7 @@ class RealGameM1Test {
 
         int players = 3;
         GameState state = GameState.newGame(players, roster, random, 6,
-                new MissionBoard(mission1.impactBoard()), ocean, oceanCatalog, diveTokenCatalog, journalCatalog);
+                MissionBoard.forMission(mission1), ocean, oceanCatalog, diveTokenCatalog, journalCatalog);
         GameSetup.deployStartingVessels(state, mission1.baseOfOperations().orElseThrow(), mission1.startingVessels());
         GameSetup.stackInitialDiveSites(state);
         Game.begin(state);

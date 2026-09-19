@@ -2,6 +2,8 @@ package io.github.yoyodes1000.endeavor.engine.play;
 
 import io.github.yoyodes1000.endeavor.engine.action.Action;
 import io.github.yoyodes1000.endeavor.engine.activation.ActivationDriver;
+import io.github.yoyodes1000.endeavor.engine.game.FinalResult;
+import io.github.yoyodes1000.endeavor.engine.game.FinalScoring;
 import io.github.yoyodes1000.endeavor.engine.game.GamePhase;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.game.PreparationCursor;
@@ -41,6 +43,18 @@ public final class Game {
             case ACTIVATION -> ActivationDriver.legalActions(state);
             case FINISHED -> List.of();
         };
+    }
+
+    /**
+     * Le décompte final (scores et vainqueurs) d'une partie terminée.
+     *
+     * @throws IllegalStateException si la partie n'est pas terminée
+     */
+    public static FinalResult finalResult(GameState state) {
+        if (state.phase() != GamePhase.FINISHED) {
+            throw new IllegalStateException("Le décompte final n'existe qu'à la fin de la partie");
+        }
+        return FinalScoring.compute(state);
     }
 
     /**
