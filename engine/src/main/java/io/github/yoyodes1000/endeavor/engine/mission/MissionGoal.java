@@ -60,6 +60,10 @@ public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Un
             depths = List.copyOf(depths == null ? List.of() : depths);
             columns = List.copyOf(columns == null ? List.of() : columns);
             zoneContains = List.copyOf(zoneContains == null ? List.of() : zoneContains);
+            if (units.contains(GoalUnit.FIELD_SYMBOL) && units.size() > 1) {
+                throw new IllegalArgumentException(
+                        "« fieldSymbol » ne se combine pas avec d'autres unités : objectif " + number);
+            }
             if (!zoneContains.isEmpty() && !units.contains(GoalUnit.ZONE)) {
                 throw new IllegalArgumentException(
                         "zoneContains suppose l'unité « zone » : objectif " + number);

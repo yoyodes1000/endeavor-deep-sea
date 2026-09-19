@@ -2,6 +2,7 @@ package io.github.yoyodes1000.endeavor.app.mission;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
 import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
@@ -29,8 +30,8 @@ import java.util.Optional;
  * valide le vocabulaire et la sémantique. Agnostique de l'I/O ({@link Reader}).
  * La colonne d'une tuile de départ, lettre dans les données, est convertie en
  * indice numérique ici, à la frontière — de même pour les colonnes d'un
- * objectif. Les règles spéciales et les marqueurs d'hexagone (symboles de
- * domaine, flèches…) restent tolérés, non modélisés.
+ * objectif. Les règles spéciales et les marqueurs d'hexagone autres que les
+ * symboles de domaine (flèches…) restent tolérés, non modélisés.
  */
 public final class MissionLoader {
 
@@ -141,9 +142,15 @@ public final class MissionLoader {
         }
         List<Gain> gains = hex.gains() == null ? List.of() : hex.gains().stream().map(Gain::fromCode).toList();
         boolean unlimited = "unlimited".equals(hex.capacity());
+        boolean wild = "wild".equals(hex.fieldSymbol());
+        Optional<FieldSymbol> color = hex.fieldSymbol() == null || wild
+                ? Optional.empty() : Optional.of(FieldSymbol.fromCode(hex.fieldSymbol()));
+        int symbolCount = hex.fieldSymbol() == null ? 0
+                : hex.fieldSymbolCount() == null ? 1 : hex.fieldSymbolCount();
         return new ImpactHex(
                 hex.row(), hex.col(), hex.points(), gains,
-                Boolean.TRUE.equals(hex.start()), Boolean.TRUE.equals(hex.offGrid()), unlimited);
+                Boolean.TRUE.equals(hex.start()), Boolean.TRUE.equals(hex.offGrid()), unlimited,
+                color, wild, symbolCount);
     }
 
     private static OceanSetup toOceanSetup(String missionId, MissionsDocument.SetupDto setup) {
