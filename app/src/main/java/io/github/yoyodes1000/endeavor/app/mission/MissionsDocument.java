@@ -3,6 +3,7 @@ package io.github.yoyodes1000.endeavor.app.mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionGoal;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Reflet brut de {@code missions.json} : l'identité de la mission, son plateau
@@ -47,12 +48,11 @@ record MissionsDocument(List<Entry> missions) {
     }
 
     /**
-     * Un objectif de fin de mission. Les champs au-delà de la forme standard
-     * ({@code leaderBonuses}, {@code count}, {@code columnsFromSeaStar},
-     * {@code chooseOption}, {@code zoneDiscoveredByYou}, un {@code majorityBonus}
-     * par couleur) servent seulement au chargeur à reconnaître un objectif hors
-     * de portée ({@link MissionGoal.Unsupported}) ; leur contenu n'est pas
-     * interprété.
+     * Un objectif de fin de mission. Les champs {@code count}, {@code columnsFromSeaStar}
+     * et {@code chooseOption} servent seulement au chargeur à reconnaître un objectif
+     * hors de portée ({@link MissionGoal.Unsupported}) ; leur contenu n'est pas
+     * interprété. Le {@code majorityBonus} est soit {@code first}/{@code second}, soit
+     * un bonus par couleur de symbole de domaine.
      */
     record GoalDto(
             Integer number,
@@ -62,14 +62,15 @@ record MissionsDocument(List<Entry> missions) {
             List<String> zoneContains,
             Boolean zoneDiscoveredByYou,
             Integer pointsPer,
-            MajorityBonusDto majorityBonus,
-            Object leaderBonuses,
+            Map<String, Integer> majorityBonus,
+            List<LeaderBonusDto> leaderBonuses,
             String count,
             String columnsFromSeaStar,
             Boolean chooseOption,
             String text) {
     }
 
-    record MajorityBonusDto(Integer first, Integer second) {
+    /** Un bonus de leader : par profondeur et/ou colonne, ou (hors de portée) par unité. */
+    record LeaderBonusDto(List<Integer> depths, List<String> columns, List<String> units, Integer points) {
     }
 }

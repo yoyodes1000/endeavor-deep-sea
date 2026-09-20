@@ -1,7 +1,8 @@
 package io.github.yoyodes1000.endeavor.engine.game;
 
+import io.github.yoyodes1000.endeavor.engine.mission.ColorBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
-import io.github.yoyodes1000.endeavor.engine.mission.MajorityBonus;
+import io.github.yoyodes1000.endeavor.engine.mission.LeaderBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionGoal;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
@@ -9,85 +10,90 @@ import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
 
 import java.util.List;
+import java.util.function.IntUnaryOperator;
 
 /**
  * Le calcul d'un objectif de fin de mission {@link MissionGoal.Standard} :
  * l'effectif (unités comptées, filtrées par profondeur/colonne, ou zones
- * qualifiées par {@code zoneContains}) et le score qui en découle — points par
- * unité, plus la part du bonus de majorité.
+ * qualifiées par {@code zoneContains} ou par leur découverte) et le score qui en
+ * découle — points par unité, plus le bonus de majorité, les bonus de leader et
+ * les bonus par couleur.
  *
- * <p><strong>Égalité de majorité</strong> : les joueurs à égalité se partagent
- * la somme des tranches de bonus qu'ils occupent ensemble, divisée par leur
- * nombre et arrondie à l'inférieur (deux ex æquo en tête se partagent
- * {@code (first + second) / 2} chacun). Une décision du domaine, pas une
- * déduction du code — à vérifier contre le livret de règles si un doute
- * subsiste. Un joueur à effectif nul ne touche aucun bonus, même à égalité
- * avec d'autres joueurs à zéro.
+ * <p>La répartition des bonus entre ex æquo est décrite par {@link MajorityShare}.
  *
  * <p>L'unité {@code fieldSymbol} compte les symboles de la couleur que le joueur
  * possède le plus (jokers ajoutés à celle-ci) ; les filtres de profondeur et de
  * colonne ne s'y appliquent pas.
  *
  * <p>{@link MissionGoal.Unsupported} n'est pas accepté ici : l'appelant doit
- * trier les objectifs modélisés des autres (carte sœur de l'orchestration).
+ * trier les objectifs modélisés des autres.
  */
 public final class MissionGoalScorer {
+
+    private static final Filter NO_EXTRA_FILTER = new Filter(List.of(), List.of());
 
     private MissionGoalScorer() {
     }
 
+    /** Un filtre de profondeurs et de colonnes ; une liste vide accepte tout. */
+    private record Filter(List<Integer> depths, List<Integer> columns) {
+
+        boolean accepts(Cell cell) {
+            return (depths.isEmpty() || depths.contains(cell.depth()))
+                    && (columns.isEmpty() || columns.contains(cell.col()));
+        }
+    }
+
     /** L'effectif du joueur sur cet objectif, avant application de {@code pointsPer}. */
     public static int effectif(MissionGoal.Standard goal, GameState state, int playerIndex) {
+        return effectif(goal, state, playerIndex, NO_EXTRA_FILTER);
+    }
+
+    /** Les points du joueur sur cet objectif : {@code pointsPer × effectif}, plus tous les bonus. */
+    public static int score(MissionGoal.Standard goal, GameState state, int playerIndex) {
+        int[] effectifs = forEachPlayer(state, player -> effectif(goal, state, player));
+        int score = goal.pointsPer() * effectifs[playerIndex];
+        score += goal.majorityBonus()
+                .map(bonus -> MajorityShare.twoTiers(effectifs, playerIndex, bonus.first(), bonus.second()))
+                .orElse(0);
+        for (LeaderBonus bonus : goal.leaderBonuses()) {
+            Filter filter = new Filter(bonus.depths(), bonus.columns());
+            int[] inScope = forEachPlayer(state, player -> effectif(goal, state, player, filter));
+            score += MajorityShare.leader(inScope, playerIndex, bonus.points());
+        }
+        for (ColorBonus bonus : goal.colorBonuses()) {
+            int[] ofColor = forEachPlayer(state, player ->
+                    FieldSymbolTally.of(state.missionBoard(), player).countOf(bonus.color()));
+            score += MajorityShare.leader(ofColor, playerIndex, bonus.points());
+        }
+        return score;
+    }
+
+    private static int[] forEachPlayer(GameState state, IntUnaryOperator perPlayer) {
+        int[] values = new int[state.playerCount()];
+        for (int player = 0; player < values.length; player++) {
+            values[player] = perPlayer.applyAsInt(player);
+        }
+        return values;
+    }
+
+    private static int effectif(MissionGoal.Standard goal, GameState state, int playerIndex, Filter extraFilter) {
         OceanBoard board = state.oceanBoard();
         OceanTileCatalog tiles = state.oceanTileCatalog();
         if (goal.units().contains(GoalUnit.ZONE)) {
-            return countZones(goal, board, tiles, playerIndex);
+            return countZones(goal, board, tiles, playerIndex, extraFilter);
         }
         if (goal.units().contains(GoalUnit.FIELD_SYMBOL)) {
             return FieldSymbolTally.of(state.missionBoard(), playerIndex).mostHeld();
         }
-        return countUnits(goal, board, tiles, playerIndex);
-    }
-
-    /** Les points du joueur sur cet objectif : {@code pointsPer × effectif}, plus le bonus de majorité. */
-    public static int score(MissionGoal.Standard goal, GameState state, int playerIndex) {
-        int effectif = effectif(goal, state, playerIndex);
-        int base = goal.pointsPer() * effectif;
-        int bonus = goal.majorityBonus()
-                .map(majorityBonus -> shareOfMajorityBonus(goal, state, playerIndex, effectif, majorityBonus))
-                .orElse(0);
-        return base + bonus;
-    }
-
-    private static int shareOfMajorityBonus(MissionGoal.Standard goal, GameState state, int playerIndex,
-                                            int myEffectif, MajorityBonus majorityBonus) {
-        if (myEffectif == 0) {
-            return 0;
-        }
-        List<Integer> tiers = List.of(majorityBonus.first(), majorityBonus.second());
-        int strictlyGreater = 0;
-        int tied = 0;
-        for (int p = 0; p < state.playerCount(); p++) {
-            int other = p == playerIndex ? myEffectif : effectif(goal, state, p);
-            if (other > myEffectif) {
-                strictlyGreater++;
-            } else if (other == myEffectif) {
-                tied++;
-            }
-        }
-        int sum = 0;
-        for (int i = 0; i < tied; i++) {
-            int position = strictlyGreater + i;
-            sum += position < tiers.size() ? tiers.get(position) : 0;
-        }
-        return sum / tied;
+        return countUnits(goal, board, tiles, playerIndex, extraFilter);
     }
 
     private static int countUnits(MissionGoal.Standard goal, OceanBoard board, OceanTileCatalog tiles,
-                                  int playerIndex) {
+                                  int playerIndex, Filter extraFilter) {
         int total = 0;
         for (Cell cell : board.occupiedCells()) {
-            if (!matchesFilter(goal, cell)) {
+            if (!matchesFilters(goal, extraFilter, cell)) {
                 continue;
             }
             OceanTile tile = OceanOwnership.tileAt(board, tiles, cell);
@@ -99,26 +105,30 @@ public final class MissionGoalScorer {
     }
 
     private static int countZones(MissionGoal.Standard goal, OceanBoard board, OceanTileCatalog tiles,
-                                  int playerIndex) {
+                                  int playerIndex, Filter extraFilter) {
         int zones = 0;
         for (Cell cell : board.occupiedCells()) {
-            if (!matchesFilter(goal, cell)) {
-                continue;
-            }
-            OceanTile tile = OceanOwnership.tileAt(board, tiles, cell);
-            boolean qualifies = goal.zoneContains().stream()
-                    .anyMatch(unit -> countUnitInCell(unit, board, tile, cell, playerIndex) > 0);
-            if (qualifies) {
+            if (matchesFilters(goal, extraFilter, cell)
+                    && zoneQualifies(goal, board, OceanOwnership.tileAt(board, tiles, cell), cell, playerIndex)) {
                 zones++;
             }
         }
         return zones;
     }
 
-    private static boolean matchesFilter(MissionGoal.Standard goal, Cell cell) {
-        boolean depthOk = goal.depths().isEmpty() || goal.depths().contains(cell.depth());
-        boolean columnOk = goal.columns().isEmpty() || goal.columns().contains(cell.col());
-        return depthOk && columnOk;
+    /** Une zone compte si le joueur l'a découverte (quand l'objectif l'exige) et y a l'une des unités demandées. */
+    private static boolean zoneQualifies(MissionGoal.Standard goal, OceanBoard board, OceanTile tile, Cell cell,
+                                         int playerIndex) {
+        if (goal.discoveredByYou() && board.discovererOf(cell).orElse(-1) != playerIndex) {
+            return false;
+        }
+        return goal.zoneContains().isEmpty()
+                || goal.zoneContains().stream()
+                        .anyMatch(unit -> countUnitInCell(unit, board, tile, cell, playerIndex) > 0);
+    }
+
+    private static boolean matchesFilters(MissionGoal.Standard goal, Filter extraFilter, Cell cell) {
+        return new Filter(goal.depths(), goal.columns()).accepts(cell) && extraFilter.accepts(cell);
     }
 
     private static int countUnitInCell(GoalUnit unit, OceanBoard board, OceanTile tile, Cell cell, int playerIndex) {
