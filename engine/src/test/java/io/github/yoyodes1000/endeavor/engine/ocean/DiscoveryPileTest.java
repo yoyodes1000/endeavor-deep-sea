@@ -82,4 +82,36 @@ class DiscoveryPileTest {
         assertEquals(3, original.size(), "la pioche d'origine ne bouge pas");
         assertFalse(copie.size() == original.size(), "la copie a été vidée indépendamment");
     }
+
+    @Test
+    void uneTuileCacheeSeGlisseDansLaPiocheDeSonNiveau() {
+        DiscoveryPile pile = DiscoveryPile.forGame(catalog(), boardWithPlaced());
+
+        pile.addTile("u", 1);
+
+        assertEquals(List.of("a", "b", "u"), pile.availableAtLevels(Set.of(1)));
+        pile.addTile("u", 1);
+        assertEquals(4, pile.size(), "un ajout répété est sans effet");
+    }
+
+    @Test
+    void uneTuileCacheeSeCopieAvecLaPioche() {
+        DiscoveryPile pile = DiscoveryPile.forGame(catalog(), boardWithPlaced());
+        DiscoveryPile copy = pile.copy();
+
+        copy.addTile("u", 1);
+
+        assertEquals(3, pile.size(), "la pioche d'origine n'a pas bougé");
+        assertEquals(4, copy.size());
+    }
+
+    @Test
+    void retirerLesNiveauxTropProfondsVideLesPilesConcernees() {
+        DiscoveryPile pile = DiscoveryPile.forGame(catalog(), boardWithPlaced());
+
+        pile.removeDeeperThan(1);
+
+        assertEquals(List.of("a", "b"), pile.availableAtLevels(Set.of(1, 2)));
+        assertEquals(java.util.Set.of(1), pile.availableDepths());
+    }
 }

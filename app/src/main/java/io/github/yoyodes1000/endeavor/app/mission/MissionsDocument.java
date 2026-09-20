@@ -23,16 +23,34 @@ record MissionsDocument(List<Entry> missions) {
     record SetupDto(
             Integer columns,
             List<StartingTileDto> startingTiles,
+            List<ShuffledRowDto> shuffledRows,
+            List<HiddenTileDto> hiddenTiles,
+            Integer maxDepth,
             CellDto baseOfOperations,
             Integer startingVessels) {
+    }
+
+    /** Une ligne dont les tuiles sont mélangées entre ses colonnes (lettres). */
+    record ShuffledRowDto(Integer depth, List<String> columns, List<RowTileDto> tiles) {
+    }
+
+    /** Une tuile d'une ligne mélangée : nommée ({@code tile}) ou tirée ({@code randomLevel}). */
+    record RowTileDto(String tile, Integer randomLevel) {
+    }
+
+    /** Une tuile glissée dans la pioche de son niveau (les autres marqueurs du relevé sont tolérés). */
+    record HiddenTileDto(String tile, Integer level) {
     }
 
     /** Une tuile de départ : nommée ({@code tile}) ou tirée ({@code randomLevel}). */
     record StartingTileDto(Integer depth, String col, String tile, Integer randomLevel) {
     }
 
-    /** Une case de l'océan (profondeur + colonne lettre), pour la base d'opérations. */
-    record CellDto(Integer depth, String col) {
+    /**
+     * La base d'opérations : une case de l'océan (profondeur + colonne lettre) ou, quand la
+     * case n'est pas connue d'avance, la tuile qui fait office de base ({@code tile}).
+     */
+    record CellDto(Integer depth, String col, String tile) {
     }
 
     record HexDto(
