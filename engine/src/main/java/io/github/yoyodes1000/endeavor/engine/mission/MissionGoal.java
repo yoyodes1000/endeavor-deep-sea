@@ -8,14 +8,13 @@ import java.util.Optional;
  * prédicat en code, comme les décomptes Senior). La fiche de chaque mission en
  * porte trois.
  *
- * <p>Deux formes : {@link Standard} couvre le cas courant (compter des unités,
- * filtrées par profondeur/colonne, un point par unité, un bonus de majorité
- * simple) ; {@link Unsupported} couvre tout le reste — bonus par couleur,
- * bonus à tranches multiples, objectifs à options, prédicats spéciaux nommés
- * (piste de nettoyage, premier à la profondeur 5…) et objectifs qui exigent de
- * savoir qui a découvert une zone, une donnée que le moteur ne trace pas
- * encore. Ces cartons portent une carte sœur ; en attendant, {@code text}
- * reste disponible pour l'affichage, mais aucun calcul de points n'existe.
+ * <p>Deux formes : {@link Standard} couvre le cas courant (compter des unités ou des
+ * zones, filtrées par profondeur/colonne, un point par unité, un bonus de majorité,
+ * des bonus de leader par profondeur ou colonne, des bonus par couleur de symbole) ;
+ * {@link Unsupported} couvre tout le reste — objectifs à options, prédicats spéciaux
+ * nommés (piste de nettoyage, premier à la profondeur 5…) et bonus de leader par
+ * unité. Ces cartons portent une carte sœur ; en attendant, {@code text} reste
+ * disponible pour l'affichage, mais aucun calcul de points n'existe.
  */
 public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Unsupported {
 
@@ -43,7 +42,10 @@ public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Un
             List<GoalUnit> zoneContains,
             int pointsPer,
             Optional<MajorityBonus> majorityBonus,
-            String text) implements MissionGoal {
+            String text,
+            boolean discoveredByYou,
+            List<LeaderBonus> leaderBonuses,
+            List<ColorBonus> colorBonuses) implements MissionGoal {
 
         public Standard {
             if (number < 1) {
@@ -75,6 +77,28 @@ public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Un
             if (text == null || text.isBlank()) {
                 throw new IllegalArgumentException("L'objectif " + number + " doit avoir un texte");
             }
+            if (discoveredByYou && !units.contains(GoalUnit.ZONE)) {
+                throw new IllegalArgumentException(
+                        "« découverte par vous » suppose l'unité « zone » : objectif " + number);
+            }
+            if (units.contains(GoalUnit.ZONE) && zoneContains.isEmpty() && !discoveredByYou) {
+                throw new IllegalArgumentException(
+                        "Une zone se qualifie par zoneContains ou par sa découverte : objectif " + number);
+            }
+            leaderBonuses = List.copyOf(leaderBonuses == null ? List.of() : leaderBonuses);
+            colorBonuses = List.copyOf(colorBonuses == null ? List.of() : colorBonuses);
+            if (!colorBonuses.isEmpty() && !units.contains(GoalUnit.FIELD_SYMBOL)) {
+                throw new IllegalArgumentException(
+                        "Un bonus par couleur suppose l'unité « fieldSymbol » : objectif " + number);
+            }
+        }
+
+        /** Un objectif sans découverte ni bonus de leader ni bonus par couleur. */
+        public Standard(int number, List<GoalUnit> units, List<Integer> depths, List<Integer> columns,
+                        List<GoalUnit> zoneContains, int pointsPer, Optional<MajorityBonus> majorityBonus,
+                        String text) {
+            this(number, units, depths, columns, zoneContains, pointsPer, majorityBonus, text,
+                    false, List.of(), List.of());
         }
     }
 

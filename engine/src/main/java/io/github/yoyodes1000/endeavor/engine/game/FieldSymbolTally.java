@@ -60,6 +60,11 @@ final class FieldSymbolTally {
         return missing;
     }
 
+    /** Le nombre de symboles d'une couleur, jokers compris (un joker vaut cette couleur). */
+    int countOf(FieldSymbol color) {
+        return byColor.get(color) + wilds;
+    }
+
     /** Le nombre de symboles de la couleur la plus possédée, jokers ajoutés à celle-ci. */
     int mostHeld() {
         int best = byColor.values().stream().mapToInt(Integer::intValue).max().orElse(0);
