@@ -4,6 +4,7 @@ import io.github.yoyodes1000.endeavor.engine.mission.ColorBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
 import io.github.yoyodes1000.endeavor.engine.mission.LeaderBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionGoal;
+import io.github.yoyodes1000.endeavor.engine.mission.SeaStarSide;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
@@ -25,10 +26,16 @@ import java.util.function.IntUnaryOperator;
  * possède le plus (jokers ajoutés à celle-ci) ; les filtres de profondeur et de
  * colonne ne s'y appliquent pas.
  *
+ * <p>Un objectif avec {@code fromSeaStar} ne compte que la colonne de la sea-star et
+ * celles de son côté ; l'unité {@code fieldSymbolSet} compte les jeux complets des
+ * quatre couleurs de symboles de domaine.
+ *
  * <p>{@link MissionGoal.Unsupported} n'est pas accepté ici : l'appelant doit
  * trier les objectifs modélisés des autres.
  */
 public final class MissionGoalScorer {
+
+    private static final String SEA_STAR_TILE_ID = "the-sea-star";
 
     private static final Filter NO_EXTRA_FILTER = new Filter(List.of(), List.of());
 
@@ -86,6 +93,9 @@ public final class MissionGoalScorer {
         if (goal.units().contains(GoalUnit.FIELD_SYMBOL)) {
             return FieldSymbolTally.of(state.missionBoard(), playerIndex).mostHeld();
         }
+        if (goal.units().contains(GoalUnit.FIELD_SYMBOL_SET)) {
+            return FieldSymbolTally.of(state.missionBoard(), playerIndex).completeSets();
+        }
         return countUnits(goal, board, tiles, playerIndex, extraFilter);
     }
 
@@ -93,7 +103,7 @@ public final class MissionGoalScorer {
                                   int playerIndex, Filter extraFilter) {
         int total = 0;
         for (Cell cell : board.occupiedCells()) {
-            if (!matchesFilters(goal, extraFilter, cell)) {
+            if (!matchesFilters(goal, board, extraFilter, cell)) {
                 continue;
             }
             OceanTile tile = OceanOwnership.tileAt(board, tiles, cell);
@@ -108,7 +118,7 @@ public final class MissionGoalScorer {
                                   int playerIndex, Filter extraFilter) {
         int zones = 0;
         for (Cell cell : board.occupiedCells()) {
-            if (matchesFilters(goal, extraFilter, cell)
+            if (matchesFilters(goal, board, extraFilter, cell)
                     && zoneQualifies(goal, board, OceanOwnership.tileAt(board, tiles, cell), cell, playerIndex)) {
                 zones++;
             }
@@ -127,8 +137,18 @@ public final class MissionGoalScorer {
                         .anyMatch(unit -> countUnitInCell(unit, board, tile, cell, playerIndex) > 0);
     }
 
-    private static boolean matchesFilters(MissionGoal.Standard goal, Filter extraFilter, Cell cell) {
-        return new Filter(goal.depths(), goal.columns()).accepts(cell) && extraFilter.accepts(cell);
+    private static boolean matchesFilters(MissionGoal.Standard goal, OceanBoard board, Filter extraFilter,
+                                          Cell cell) {
+        return new Filter(goal.depths(), goal.columns()).accepts(cell) && extraFilter.accepts(cell)
+                && goal.fromSeaStar().map(side -> onSideOfSeaStar(side, board, cell)).orElse(true);
+    }
+
+    private static boolean onSideOfSeaStar(SeaStarSide side, OceanBoard board, Cell cell) {
+        Cell seaStar = board.occupiedCells().stream()
+                .filter(candidate -> board.tileAt(candidate).orElse("").equals(SEA_STAR_TILE_ID))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("La sea-star n'est pas sur le plateau"));
+        return side.accepts(cell.col(), seaStar.col());
     }
 
     private static int countUnitInCell(GoalUnit unit, OceanBoard board, OceanTile tile, Cell cell, int playerIndex) {
@@ -140,7 +160,7 @@ public final class MissionGoalScorer {
                     + OceanOwnership.conservationDiscsOwnedBy(board, tile, cell, playerIndex)
                     + OceanOwnership.journalDiscsOwnedBy(board, tile, cell, playerIndex);
             case VESSEL -> board.vesselCount(cell, playerIndex);
-            case ZONE, FIELD_SYMBOL, IMPACT_MARKER ->
+            case ZONE, FIELD_SYMBOL, FIELD_SYMBOL_SET, IMPACT_MARKER ->
                     throw new UnsupportedOperationException("Unité pas encore câblée : " + unit);
         };
     }

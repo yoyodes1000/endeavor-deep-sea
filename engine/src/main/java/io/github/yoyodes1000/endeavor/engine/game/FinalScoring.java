@@ -1,5 +1,6 @@
 package io.github.yoyodes1000.endeavor.engine.game;
 
+import io.github.yoyodes1000.endeavor.engine.mission.GoalOption;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionGoal;
 import io.github.yoyodes1000.endeavor.engine.player.HeldSpecialist;
 import io.github.yoyodes1000.endeavor.engine.specialist.EndGameScoring;
@@ -7,6 +8,7 @@ import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistFace;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Le décompte final : assemble les trois sources de points (attributs et revues,
@@ -56,6 +58,13 @@ public final class FinalScoring {
             switch (goal) {
                 case MissionGoal.Standard standard ->
                         total += standardGoalPoints(standard, state, playerIndex, uncounted);
+                case MissionGoal.Choice choice -> {
+                    // hexagone objectif libre : l'objectif ne rapporte rien à personne (règle du jeu)
+                    Optional<GoalOption> chosen = state.missionBoard().chosenOption(choice.number());
+                    if (chosen.isPresent()) {
+                        total += standardGoalPoints(chosen.get().goal(), state, playerIndex, uncounted);
+                    }
+                }
                 case MissionGoal.Unsupported unsupported ->
                         uncounted.add("Objectif " + unsupported.number() + " : forme non modélisée");
             }

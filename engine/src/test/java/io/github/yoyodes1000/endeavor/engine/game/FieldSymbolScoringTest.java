@@ -134,4 +134,15 @@ class FieldSymbolScoringTest {
         assertThrows(IllegalArgumentException.class,
                 () -> new ImpactHex(0, 0, 0, List.of(), false, false, false, Optional.empty(), true, 3));
     }
+
+    @Test
+    void lUniteJeuxCompletsRapporteSesPointsParEnsemble() {
+        GameState state = newGame();
+        occupy(state, 0, BLUE_A, BROWN, GREEN, YELLOW);
+        MissionGoal.Standard goal = new MissionGoal.Standard(
+                1, List.of(GoalUnit.FIELD_SYMBOL_SET), List.of(), List.of(), List.of(), 3, Optional.empty(), "t");
+
+        assertEquals(3, MissionGoalScorer.score(goal, state, 0));
+        assertEquals(0, MissionGoalScorer.score(goal, state, 1));
+    }
 }

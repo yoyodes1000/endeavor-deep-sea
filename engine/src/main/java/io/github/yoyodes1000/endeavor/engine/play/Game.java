@@ -1,6 +1,7 @@
 package io.github.yoyodes1000.endeavor.engine.play;
 
 import io.github.yoyodes1000.endeavor.engine.action.Action;
+import io.github.yoyodes1000.endeavor.engine.action.ChoisirOption;
 import io.github.yoyodes1000.endeavor.engine.activation.ActivationDriver;
 import io.github.yoyodes1000.endeavor.engine.game.FinalResult;
 import io.github.yoyodes1000.endeavor.engine.game.FinalScoring;
@@ -38,6 +39,9 @@ public final class Game {
 
     /** Les coups légaux de la phase courante (vide si la partie est finie). */
     public static List<Action> legalActions(GameState state) {
+        if (state.missionBoard().pendingOptionChoice().isPresent()) {
+            return optionChoices(state);
+        }
         return switch (state.phase()) {
             case PREPARATION -> PreparationDriver.legalActions(state);
             case ACTIVATION -> ActivationDriver.legalActions(state);
@@ -64,6 +68,11 @@ public final class Game {
      * @throws IllegalStateException si la partie est déjà terminée
      */
     public static void apply(GameState state, Action action) {
+        if (state.missionBoard().pendingOptionChoice().isPresent()) {
+            applyOptionChoice(state, action);
+            advance(state);
+            return;
+        }
         switch (state.phase()) {
             case PREPARATION -> PreparationDriver.apply(state, action);
             case ACTIVATION -> ActivationDriver.apply(state, action);
@@ -72,9 +81,27 @@ public final class Game {
         advance(state);
     }
 
+    /**
+     * Le choix d'option d'un objectif, qui passe avant tout autre coup : le joueur vient de
+     * poser un pion sur un hexagone objectif. Le jeu ne progresse pas tant qu'il n'est pas fait,
+     * pour que la partie ne s'achève pas avec un objectif dont l'option reste à choisir.
+     */
+    private static List<Action> optionChoices(GameState state) {
+        return state.missionBoard().pendingOptions().stream()
+                .map(option -> (Action) new ChoisirOption(option.id()))
+                .toList();
+    }
+
+    private static void applyOptionChoice(GameState state, Action action) {
+        if (!(action instanceof ChoisirOption choice)) {
+            throw new IllegalStateException("Une option d'objectif reste à choisir : " + action);
+        }
+        state.missionBoard().chooseOption(choice.optionId());
+    }
+
     /** Enchaîne les transitions de phase et de manche tant qu'aucune décision n'attend. */
     private static void advance(GameState state) {
-        boolean progressed = true;
+        boolean progressed = state.missionBoard().pendingOptionChoice().isEmpty();
         while (progressed) {
             progressed = switch (state.phase()) {
                 case PREPARATION -> enterActivationIfPreparationDone(state);
