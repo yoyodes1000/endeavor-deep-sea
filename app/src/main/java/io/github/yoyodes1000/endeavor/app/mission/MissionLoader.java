@@ -3,10 +3,12 @@ package io.github.yoyodes1000.endeavor.app.mission;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
+import io.github.yoyodes1000.endeavor.engine.mission.ColorBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactHex;
+import io.github.yoyodes1000.endeavor.engine.mission.LeaderBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.MajorityBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionCatalog;
@@ -19,8 +21,11 @@ import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.UncheckedIOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Charge le catalogue des missions depuis le JSON du matériel et le traduit vers
@@ -82,34 +87,71 @@ public final class MissionLoader {
         }
         List<GoalUnit> units = goal.units().stream().map(GoalUnit::fromCode).toList();
         List<Integer> depths = goal.depths() == null ? List.of() : goal.depths();
-        List<Integer> columns = goal.columns() == null ? List.of()
-                : goal.columns().stream().map(MissionLoader::columnIndex).toList();
+        List<Integer> columns = goal.columns() == null ? List.of() : toColumnIndexes(goal.columns());
         List<GoalUnit> zoneContains = goal.zoneContains() == null ? List.of()
                 : goal.zoneContains().stream().map(GoalUnit::fromCode).toList();
         int pointsPer = goal.pointsPer() == null ? 1 : goal.pointsPer();
-        Optional<MajorityBonus> majorityBonus = goal.majorityBonus() == null ? Optional.empty()
-                : Optional.of(new MajorityBonus(goal.majorityBonus().first(), goal.majorityBonus().second()));
-        return new MissionGoal.Standard(
-                goal.number(), units, depths, columns, zoneContains, pointsPer, majorityBonus, text);
+        Optional<MajorityBonus> majorityBonus = isTierBonus(goal.majorityBonus())
+                ? Optional.of(new MajorityBonus(goal.majorityBonus().get("first"), goal.majorityBonus().get("second")))
+                : Optional.empty();
+        List<ColorBonus> colorBonuses = isTierBonus(goal.majorityBonus()) || goal.majorityBonus() == null
+                ? List.of() : toColorBonuses(goal.majorityBonus());
+        List<LeaderBonus> leaderBonuses = goal.leaderBonuses() == null ? List.of()
+                : goal.leaderBonuses().stream().map(MissionLoader::toLeaderBonus).toList();
+        return new MissionGoal.Standard(goal.number(), units, depths, columns, zoneContains, pointsPer,
+                majorityBonus, text, Boolean.TRUE.equals(goal.zoneDiscoveredByYou()), leaderBonuses, colorBonuses);
     }
 
     /**
-     * Vrai si l'objectif se ramène au filtre standard (décision : l'arithmétique
-     * en données, le prédicat en code). Tout le reste — bonus par couleur,
-     * {@code leaderBonuses}, {@code chooseOption}, prédicat {@code count},
-     * {@code columnsFromSeaStar}, découverte de zone (non tracée par le moteur)
-     * — devient un objectif {@link MissionGoal.Unsupported}, carte sœur.
+     * Vrai si l'objectif se ramène à une forme que le moteur calcule : filtre standard,
+     * bonus de majorité {@code first}/{@code second}, bonus par couleur, bonus de leader
+     * par profondeur ou colonne, découverte de zone. Tout le reste — {@code chooseOption},
+     * prédicat {@code count}, {@code columnsFromSeaStar}, bonus de leader par unité — devient
+     * un objectif {@link MissionGoal.Unsupported}, carte sœur.
      */
     private static boolean isStandardShape(MissionsDocument.GoalDto goal) {
-        if (goal.count() != null || goal.leaderBonuses() != null || goal.columnsFromSeaStar() != null
-                || Boolean.TRUE.equals(goal.chooseOption()) || Boolean.TRUE.equals(goal.zoneDiscoveredByYou())) {
+        if (goal.count() != null || goal.columnsFromSeaStar() != null || Boolean.TRUE.equals(goal.chooseOption())) {
             return false;
         }
         if (goal.units() == null || goal.units().isEmpty()) {
             return false;
         }
-        MissionsDocument.MajorityBonusDto bonus = goal.majorityBonus();
-        return bonus == null || (bonus.first() != null && bonus.second() != null);
+        boolean leaderBonusesUnderstood = goal.leaderBonuses() == null
+                || goal.leaderBonuses().stream().allMatch(MissionLoader::isPositionalLeaderBonus);
+        return leaderBonusesUnderstood
+                && (goal.majorityBonus() == null || isTierBonus(goal.majorityBonus())
+                || isColorBonus(goal.majorityBonus(), goal.units()));
+    }
+
+    private static boolean isPositionalLeaderBonus(MissionsDocument.LeaderBonusDto bonus) {
+        boolean targetsPosition = (bonus.depths() != null && !bonus.depths().isEmpty())
+                || (bonus.columns() != null && !bonus.columns().isEmpty());
+        return bonus.points() != null && bonus.units() == null && targetsPosition;
+    }
+
+    private static boolean isTierBonus(Map<String, Integer> bonus) {
+        return bonus != null && bonus.keySet().equals(Set.of("first", "second"));
+    }
+
+    private static boolean isColorBonus(Map<String, Integer> bonus, List<String> units) {
+        return units.contains(GoalUnit.FIELD_SYMBOL.code())
+                && bonus.keySet().stream().allMatch(key -> Arrays.stream(FieldSymbol.values())
+                .anyMatch(color -> color.code().equals(key)));
+    }
+
+    private static List<ColorBonus> toColorBonuses(Map<String, Integer> bonus) {
+        return bonus.entrySet().stream()
+                .map(entry -> new ColorBonus(FieldSymbol.fromCode(entry.getKey()), entry.getValue()))
+                .toList();
+    }
+
+    private static LeaderBonus toLeaderBonus(MissionsDocument.LeaderBonusDto bonus) {
+        List<Integer> columns = bonus.columns() == null ? List.of() : toColumnIndexes(bonus.columns());
+        return new LeaderBonus(bonus.depths(), columns, bonus.points());
+    }
+
+    private static List<Integer> toColumnIndexes(List<String> letters) {
+        return letters.stream().map(MissionLoader::columnIndex).toList();
     }
 
     private static Optional<Cell> toBaseOfOperations(MissionsDocument.SetupDto setup) {

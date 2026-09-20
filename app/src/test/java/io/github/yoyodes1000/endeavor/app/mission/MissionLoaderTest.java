@@ -161,10 +161,32 @@ class MissionLoaderTest {
     }
 
     @Test
-    void unObjectifABonusParCouleurDevientNonSupporte() throws Exception {
+    void unObjectifABonusParCouleurEstStandard() throws Exception {
         // Mission 3, objectif 3 : bonus { blue, brown, green, yellow } au lieu de { first, second }.
-        List<MissionGoal> goals = realCatalog().byNumber(3).orElseThrow().goals();
-        assertTrue(goals.get(2) instanceof MissionGoal.Unsupported);
+        MissionGoal.Standard goal = (MissionGoal.Standard) realCatalog().byNumber(3).orElseThrow().goals().get(2);
+
+        assertEquals(List.of(GoalUnit.FIELD_SYMBOL), goal.units());
+        assertEquals(4, goal.colorBonuses().size());
+        assertTrue(goal.colorBonuses().stream().allMatch(bonus -> bonus.points() == 2));
+        assertTrue(goal.majorityBonus().isEmpty());
+    }
+
+    @Test
+    void unObjectifDeZonesDecouvertesABonusDeLeaderEstStandard() throws Exception {
+        // Mission 6, objectif 2 : zones découvertes, +2 au leader des profondeurs 3, 4, 5 et des colonnes B, D.
+        MissionGoal.Standard goal = (MissionGoal.Standard) realCatalog().byNumber(6).orElseThrow().goals().get(1);
+
+        assertTrue(goal.discoveredByYou());
+        assertEquals(5, goal.leaderBonuses().size());
+        assertEquals(List.of(3), goal.leaderBonuses().get(0).depths());
+        assertEquals(List.of(1), goal.leaderBonuses().get(3).columns(), "colonne B -> indice 1");
+        assertEquals(List.of(3), goal.leaderBonuses().get(4).columns(), "colonne D -> indice 3");
+    }
+
+    @Test
+    void unObjectifADisqueDesigneResteNonSupporte() throws Exception {
+        // Mission 6, objectif 3 : prédicat count + bonus de leader par unité.
+        assertTrue(realCatalog().byNumber(6).orElseThrow().goals().get(2) instanceof MissionGoal.Unsupported);
     }
 
     @Test
