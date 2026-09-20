@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
 import io.github.yoyodes1000.endeavor.engine.mission.ColorBonus;
+import io.github.yoyodes1000.endeavor.engine.mission.GoalOption;
 import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
 import io.github.yoyodes1000.endeavor.engine.mission.ImpactBoard;
@@ -13,6 +14,7 @@ import io.github.yoyodes1000.endeavor.engine.mission.MajorityBonus;
 import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionCatalog;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionGoal;
+import io.github.yoyodes1000.endeavor.engine.mission.SeaStarSide;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
 import io.github.yoyodes1000.endeavor.engine.ocean.StartingTile;
@@ -25,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 /**
@@ -39,6 +42,8 @@ import java.util.Set;
  * symboles de domaine (flèches…) restent tolérés, non modélisés.
  */
 public final class MissionLoader {
+
+    private static final String FIELD_SYMBOL_SETS_COUNT = "field-symbol-sets";
 
     private final ObjectMapper mapper = new ObjectMapper()
             .findAndRegisterModules()
@@ -78,14 +83,34 @@ public final class MissionLoader {
         if (goal.number() == null) {
             throw new IllegalArgumentException("Objectif sans numéro");
         }
+        if (Boolean.TRUE.equals(goal.chooseOption())) {
+            return toChoice(goal);
+        }
         String text = goal.text() == null ? "" : goal.text();
         if (!isStandardShape(goal)) {
             return new MissionGoal.Unsupported(goal.number(), text);
         }
-        if (text.isBlank()) {
-            throw new IllegalArgumentException("Objectif " + goal.number() + " sans texte");
+        return toStandard(goal.number(), goal);
+    }
+
+    /** Un objectif à options ; une seule option hors de portée suffit à le rendre hors de portée. */
+    private static MissionGoal toChoice(MissionsDocument.GoalDto goal) {
+        List<MissionsDocument.GoalDto> options = goal.options() == null ? List.of() : goal.options();
+        if (options.size() < 2 || !options.stream().allMatch(option -> option.id() != null && isStandardShape(option))) {
+            return new MissionGoal.Unsupported(goal.number(), goal.text());
         }
-        List<GoalUnit> units = goal.units().stream().map(GoalUnit::fromCode).toList();
+        return new MissionGoal.Choice(goal.number(), options.stream()
+                .map(option -> new GoalOption(option.id(), toStandard(goal.number(), option)))
+                .toList());
+    }
+
+    private static MissionGoal.Standard toStandard(int number, MissionsDocument.GoalDto goal) {
+        String text = goal.text() == null ? "" : goal.text();
+        if (text.isBlank()) {
+            throw new IllegalArgumentException("Objectif " + number + " sans texte");
+        }
+        List<GoalUnit> units = goal.count() != null ? List.of(GoalUnit.FIELD_SYMBOL_SET)
+                : goal.units().stream().map(GoalUnit::fromCode).toList();
         List<Integer> depths = goal.depths() == null ? List.of() : goal.depths();
         List<Integer> columns = goal.columns() == null ? List.of() : toColumnIndexes(goal.columns());
         List<GoalUnit> zoneContains = goal.zoneContains() == null ? List.of()
@@ -94,33 +119,34 @@ public final class MissionLoader {
         Optional<MajorityBonus> majorityBonus = isTierBonus(goal.majorityBonus())
                 ? Optional.of(new MajorityBonus(goal.majorityBonus().get("first"), goal.majorityBonus().get("second")))
                 : Optional.empty();
-        List<ColorBonus> colorBonuses = isTierBonus(goal.majorityBonus()) || goal.majorityBonus() == null
+        List<ColorBonus> colorBonuses = goal.majorityBonus() == null || isTierBonus(goal.majorityBonus())
                 ? List.of() : toColorBonuses(goal.majorityBonus());
         List<LeaderBonus> leaderBonuses = goal.leaderBonuses() == null ? List.of()
                 : goal.leaderBonuses().stream().map(MissionLoader::toLeaderBonus).toList();
-        return new MissionGoal.Standard(goal.number(), units, depths, columns, zoneContains, pointsPer,
-                majorityBonus, text, Boolean.TRUE.equals(goal.zoneDiscoveredByYou()), leaderBonuses, colorBonuses);
+        Optional<SeaStarSide> fromSeaStar = goal.columnsFromSeaStar() == null ? Optional.empty()
+                : Optional.of(SeaStarSide.fromCode(goal.columnsFromSeaStar()));
+        return new MissionGoal.Standard(number, units, depths, columns, zoneContains, pointsPer, majorityBonus, text,
+                Boolean.TRUE.equals(goal.zoneDiscoveredByYou()), leaderBonuses, colorBonuses, fromSeaStar);
     }
 
     /**
      * Vrai si l'objectif se ramène à une forme que le moteur calcule : filtre standard,
      * bonus de majorité {@code first}/{@code second}, bonus par couleur, bonus de leader
-     * par profondeur ou colonne, découverte de zone. Tout le reste — {@code chooseOption},
-     * prédicat {@code count}, {@code columnsFromSeaStar}, bonus de leader par unité — devient
-     * un objectif {@link MissionGoal.Unsupported}, carte sœur.
+     * par profondeur ou colonne, découverte de zone, côté de la sea-star, jeux complets
+     * de symboles. Tout le reste — prédicat {@code count} inconnu, bonus de leader par
+     * unité — devient un objectif {@link MissionGoal.Unsupported}, carte sœur.
      */
     private static boolean isStandardShape(MissionsDocument.GoalDto goal) {
-        if (goal.count() != null || goal.columnsFromSeaStar() != null || Boolean.TRUE.equals(goal.chooseOption())) {
-            return false;
-        }
-        if (goal.units() == null || goal.units().isEmpty()) {
+        boolean knownCount = goal.count() == null || FIELD_SYMBOL_SETS_COUNT.equals(goal.count());
+        if (!knownCount || (goal.count() == null && (goal.units() == null || goal.units().isEmpty()))) {
             return false;
         }
         boolean leaderBonusesUnderstood = goal.leaderBonuses() == null
                 || goal.leaderBonuses().stream().allMatch(MissionLoader::isPositionalLeaderBonus);
+        List<String> units = goal.units() == null ? List.of() : goal.units();
         return leaderBonusesUnderstood
                 && (goal.majorityBonus() == null || isTierBonus(goal.majorityBonus())
-                || isColorBonus(goal.majorityBonus(), goal.units()));
+                || isColorBonus(goal.majorityBonus(), units));
     }
 
     private static boolean isPositionalLeaderBonus(MissionsDocument.LeaderBonusDto bonus) {
@@ -192,7 +218,7 @@ public final class MissionLoader {
         return new ImpactHex(
                 hex.row(), hex.col(), hex.points(), gains,
                 Boolean.TRUE.equals(hex.start()), Boolean.TRUE.equals(hex.offGrid()), unlimited,
-                color, wild, symbolCount);
+                color, wild, symbolCount, hex.goal() == null ? OptionalInt.empty() : OptionalInt.of(hex.goal()));
     }
 
     private static OceanSetup toOceanSetup(String missionId, MissionsDocument.SetupDto setup) {

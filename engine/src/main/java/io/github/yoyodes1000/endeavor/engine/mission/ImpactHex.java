@@ -5,6 +5,7 @@ import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * Un hexagone du plateau Impact : sa position (row/col), les points qu'il vaut au
@@ -21,6 +22,9 @@ import java.util.Optional;
  * ({@code fieldSymbol}), soit un joker ({@code wild}) qui vaut n'importe laquelle ;
  * {@code fieldSymbolCount} vaut 2 pour un symbole double.
  *
+ * <p>Un hexagone <strong>objectif</strong> ({@code goal}) porte le numéro d'un objectif à
+ * options : y poser un pion permet de choisir l'option de cet objectif.
+ *
  * <p>Les autres marqueurs de scénario purement descriptifs ({@code arrow},
  * {@code rescue}, {@code goal}…) ne sont pas encore portés : le chargeur les ignore.
  *
@@ -29,6 +33,7 @@ import java.util.Optional;
  * @param fieldSymbol      la couleur du symbole de domaine porté, s'il y en a une
  * @param wild             vrai si le symbole est un joker (exclusif avec {@code fieldSymbol})
  * @param fieldSymbolCount le nombre de symboles portés : 0 si aucun, sinon 1 ou 2
+ * @param goal             le numéro de l'objectif que cet hexagone désigne, s'il y en a un
  */
 public record ImpactHex(
         int row,
@@ -40,11 +45,13 @@ public record ImpactHex(
         boolean unlimitedCapacity,
         Optional<FieldSymbol> fieldSymbol,
         boolean wild,
-        int fieldSymbolCount) {
+        int fieldSymbolCount,
+        OptionalInt goal) {
 
     public ImpactHex {
         gains = List.copyOf(gains);
         fieldSymbol = fieldSymbol == null ? Optional.empty() : fieldSymbol;
+        goal = goal == null ? OptionalInt.empty() : goal;
         if (wild && fieldSymbol.isPresent()) {
             throw new IllegalArgumentException("Un symbole est soit une couleur, soit un joker, pas les deux");
         }
@@ -54,9 +61,18 @@ public record ImpactHex(
         }
     }
 
+    /** Un hexagone qui n'est pas un hexagone objectif. */
+    public ImpactHex(int row, int col, int points, List<Gain> gains, boolean start, boolean offGrid,
+                     boolean unlimitedCapacity, Optional<FieldSymbol> fieldSymbol, boolean wild,
+                     int fieldSymbolCount) {
+        this(row, col, points, gains, start, offGrid, unlimitedCapacity, fieldSymbol, wild, fieldSymbolCount,
+                OptionalInt.empty());
+    }
+
     /** Un hexagone sans symbole de domaine. */
     public ImpactHex(int row, int col, int points, List<Gain> gains, boolean start, boolean offGrid,
                      boolean unlimitedCapacity) {
-        this(row, col, points, gains, start, offGrid, unlimitedCapacity, Optional.empty(), false, 0);
+        this(row, col, points, gains, start, offGrid, unlimitedCapacity, Optional.empty(), false, 0,
+                OptionalInt.empty());
     }
 }

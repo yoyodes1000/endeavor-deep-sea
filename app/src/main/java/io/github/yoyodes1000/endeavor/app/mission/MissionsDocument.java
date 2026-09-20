@@ -44,18 +44,20 @@ record MissionsDocument(List<Entry> missions) {
             Boolean offGrid,
             Object capacity,
             String fieldSymbol,
-            Integer fieldSymbolCount) {
+            Integer fieldSymbolCount,
+            Integer goal) {
     }
 
     /**
-     * Un objectif de fin de mission. Les champs {@code count}, {@code columnsFromSeaStar}
-     * et {@code chooseOption} servent seulement au chargeur à reconnaître un objectif
-     * hors de portée ({@link MissionGoal.Unsupported}) ; leur contenu n'est pas
-     * interprété. Le {@code majorityBonus} est soit {@code first}/{@code second}, soit
+     * Un objectif de fin de mission, éventuellement à options ({@code chooseOption} et
+     * {@code options}, chacune étant un objectif à part entière). Le champ {@code count}
+     * nomme un calcul du moteur ; seul {@code field-symbol-sets} est connu, tout autre
+     * fait de l'objectif un {@link MissionGoal.Unsupported}. Le {@code majorityBonus} est soit {@code first}/{@code second}, soit
      * un bonus par couleur de symbole de domaine.
      */
     record GoalDto(
             Integer number,
+            String id,
             List<String> units,
             List<Integer> depths,
             List<String> columns,
@@ -67,6 +69,7 @@ record MissionsDocument(List<Entry> missions) {
             String count,
             String columnsFromSeaStar,
             Boolean chooseOption,
+            List<GoalDto> options,
             String text) {
     }
 

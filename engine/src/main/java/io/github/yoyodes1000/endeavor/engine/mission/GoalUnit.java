@@ -7,6 +7,7 @@ package io.github.yoyodes1000.endeavor.engine.mission;
  * {@code vessel} les submersibles ; {@code zone} des zones (toujours seule,
  * qualifiée par {@code zoneContains} sur {@link MissionGoal.Standard}) ;
  * {@code fieldSymbol} les symboles de domaine du plateau Impact (toujours seule) ;
+ * {@code fieldSymbolSet} les jeux complets des quatre couleurs (toujours seule) ;
  * {@code impactMarker} reste hors de portée (cf. {@link MissionGoal.Unsupported}).
  */
 public enum GoalUnit {
@@ -18,6 +19,7 @@ public enum GoalUnit {
     VESSEL("vessel"),
     ZONE("zone"),
     FIELD_SYMBOL("fieldSymbol"),
+    FIELD_SYMBOL_SET("fieldSymbolSet"),
     IMPACT_MARKER("impactMarker");
 
     private final String code;

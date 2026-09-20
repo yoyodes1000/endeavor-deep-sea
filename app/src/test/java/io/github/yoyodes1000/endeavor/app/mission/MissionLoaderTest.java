@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.github.yoyodes1000.endeavor.engine.mission.GoalOption;
+import io.github.yoyodes1000.endeavor.engine.mission.SeaStarSide;
 import io.github.yoyodes1000.endeavor.engine.mission.GoalUnit;
 import io.github.yoyodes1000.endeavor.engine.journal.FieldSymbol;
 import io.github.yoyodes1000.endeavor.engine.mission.HexOrientation;
@@ -190,10 +192,27 @@ class MissionLoaderTest {
     }
 
     @Test
-    void unObjectifAOptionsDevientNonSupporte() throws Exception {
-        // Mission 8, objectif 1 : chooseOption + options, pas de texte au niveau racine.
+    void lesObjectifsAOptionsDeMission8SontDesChoix() throws Exception {
         List<MissionGoal> goals = realCatalog().byNumber(8).orElseThrow().goals();
-        assertTrue(goals.get(0) instanceof MissionGoal.Unsupported);
+
+        assertTrue(goals.stream().allMatch(goal -> goal instanceof MissionGoal.Choice));
+        MissionGoal.Choice near = (MissionGoal.Choice) goals.get(0);
+        assertEquals(List.of("near", "far"), near.options().stream().map(GoalOption::id).toList());
+        assertEquals(Optional.of(SeaStarSide.LEFT), near.options().get(0).goal().fromSeaStar());
+        assertEquals(Optional.of(SeaStarSide.RIGHT), near.options().get(1).goal().fromSeaStar());
+        MissionGoal.Choice symbols = (MissionGoal.Choice) goals.get(2);
+        assertEquals(List.of("narrow", "broad"), symbols.options().stream().map(GoalOption::id).toList());
+        assertEquals(List.of(GoalUnit.FIELD_SYMBOL_SET), symbols.options().get(1).goal().units());
+        assertEquals(3, symbols.options().get(1).goal().pointsPer());
+    }
+
+    @Test
+    void lesHexagonesObjectifDeMission8PortentLeurNumero() throws Exception {
+        ImpactBoard board = realCatalog().byNumber(8).orElseThrow().impactBoard();
+
+        assertEquals(java.util.OptionalInt.of(1), board.hexAt(9, 0).orElseThrow().goal());
+        assertEquals(java.util.OptionalInt.of(2), board.hexAt(8, 8).orElseThrow().goal());
+        assertEquals(java.util.OptionalInt.of(3), board.hexAt(1, 0).orElseThrow().goal());
     }
 
     @Test

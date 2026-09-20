@@ -16,7 +16,7 @@ import java.util.Optional;
  * unité. Ces cartons portent une carte sœur ; en attendant, {@code text} reste
  * disponible pour l'affichage, mais aucun calcul de points n'existe.
  */
-public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Unsupported {
+public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Choice, MissionGoal.Unsupported {
 
     int number();
 
@@ -45,7 +45,8 @@ public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Un
             String text,
             boolean discoveredByYou,
             List<LeaderBonus> leaderBonuses,
-            List<ColorBonus> colorBonuses) implements MissionGoal {
+            List<ColorBonus> colorBonuses,
+            Optional<SeaStarSide> fromSeaStar) implements MissionGoal {
 
         public Standard {
             if (number < 1) {
@@ -62,10 +63,12 @@ public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Un
             depths = List.copyOf(depths == null ? List.of() : depths);
             columns = List.copyOf(columns == null ? List.of() : columns);
             zoneContains = List.copyOf(zoneContains == null ? List.of() : zoneContains);
-            if (units.contains(GoalUnit.FIELD_SYMBOL) && units.size() > 1) {
+            if ((units.contains(GoalUnit.FIELD_SYMBOL) || units.contains(GoalUnit.FIELD_SYMBOL_SET))
+                    && units.size() > 1) {
                 throw new IllegalArgumentException(
-                        "« fieldSymbol » ne se combine pas avec d'autres unités : objectif " + number);
+                        "Une unité de symboles de domaine ne se combine pas avec d'autres unités : objectif " + number);
             }
+            fromSeaStar = fromSeaStar == null ? Optional.empty() : fromSeaStar;
             if (!zoneContains.isEmpty() && !units.contains(GoalUnit.ZONE)) {
                 throw new IllegalArgumentException(
                         "zoneContains suppose l'unité « zone » : objectif " + number);
@@ -93,12 +96,53 @@ public sealed interface MissionGoal permits MissionGoal.Standard, MissionGoal.Un
             }
         }
 
+        /** Un objectif sans côté de la sea-star. */
+        public Standard(int number, List<GoalUnit> units, List<Integer> depths, List<Integer> columns,
+                        List<GoalUnit> zoneContains, int pointsPer, Optional<MajorityBonus> majorityBonus,
+                        String text, boolean discoveredByYou, List<LeaderBonus> leaderBonuses,
+                        List<ColorBonus> colorBonuses) {
+            this(number, units, depths, columns, zoneContains, pointsPer, majorityBonus, text, discoveredByYou,
+                    leaderBonuses, colorBonuses, Optional.empty());
+        }
+
         /** Un objectif sans découverte ni bonus de leader ni bonus par couleur. */
         public Standard(int number, List<GoalUnit> units, List<Integer> depths, List<Integer> columns,
                         List<GoalUnit> zoneContains, int pointsPer, Optional<MajorityBonus> majorityBonus,
                         String text) {
             this(number, units, depths, columns, zoneContains, pointsPer, majorityBonus, text,
-                    false, List.of(), List.of());
+                    false, List.of(), List.of(), Optional.empty());
+        }
+    }
+
+    /**
+     * Un objectif à options : le joueur qui pose un pion sur son hexagone objectif
+     * choisit l'option, qui vaut ensuite pour tous les joueurs. Tant que l'hexagone
+     * est vide, l'objectif ne rapporte rien à personne.
+     *
+     * @param options les options offertes, au moins deux, d'identifiants distincts
+     */
+    record Choice(int number, List<GoalOption> options) implements MissionGoal {
+
+        public Choice {
+            if (number < 1) {
+                throw new IllegalArgumentException("Numéro d'objectif invalide : " + number);
+            }
+            if (options == null || options.size() < 2) {
+                throw new IllegalArgumentException("L'objectif " + number + " doit offrir au moins deux options");
+            }
+            options = List.copyOf(options);
+            if (options.stream().map(GoalOption::id).distinct().count() != options.size()) {
+                throw new IllegalArgumentException("Identifiants d'option en double : objectif " + number);
+            }
+        }
+
+        @Override
+        public String text() {
+            return options.stream().map(option -> option.goal().text()).reduce((a, b) -> a + " / " + b).orElse("");
+        }
+
+        public Optional<GoalOption> option(String optionId) {
+            return options.stream().filter(option -> option.id().equals(optionId)).findFirst();
         }
     }
 
