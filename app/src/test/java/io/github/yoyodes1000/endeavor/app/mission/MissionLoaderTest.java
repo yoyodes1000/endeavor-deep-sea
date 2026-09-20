@@ -24,6 +24,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import io.github.yoyodes1000.endeavor.engine.ocean.HiddenTile;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
+import io.github.yoyodes1000.endeavor.engine.ocean.ShuffledRow;
+import io.github.yoyodes1000.endeavor.app.ocean.OceanTileLoader;
 import org.junit.jupiter.api.Test;
 
 class MissionLoaderTest {
@@ -202,5 +206,62 @@ class MissionLoaderTest {
                 + "\"impactBoard\":{\"orientation\":\"pointy-top\",\"hexes\":[{\"row\":0,\"col\":0,\"points\":0}]},"
                 + "\"setup\":{\"columns\":5,\"startingTiles\":[{\"depth\":1,\"col\":\"AA\",\"tile\":\"x\"}]}}]}";
         assertThrows(IllegalArgumentException.class, () -> loader.load(new StringReader(json)));
+    }
+
+    @Test
+    void lesMissionsAZoneDeLancementParTuileLaDeclarent() throws Exception {
+        MissionCatalog catalog = realCatalog();
+
+        for (int number : new int[]{2, 4, 8, 9, 10}) {
+            Mission mission = catalog.byNumber(number).orElseThrow();
+            assertEquals(Optional.of("the-sea-star"), mission.baseTile(), "mission " + number);
+            assertEquals(1, mission.startingVessels(), "mission " + number);
+        }
+        assertEquals(Optional.of("remote-anchorage"), catalog.byNumber(7).orElseThrow().baseTile());
+        assertTrue(catalog.byNumber(1).orElseThrow().baseOfOperations().isPresent(), "M1 garde sa case");
+    }
+
+    @Test
+    void lesMissionsADeuxZonesDeLancementChoisiesNeLaDeclarentPasEncore() throws Exception {
+        for (int number : new int[]{3, 5, 6}) {
+            Mission mission = realCatalog().byNumber(number).orElseThrow();
+            assertTrue(mission.baseOfOperations().isEmpty() && mission.baseTile().isEmpty(), "mission " + number);
+        }
+    }
+
+    @Test
+    void lesProfondeursMaximalesEtLesColonnesDesMissionsReduitesSontChargees() throws Exception {
+        OceanSetup mission5 = realCatalog().byNumber(5).orElseThrow().oceanSetup();
+        assertEquals(7, mission5.columns());
+        assertEquals(3, mission5.maxDepth());
+        assertEquals(6, realCatalog().byNumber(9).orElseThrow().oceanSetup().columns());
+        assertEquals(4, realCatalog().byNumber(9).orElseThrow().oceanSetup().maxDepth());
+        assertEquals(5, realCatalog().byNumber(1).orElseThrow().oceanSetup().maxDepth(), "profondeur pleine par défaut");
+    }
+
+    @Test
+    void lesLignesMelangeesEtLesTuilesCacheesDeMission8SontChargees() throws Exception {
+        OceanSetup setup = realCatalog().byNumber(8).orElseThrow().oceanSetup();
+
+        assertEquals(1, setup.shuffledRows().size());
+        assertEquals(List.of(0, 1, 2, 3, 4), setup.shuffledRows().get(0).columns());
+        assertEquals(new ShuffledRow.Named("the-sea-star"), setup.shuffledRows().get(0).entries().get(0));
+        assertEquals(new ShuffledRow.Random(1), setup.shuffledRows().get(0).entries().get(1));
+        assertEquals(List.of(new HiddenTile("the-looking-glass", 2)), setup.hiddenTiles());
+    }
+
+    @Test
+    void toutesLesTuilesNommeesDesMissionsExistentAuCatalogueDesTuiles() throws Exception {
+        try (Reader source = Files.newBufferedReader(Path.of("..", "data", "ocean-tiles.json"), StandardCharsets.UTF_8)) {
+            OceanTileCatalog tiles = new OceanTileLoader().load(source);
+            for (Mission mission : realCatalog().missions()) {
+                OceanSetup setup = mission.oceanSetup();
+                setup.startingTiles().stream().filter(tile -> tile instanceof StartingTile.Named)
+                        .forEach(tile -> assertTrue(tiles.byId(((StartingTile.Named) tile).tileId()).isPresent(),
+                                "mission " + mission.number() + " : " + tile));
+                setup.hiddenTiles().forEach(hidden -> assertTrue(tiles.byId(hidden.tileId()).isPresent(),
+                        "mission " + mission.number() + " : " + hidden));
+            }
+        }
     }
 }

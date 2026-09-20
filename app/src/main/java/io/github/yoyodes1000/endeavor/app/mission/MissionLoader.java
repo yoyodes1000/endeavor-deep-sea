@@ -14,7 +14,9 @@ import io.github.yoyodes1000.endeavor.engine.mission.Mission;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionCatalog;
 import io.github.yoyodes1000.endeavor.engine.mission.MissionGoal;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
+import io.github.yoyodes1000.endeavor.engine.ocean.HiddenTile;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanSetup;
+import io.github.yoyodes1000.endeavor.engine.ocean.ShuffledRow;
 import io.github.yoyodes1000.endeavor.engine.ocean.StartingTile;
 import io.github.yoyodes1000.endeavor.engine.specialist.Gain;
 
@@ -71,7 +73,7 @@ public final class MissionLoader {
         List<MissionGoal> goals = entry.goals() == null ? List.of()
                 : entry.goals().stream().map(MissionLoader::toGoal).toList();
         return new Mission(entry.id(), entry.number(), entry.name(), toBoard(entry.id(), entry.impactBoard()),
-                toOceanSetup(entry.id(), setup), toBaseOfOperations(setup), startingVessels(setup), goals);
+                toOceanSetup(entry.id(), setup), toBaseOfOperations(setup), toBaseTile(setup), startingVessels(setup), goals);
     }
 
     private static MissionGoal toGoal(MissionsDocument.GoalDto goal) {
@@ -156,13 +158,18 @@ public final class MissionLoader {
 
     private static Optional<Cell> toBaseOfOperations(MissionsDocument.SetupDto setup) {
         MissionsDocument.CellDto base = setup.baseOfOperations();
-        if (base == null) {
+        if (base == null || base.tile() != null) {
             return Optional.empty();
         }
         if (base.depth() == null || base.col() == null) {
             throw new IllegalArgumentException("Base d'opérations incomplète (depth et col requis)");
         }
         return Optional.of(new Cell(base.depth(), columnIndex(base.col())));
+    }
+
+    private static Optional<String> toBaseTile(MissionsDocument.SetupDto setup) {
+        MissionsDocument.CellDto base = setup.baseOfOperations();
+        return base == null ? Optional.empty() : Optional.ofNullable(base.tile());
     }
 
     private static int startingVessels(MissionsDocument.SetupDto setup) {
@@ -201,7 +208,37 @@ public final class MissionLoader {
         }
         List<StartingTile> startingTiles = setup.startingTiles() == null ? List.of()
                 : setup.startingTiles().stream().map(MissionLoader::toStartingTile).toList();
-        return new OceanSetup(setup.columns(), startingTiles);
+        List<ShuffledRow> shuffledRows = setup.shuffledRows() == null ? List.of()
+                : setup.shuffledRows().stream().map(MissionLoader::toShuffledRow).toList();
+        List<HiddenTile> hiddenTiles = setup.hiddenTiles() == null ? List.of()
+                : setup.hiddenTiles().stream().map(MissionLoader::toHiddenTile).toList();
+        int maxDepth = setup.maxDepth() == null ? OceanSetup.DEEPEST : setup.maxDepth();
+        return new OceanSetup(setup.columns(), startingTiles, shuffledRows, hiddenTiles, maxDepth);
+    }
+
+    private static ShuffledRow toShuffledRow(MissionsDocument.ShuffledRowDto row) {
+        if (row.depth() == null || row.columns() == null || row.tiles() == null) {
+            throw new IllegalArgumentException("Ligne mélangée incomplète (depth, columns et tiles requis)");
+        }
+        List<ShuffledRow.Entry> entries = row.tiles().stream().map(MissionLoader::toRowEntry).toList();
+        return new ShuffledRow(row.depth(), toColumnIndexes(row.columns()), entries);
+    }
+
+    private static ShuffledRow.Entry toRowEntry(MissionsDocument.RowTileDto tile) {
+        if (tile.tile() != null) {
+            return new ShuffledRow.Named(tile.tile());
+        }
+        if (tile.randomLevel() != null) {
+            return new ShuffledRow.Random(tile.randomLevel());
+        }
+        throw new IllegalArgumentException("Tuile de ligne mélangée sans « tile » ni « randomLevel »");
+    }
+
+    private static HiddenTile toHiddenTile(MissionsDocument.HiddenTileDto tile) {
+        if (tile.tile() == null || tile.level() == null) {
+            throw new IllegalArgumentException("Tuile cachée incomplète (tile et level requis)");
+        }
+        return new HiddenTile(tile.tile(), tile.level());
     }
 
     private static StartingTile toStartingTile(MissionsDocument.StartingTileDto tile) {

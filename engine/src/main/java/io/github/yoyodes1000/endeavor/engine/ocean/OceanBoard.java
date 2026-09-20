@@ -141,20 +141,41 @@ public final class OceanBoard {
                 used.add(named.tileId());
             }
         }
+        for (ShuffledRow row : setup.shuffledRows()) {
+            for (ShuffledRow.Entry entry : row.entries()) {
+                if (entry instanceof ShuffledRow.Named named) {
+                    used.add(named.tileId());
+                }
+            }
+        }
         for (StartingTile tile : setup.startingTiles()) {
             String tileId = switch (tile) {
-                case StartingTile.Named named -> {
-                    if (catalog.byId(named.tileId()).isEmpty()) {
-                        throw new IllegalArgumentException("Tuile de mise en place inconnue : " + named.tileId());
-                    }
-                    yield named.tileId();
-                }
+                case StartingTile.Named named -> requireKnown(catalog, named.tileId());
                 case StartingTile.Random drawn -> drawFromPile(catalog, random, drawn.level(), used);
             };
             board.placeTile(new Cell(tile.depth(), tile.col()), tileId);
             used.add(tileId);
         }
+        for (ShuffledRow row : setup.shuffledRows()) {
+            List<ShuffledRow.Entry> shuffled = new ArrayList<>(row.entries());
+            random.shuffle(shuffled);
+            for (int i = 0; i < shuffled.size(); i++) {
+                String tileId = switch (shuffled.get(i)) {
+                    case ShuffledRow.Named named -> requireKnown(catalog, named.tileId());
+                    case ShuffledRow.Random drawn -> drawFromPile(catalog, random, drawn.level(), used);
+                };
+                board.placeTile(new Cell(row.depth(), row.columns().get(i)), tileId);
+                used.add(tileId);
+            }
+        }
         return board;
+    }
+
+    private static String requireKnown(OceanTileCatalog catalog, String tileId) {
+        if (catalog.byId(tileId).isEmpty()) {
+            throw new IllegalArgumentException("Tuile de mise en place inconnue : " + tileId);
+        }
+        return tileId;
     }
 
     private static String drawFromPile(OceanTileCatalog catalog, RandomSource random, int level, Set<String> used) {
