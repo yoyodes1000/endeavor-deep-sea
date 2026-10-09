@@ -1209,7 +1209,8 @@ public final class ActivationDriver {
         return actions;
     }
 
-    private static int currentPlayer(GameState state) {
+    /** Le joueur dont c'est le tour : le rang courant, dans l'ordre du tour de la manche. */
+    public static int currentPlayer(GameState state) {
         return state.turnOrder().get(state.activationCursor().turnPosition());
     }
 

@@ -16,6 +16,7 @@ import io.github.yoyodes1000.endeavor.engine.game.GamePhase;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
 import io.github.yoyodes1000.endeavor.engine.support.Fixtures;
 import java.util.List;
+import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
 
 class GameTest {
@@ -108,5 +109,42 @@ class GameTest {
             Game.apply(state, Game.legalActions(state).get(0));
         }
         assertEquals(2, Game.finalResult(state).scores().size());
+    }
+
+    @Test
+    void leJoueurCourantOuvreLaPartieSurLePremierJoueur() {
+        GameState state = game(2);
+        Game.begin(state);
+
+        assertEquals(OptionalInt.of(state.firstPlayerIndex()), Game.currentPlayer(state));
+    }
+
+    @Test
+    void laMainPasseALAutreJoueurQuandLePremierLaRend() {
+        GameState state = game(2);
+        Game.begin(state);
+        int first = state.firstPlayerIndex();
+
+        int garde = 0;
+        while (Game.currentPlayer(state).equals(OptionalInt.of(first))) {
+            Game.apply(state, Game.legalActions(state).get(0));
+            if (++garde > 50) {
+                fail("le premier joueur ne rend jamais la main");
+            }
+        }
+
+        assertEquals(OptionalInt.of(1 - first), Game.currentPlayer(state));
+    }
+
+    @Test
+    void unJoueurCourantExisteJusquALaFinPuisPlusAucun() {
+        GameState state = game(3);
+        Game.begin(state);
+        while (state.phase() != GamePhase.FINISHED) {
+            assertTrue(Game.currentPlayer(state).isPresent(), "tant que la partie continue, quelqu'un décide");
+            Game.apply(state, Game.legalActions(state).get(0));
+        }
+
+        assertEquals(OptionalInt.empty(), Game.currentPlayer(state));
     }
 }

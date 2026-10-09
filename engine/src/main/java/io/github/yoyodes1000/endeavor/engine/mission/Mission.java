@@ -67,6 +67,11 @@ public record Mission(String id, int number, String name, ImpactBoard impactBoar
         this(id, number, name, impactBoard, oceanSetup, baseOfOperations, Optional.empty(), startingVessels, goals);
     }
 
+    /** Vrai si la fiche désigne une zone de lancement (case ou tuile) : la mission peut alors se mettre en place. */
+    public boolean hasLaunchZone() {
+        return baseOfOperations.isPresent() || baseTile.isPresent();
+    }
+
     /**
      * La zone de lancement de la mission sur l'océan bâti : la case de la base d'opérations, ou la
      * case qui porte sa tuile (la sea-star d'une mission à lignes mélangées n'a pas de case connue
