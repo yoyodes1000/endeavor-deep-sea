@@ -17,10 +17,11 @@ import java.util.Set;
  * stockée (décision 7). La pose d'un pion impact exige une case de départ ou le
  * voisin d'un hexagone occupé — d'où le besoin du graphe d'adjacence.
  *
- * <p>Adjacence implémentée pour {@code pointy-top} et {@code flat-top} ;
- * {@code rect-rows} (mission 10) reste à faire. La convention de décalage exacte
- * (odd-r / odd-q) est un choix documenté : la connexité ne la départage pas, elle
- * se vérifiera à l'affichage.
+ * <p>Adjacence implémentée pour {@code pointy-top}, {@code flat-top} et
+ * {@code rect-rows} (mission 10 : cinq pistes de profondeur, chacune une ligne dont
+ * les cases se suivent de gauche à droite ; les pistes ne se touchent pas). La
+ * convention de décalage exacte (odd-r / odd-q) est un choix documenté : la
+ * connexité ne la départage pas, elle se vérifiera à l'affichage.
  *
  * <p>Les hexagones {@code offGrid} (∞ hors-grille) sont exclus de l'adjacence
  * géométrique : ils s'atteignent par une flèche, traitée à part.
@@ -107,8 +108,7 @@ public final class ImpactBoard {
             case FLAT_TOP -> Math.floorMod(col, 2) == 0
                     ? new int[][] {{1, 0}, {-1, 0}, {0, -1}, {-1, -1}, {0, 1}, {-1, 1}}
                     : new int[][] {{1, 0}, {-1, 0}, {1, -1}, {0, -1}, {1, 1}, {0, 1}};
-            case RECT_ROWS -> throw new UnsupportedOperationException(
-                    "Adjacence rect-rows à implémenter (mission 10)");
+            case RECT_ROWS -> new int[][] {{0, 1}, {0, -1}};
         };
     }
 

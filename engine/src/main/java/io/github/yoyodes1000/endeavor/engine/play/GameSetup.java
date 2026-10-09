@@ -1,11 +1,20 @@
 package io.github.yoyodes1000.endeavor.engine.play;
 
+import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import io.github.yoyodes1000.endeavor.engine.dive.DiveSiteSetup;
+import io.github.yoyodes1000.endeavor.engine.dive.DiveTokenCatalog;
 import io.github.yoyodes1000.endeavor.engine.effect.EffectOutcome;
 import io.github.yoyodes1000.endeavor.engine.effect.GainResolver;
 import io.github.yoyodes1000.endeavor.engine.game.GameState;
+import io.github.yoyodes1000.endeavor.engine.journal.JournalCatalog;
+import io.github.yoyodes1000.endeavor.engine.mission.Mission;
+import io.github.yoyodes1000.endeavor.engine.mission.MissionBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
+import io.github.yoyodes1000.endeavor.engine.ocean.HiddenTile;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
+import io.github.yoyodes1000.endeavor.engine.ocean.OceanTileCatalog;
+import io.github.yoyodes1000.endeavor.engine.specialist.SpecialistRoster;
 
 /**
  * Mise en place de l'océan au démarrage d'une partie : chaque joueur reçoit ses
@@ -20,6 +29,47 @@ import io.github.yoyodes1000.endeavor.engine.ocean.OceanTile;
 public final class GameSetup {
 
     private GameSetup() {
+    }
+
+    /** Le matériel immuable d'une partie, commun à toutes les missions. */
+    public record Materials(SpecialistRoster roster, OceanTileCatalog oceanTiles, DiveTokenCatalog diveTokens,
+                            JournalCatalog journals) {
+    }
+
+    /**
+     * Bâtit une partie prête à démarrer ({@link Game#begin}) pour une mission : l'océan de sa mise en
+     * place (lignes mélangées comprises), la pioche de découverte (tuiles cachées ajoutées, tuiles
+     * au-delà de la profondeur maximale retirées), les submersibles de départ sur la zone de lancement
+     * et les jetons des sites de plongée déjà en jeu.
+     *
+     * @throws IllegalArgumentException si la fiche ne désigne pas de zone de lancement, ou si une tuile
+     *     cachée est inconnue du matériel ou n'est pas de son niveau
+     */
+    public static GameState newMissionGame(Mission mission, int playerCount, Materials materials,
+                                           RandomSource random, int startingDiscs) {
+        OceanBoard ocean = OceanBoard.fromSetup(mission.oceanSetup(), materials.oceanTiles(), random);
+        Cell launch = mission.launchCell(ocean).orElseThrow(() -> new IllegalArgumentException(
+                "La mission " + mission.number() + " ne désigne pas de zone de lancement"));
+        GameState state = GameState.newGame(playerCount, materials.roster(), random, startingDiscs,
+                MissionBoard.forMission(mission), ocean, materials.oceanTiles(), materials.diveTokens(),
+                materials.journals());
+        shapeDiscoveryPile(state, mission);
+        deployStartingVessels(state, launch, mission.startingVessels());
+        stackInitialDiveSites(state);
+        return state;
+    }
+
+    private static void shapeDiscoveryPile(GameState state, Mission mission) {
+        for (HiddenTile hidden : mission.oceanSetup().hiddenTiles()) {
+            OceanTile tile = state.oceanTileCatalog().byId(hidden.tileId()).orElseThrow(
+                    () -> new IllegalArgumentException("Tuile cachée inconnue au catalogue : " + hidden.tileId()));
+            if (tile.depth() != hidden.level()) {
+                throw new IllegalArgumentException("La tuile cachée " + hidden.tileId() + " est de niveau "
+                        + tile.depth() + ", pas " + hidden.level());
+            }
+            state.discoveryPile().addTile(hidden.tileId(), hidden.level());
+        }
+        state.discoveryPile().removeDeeperThan(mission.oceanSetup().maxDepth());
     }
 
     /**

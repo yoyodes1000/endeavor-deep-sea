@@ -68,9 +68,17 @@ class ImpactBoardTest {
     }
 
     @Test
-    void rectRowsPasEncoreSupporte() {
-        ImpactBoard board = new ImpactBoard(HexOrientation.RECT_ROWS, List.of(hex(0, 0), hex(0, 1)));
-        assertThrows(UnsupportedOperationException.class,
-                () -> board.neighbors(board.hexAt(0, 0).orElseThrow()));
+    void lesPistesRectanglesSeSuiventDeGaucheADroiteSansSeToucher() {
+        List<ImpactHex> hexes = List.of(
+                new ImpactHex(0, 0, 0, List.of(), true, false, false),
+                new ImpactHex(0, 1, 0, List.of(), false, false, false),
+                new ImpactHex(0, 2, 0, List.of(), false, false, false),
+                new ImpactHex(1, 0, 0, List.of(), true, false, false),
+                new ImpactHex(1, 1, 0, List.of(), false, false, false));
+        ImpactBoard board = new ImpactBoard(HexOrientation.RECT_ROWS, hexes);
+
+        assertEquals(List.of(hexes.get(1)), board.neighbors(hexes.get(0)));
+        assertEquals(2, board.neighbors(hexes.get(1)).size(), "un voisin de chaque côté");
+        assertEquals(List.of(hexes.get(4)), board.neighbors(hexes.get(3)), "la piste 1 ne touche pas la piste 0");
     }
 }

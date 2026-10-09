@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.yoyodes1000.endeavor.engine.RandomSource;
 import java.util.List;
@@ -105,5 +106,51 @@ class OceanBoardSetupTest {
     @Test
     void laTuileNommeeRefuseUnIdentifiantVide() {
         assertThrows(IllegalArgumentException.class, () -> new StartingTile.Named(1, 0, " "));
+    }
+
+    private static OceanSetup shuffledRowSetup() {
+        return new OceanSetup(3, List.of(), List.of(new ShuffledRow(1, List.of(0, 1, 2), List.of(
+                new ShuffledRow.Named("sea-star"), new ShuffledRow.Random(1), new ShuffledRow.Random(1)))),
+                List.of(), OceanSetup.DEEPEST);
+    }
+
+    @Test
+    void uneLigneMelangeeRemplitToutesSesColonnesEtPlaceLaTuileNommeeQuelquePart() {
+        OceanBoard board = OceanBoard.fromSetup(shuffledRowSetup(), catalog(), RandomSource.fromSeed(1));
+
+        for (int col = 0; col < 3; col++) {
+            assertTrue(board.isOccupied(new Cell(1, col)));
+        }
+        assertEquals(1, board.occupiedCells().stream()
+                .filter(cell -> board.tileAt(cell).orElseThrow().equals("sea-star")).count());
+        assertEquals(3, board.placedTileIds().size(), "trois tuiles distinctes");
+    }
+
+    @Test
+    void laColonneDeLaTuileNommeeDUneLigneMelangeeVarieAvecLaGraine() {
+        java.util.Set<Integer> columns = new java.util.HashSet<>();
+        for (long seed = 1; seed <= 40; seed++) {
+            OceanBoard board = OceanBoard.fromSetup(shuffledRowSetup(), catalog(), RandomSource.fromSeed(seed));
+            columns.addAll(board.occupiedCells().stream()
+                    .filter(cell -> board.tileAt(cell).orElseThrow().equals("sea-star"))
+                    .map(Cell::col).toList());
+        }
+        assertEquals(java.util.Set.of(0, 1, 2), columns);
+    }
+
+    @Test
+    void laMemeGraineRebatitLaMemeLigneMelangee() {
+        OceanBoard first = OceanBoard.fromSetup(shuffledRowSetup(), catalog(), RandomSource.fromSeed(9));
+        OceanBoard second = OceanBoard.fromSetup(shuffledRowSetup(), catalog(), RandomSource.fromSeed(9));
+
+        for (int col = 0; col < 3; col++) {
+            assertEquals(first.tileAt(new Cell(1, col)), second.tileAt(new Cell(1, col)));
+        }
+    }
+
+    @Test
+    void uneLigneMelangeeExigeAutantDeTuilesQueDeColonnes() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new ShuffledRow(1, List.of(0, 1), List.of(new ShuffledRow.Named("sea-star"))));
     }
 }

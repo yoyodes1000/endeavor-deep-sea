@@ -31,7 +31,7 @@ public final class DiscoveryPile {
 
     private DiscoveryPile(List<String> available, Map<String, Integer> depthById) {
         this.available = new ArrayList<>(available);
-        this.depthById = depthById;
+        this.depthById = new HashMap<>(depthById);
     }
 
     /**
@@ -53,7 +53,7 @@ public final class DiscoveryPile {
             available.add(tile.id());
             depthById.put(tile.id(), tile.depth());
         }
-        return new DiscoveryPile(available, Map.copyOf(depthById));
+        return new DiscoveryPile(available, depthById);
     }
 
     /** Les identifiants encore disponibles dont la profondeur figure parmi {@code levels}. */
@@ -113,6 +113,26 @@ public final class DiscoveryPile {
     /** Combien de tuiles restent à découvrir. */
     public int size() {
         return available.size();
+    }
+
+    /**
+     * Glisse une tuile dans la pioche de son niveau (tuile cachée de mise en place : une
+     * tuile unique n'y figure pas d'ordinaire). Sans effet si elle y est déjà.
+     */
+    public void addTile(String tileId, int depth) {
+        if (tileId == null || tileId.isBlank()) {
+            throw new IllegalArgumentException("Une tuile ajoutée à la pioche doit avoir un identifiant");
+        }
+        if (available.contains(tileId)) {
+            return;
+        }
+        depthById.put(tileId, depth);
+        available.add(tileId);
+    }
+
+    /** Retire de la pioche les tuiles plus profondes que {@code maxDepth} (profondeur maximale d'une mission). */
+    public void removeDeeperThan(int maxDepth) {
+        available.removeIf(tileId -> depthById.get(tileId) > maxDepth);
     }
 
     /** Copie indépendante, pour isoler une simulation (déc. 3). */
