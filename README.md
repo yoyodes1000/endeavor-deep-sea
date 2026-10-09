@@ -18,15 +18,20 @@ n'est pas une variante prévue par l'éditeur.
 
 ## État
 
-Squelette en place. Le moteur de règles n'est pas commencé.
+Le moteur fait jouer une partie complète, des deux phases de chaque manche
+jusqu'au décompte final. Une API locale permet de la jouer contre des bots qui
+choisissent leurs coups au hasard. L'interface de jeu reste à faire.
 
 | Étape | État |
 |---|---|
 | Lecture et synthèse des règles | terminé |
 | Architecture du projet | terminé |
 | Squelette technique | terminé |
-| Modélisation du matériel | en attente des relevés |
-| Moteur de règles | à faire |
+| Modélisation du matériel | terminé |
+| Moteur de règles | jouable sur les missions 1, 2, 4, 7, 8, 9 et 10 ; restent les règles spéciales des zones, les actions des revues acquises et les connexions entre sites |
+| API locale | partie contre des bots aléatoires |
+| Intelligence artificielle | à faire (bots aléatoires seulement) |
+| Interface de jeu | à faire |
 
 ## Construire et lancer
 
@@ -69,6 +74,34 @@ mvn test              # moteur
 cd ui && npm test     # interface
 ```
 
+## API locale
+
+L'application expose une API sur `http://127.0.0.1:8080/api`. Le joueur humain
+occupe le siège 0, les bots les autres.
+
+| Route | Rôle |
+|---|---|
+| `GET /api/missions` | Les missions jouables, en indiquant si tous leurs objectifs sont comptés |
+| `POST /api/game` | Nouvelle partie : `{"mission": 1, "opponents": 2}`, de 1 à 3 adversaires. Une graine `seed` facultative rejoue une partie à l'identique |
+| `GET /api/game` | La partie vue par le joueur : phase, manche, joueur courant, coups légaux, coups joués par les bots |
+| `POST /api/game/moves` | Jouer un coup : `{"moveNumber": 3, "action": {"type": "Recruter", "specialistId": "pilot"}}` |
+| `GET /api/game/result` | Le décompte final, une fois la partie terminée |
+
+Un coup est un objet JSON qui porte son `type`, le nom du coup dans le moteur,
+et ses paramètres. Le serveur n'accepte qu'un coup présent dans la liste des
+coups légaux. `moveNumber` reprend celui de la dernière vue lue : un coup choisi
+sur un état périmé est refusé. Les bots jouent dans la même requête, jusqu'à ce
+que la main revienne au joueur.
+
+Les erreurs suivent le format `application/problem+json` : 400 pour une requête
+invalide, 404 sans partie en cours, 409 pour un coup périmé ou un décompte
+demandé trop tôt, 415 pour un corps qui n'est pas du JSON, 422 pour un coup
+illégal.
+
+L'application n'écoute que sur la boucle locale. Elle refuse toute requête
+adressée à un autre nom d'hôte que `localhost` ou `127.0.0.1`, ce qui la protège
+du *DNS rebinding*.
+
 ## Documentation
 
 - [Architecture](docs/architecture.md) — décisions structurantes, alternatives
@@ -84,9 +117,17 @@ cd ui && npm test     # interface
 chargée au démarrage. Ces fichiers ne dépendent d'aucun module : le moteur les
 lit, l'application les sert.
 
-- `specialists.json` — les 21 spécialistes, faces Junior et Senior
-- `missions.json` — les plateaux Impact des scénarios, relevés sur les fiches
-  (3 des 10 à ce jour)
+- `specialists.json` — les spécialistes, faces Junior et Senior, chefs
+  d'équipe compris
+- `missions.json` — les 10 scénarios : plateau Impact, mise en place de l'océan,
+  zone de lancement et objectifs
+- `ocean-tiles.json` — les 37 tuiles Océan et leurs sites
+- `dive-tokens.json` — les jetons Plongée, par type et nombre d'exemplaires
+- `journals.json` — les 32 revues
+- `player-board.json` — le plateau joueur : pistes et zones
+
+Au build, ces fichiers sont copiés dans le jar de l'application, qui les charge
+une fois au démarrage. Une description invalide empêche le démarrage.
 
 Le champ `actions` se lit à deux niveaux : la liste **externe** énumère les
 actions cumulées, la liste **interne** les alternatives. `[["travel", "sonar"]]`

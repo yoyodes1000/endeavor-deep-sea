@@ -11,6 +11,7 @@ import io.github.yoyodes1000.endeavor.engine.game.PreparationCursor;
 import io.github.yoyodes1000.endeavor.engine.preparation.PreparationDriver;
 
 import java.util.List;
+import java.util.OptionalInt;
 
 /**
  * La façade du moteur : le point d'entrée unique qui réalise la signature centrale
@@ -46,6 +47,19 @@ public final class Game {
             case PREPARATION -> PreparationDriver.legalActions(state);
             case ACTIVATION -> ActivationDriver.legalActions(state);
             case FINISHED -> List.of();
+        };
+    }
+
+    /**
+     * Le joueur qui doit choisir le prochain coup — vide si la partie est finie. Toute
+     * décision du moteur revient au joueur dont c'est le tour : les coups légaux sont
+     * toujours les siens.
+     */
+    public static OptionalInt currentPlayer(GameState state) {
+        return switch (state.phase()) {
+            case PREPARATION -> OptionalInt.of(PreparationDriver.currentPlayer(state));
+            case ACTIVATION -> OptionalInt.of(ActivationDriver.currentPlayer(state));
+            case FINISHED -> OptionalInt.empty();
         };
     }
 

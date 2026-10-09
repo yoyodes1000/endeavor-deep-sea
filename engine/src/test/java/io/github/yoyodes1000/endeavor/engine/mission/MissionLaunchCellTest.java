@@ -1,7 +1,9 @@
 package io.github.yoyodes1000.endeavor.engine.mission;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.yoyodes1000.endeavor.engine.ocean.Cell;
 import io.github.yoyodes1000.endeavor.engine.ocean.OceanBoard;
@@ -45,6 +47,13 @@ class MissionLaunchCellTest {
     void sansBaseLaMissionNAPasDeZoneDeLancement() {
         assertEquals(Optional.empty(), mission(Optional.empty(), Optional.empty()).launchCell(ocean()));
         assertEquals(Optional.empty(), mission(Optional.empty(), Optional.of("absente")).launchCell(ocean()));
+    }
+
+    @Test
+    void uneBaseParCaseOuParTuileDonneUneZoneDeLancement() {
+        assertTrue(mission(Optional.of(new Cell(1, 0)), Optional.empty()).hasLaunchZone());
+        assertTrue(mission(Optional.empty(), Optional.of("the-sea-star")).hasLaunchZone());
+        assertFalse(mission(Optional.empty(), Optional.empty()).hasLaunchZone());
     }
 
     @Test

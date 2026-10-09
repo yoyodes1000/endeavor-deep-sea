@@ -45,6 +45,15 @@
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
       </resource>
+      <!--
+        Le materiel du jeu, embarque dans le jar sous data/ : l'application
+        demarre sans dependre du dossier courant. Copie brute, sans filtrage.
+      -->
+      <resource>
+        <directory>${project.basedir}/../data</directory>
+        <targetPath>data</targetPath>
+        <filtering>false</filtering>
+      </resource>
     </resources>
 
     <plugins>

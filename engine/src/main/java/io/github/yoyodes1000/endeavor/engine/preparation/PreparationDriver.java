@@ -146,7 +146,7 @@ public final class PreparationDriver {
     }
 
     /** Le joueur qui agit : le rang courant du tour, dans l'ordre du tour de la manche. */
-    private static int currentPlayer(GameState state) {
+    public static int currentPlayer(GameState state) {
         return state.turnOrder().get(state.cursor().turnPosition());
     }
 
